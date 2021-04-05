@@ -19,9 +19,11 @@ minLTP = 25.0
 maxLTP = 5000
 period = '6mo'
 duration = '1d'
-TEST_STKCODE = "HAPPSTMNDS"
+# Try Fixing bug with this symbol
+TEST_STKCODE = "ARTEMISMED" #"HAPPSTMNDS"
 
 nse = Nse()
+np.seterr(divide='ignore', invalid='ignore')
 
 # Decoration Class
 class colorText:
@@ -47,7 +49,10 @@ screeningDictionary = {
 listStockCodes = []
 
 # Get system wide proxy for networking
-proxyServer = urllib.request.getproxies()['http']
+try:
+    proxyServer = urllib.request.getproxies()['http']
+except KeyError:
+    proxyServer = ""
 
 # Fetch all stock codes from NSE
 def fetchStockCodes():
