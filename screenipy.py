@@ -16,7 +16,8 @@ DEBUG = False
 consolidationPercentage = 4
 volumeRatio = 2.5
 minLTP = 25.0
-period = '1y'
+maxLTP = 5000
+period = '6mo'
 duration = '1d'
 TEST_STKCODE = "HAPPSTMNDS"
 
@@ -34,13 +35,14 @@ class colorText:
 	UNDR = '\033[4m'
 
 # Global Variabls
-screenResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume'])
+screenResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP'])
 screeningDictionary = {
     'Stock': "",
     'Consolidating': "",
     'Breaking-Out': "",
     'MA-Signal': "",
-    'Volume': ""
+    'Volume': "",
+    'LTP': 0
 }
 listStockCodes = []
 
@@ -51,7 +53,7 @@ proxyServer = urllib.request.getproxies()['http']
 def fetchStockCodes():
     global listStockCodes
     print("Getting Stock Codes From NSE... ",end='')
-    listStockCodes = list(nse.get_stock_codes())[1:]
+    listStockCodes = list(nse.get_stock_codes(cached=False))[1:]
     if len(listStockCodes) > 10:
         print("=> Done! Fetched %d stock codes." % len(listStockCodes))
     else:
@@ -140,16 +142,14 @@ def r(daysToLookback=30):
     plt.title("Randomized Price Action")
     plt.show()
 
-# Validate LTP than minimum threshold
-def validateLTP(data,minLTP=minLTP):
-    if(data.describe()['Close']['mean'] >= minLTP):
-        if DEBUG:
-            print("LTP >= %d => Valid!" % minLTP)
-        return True
+# Validate LTP within limits
+def validateLTP(data, dict, minLTP=minLTP, maxLTP=maxLTP):
+    recent = data.head(1)
+    ltp = round(recent['Close'][0],2)
+    if(ltp >= minLTP and ltp <= maxLTP):
+        dict['LTP'] = colorText.GREEN + str(ltp) + colorText.END
     else:
-        if DEBUG:
-            print("LTP <= %d => Invalid!" % minLTP)
-        return False
+        dict['LTP'] = colorText.FAIL + str(ltp) + colorText.END
 
 # Validate if share is in valid box
 def validateBox(data,boxHeight=20):
@@ -184,7 +184,7 @@ def validateConsolidation(data, dict, percentage=2.5):
     else:
         if DEBUG:
             print("Consolidation => Invalid!")
-        dict['Consolidating'] = colorText.FAIL + "Range = " + str(round((abs((hc-lc)/hc)*100),2)) + "%" + colorText.END
+        dict['Consolidating'] = colorText.BOLD + colorText.FAIL + "Range = " + str(round((abs((hc-lc)/hc)*100),2)) + "%" + colorText.END
 
 # Validate Moving averages
 def validateMovingAverages(data, dict):
@@ -205,19 +205,30 @@ def validateVolume(data, dict, volumeRatio=2.5):
     else:
         dict['Volume'] = colorText.BOLD + colorText.FAIL + str(round(ratio,2)) + "x" + colorText.END
 
+# Validate if stock is currently breaking out
+def isBreakingOut(data, dict):
+    recent = data.head(1)
+    data = data[1:]
+    hc = round(data.describe()['Close']['max'],2)
+    if(recent['Close'][0] > hc):
+        dict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "Yes (Crossed " + str(hc) + ")" + colorText.END
+    else:
+        dict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "No (Wait for " + str(hc) + ")" + colorText.END
+
 if __name__ == "__main__":
     os.system("clear")
     fetchStockCodes()
     for stock in listStockCodes:
         try:
             data = fetchStockData(stock)
-            processedData = preprocessData(data, daysToLookback=14)
+            processedData = preprocessData(data, daysToLookback=60)
             screeningDictionary['Stock'] = colorText.BOLD + colorText.BLUE + stock + colorText.END
             validateConsolidation(processedData, screeningDictionary, percentage=consolidationPercentage)
             validateMovingAverages(processedData, screeningDictionary)
             validateVolume(processedData, screeningDictionary, volumeRatio=volumeRatio)
+            isBreakingOut(processedData, screeningDictionary)
+            validateLTP(processedData, screeningDictionary, minLTP=minLTP, maxLTP=maxLTP)
             highest, openclose = findBoxBreakout(data)
-            #validateLTP(processedData)
             #validateBox(processedData)
             screenResults = screenResults.append(screeningDictionary,ignore_index=True)
         except KeyboardInterrupt:
@@ -227,6 +238,10 @@ if __name__ == "__main__":
         except Exception as e:
             print(colorText.FAIL + "[+] Exception Occured while Screening! Moving on.." + colorText.END)
             print(e)
+            sys.exit(1)
+    print(colorText.BOLD + colorText.GREEN + "[+] Screening Completed! Happy Trading! :)" + colorText.END)
+    print(tabulate(screenResults, headers='keys', tablefmt='psql'))
+    sys.exit(0)
     #showBoxfitLine(highest, daysToLookback=20, stockCode=TEST_STKCODE)
     #showBoxfitLineAverage(highest, daysToLookback=20, stockCode=TEST_STKCODE)
     #showBoxfitLine(openclose, daysToLookback=20, stockCode=TEST_STKCODE)
