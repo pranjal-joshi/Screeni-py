@@ -10,6 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from tabulate import tabulate
+import configparser
 
 # Constants
 DEBUG = False
@@ -24,6 +25,7 @@ TEST_STKCODE = "HAPPSTMNDS"
 
 nse = Nse()
 np.seterr(divide='ignore', invalid='ignore')
+parser = configparser.ConfigParser()
 
 # Decoration Class
 class colorText:
@@ -252,15 +254,28 @@ def findBreakout(data, dict, daysToLookback):
             dict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "NO (BO: " + str(hc) + ")" + colorText.END
 
 
-# Handle user input
-def promptUserInput():
-    global duration
-    duration = Input("[+]")
-
+# Handle user input and save config
+def setConfig(parser):
+    parser.add_section('config')
+    print('[+] Screeni-py User Configuration:')
+    period = input('[+] Enter number of days for historical screening (Days): ')
+    duration = input('[+] Enter Duration of each candle (Days): ')
+    minLTP = input('[+] Minimum Price of Stock to Buy (in RS): ')
+    maxLTP = input('[+] Maximum Price of Stock to Buy (in RS): ')
+    volumeRatio = input('[+] How many times the volume should be more than average for the breakout? (Number): ')
+    consolidationPercentage = input('[+] How many %% the price should be in range to consider it as consolidation?: ')
+    parser.set('config','period',period + "d")
+    parser.set('config','duration',period + "d")
+    parser.set('config','minPrice',minLTP)
+    parser.set('config','maxPrice',maxLTP)
+    parser.set('config','volumeRatio',volumeRatio)
+    parser.set('config','consolidationPercentage',consolidationPercentage)
+    fp = open('screenipy.ini','w')
+    parser.write(fp)
+    fp.close()
 
 if __name__ == "__main__":
     os.system("clear")
-    
     fetchStockCodes()
     for stock in listStockCodes:
         try:
