@@ -20,7 +20,7 @@ maxLTP = 5000
 period = '6mo'
 duration = '1d'
 # Try Fixing bug with this symbol
-TEST_STKCODE = "ARTEMISMED" #"HAPPSTMNDS"
+TEST_STKCODE = "HAPPSTMNDS"
 
 nse = Nse()
 np.seterr(divide='ignore', invalid='ignore')
@@ -57,7 +57,7 @@ except KeyError:
 # Fetch all stock codes from NSE
 def fetchStockCodes():
     global listStockCodes
-    print("Getting Stock Codes From NSE... ",end='')
+    print("Getting Stock Codes From NSE... ", end='')
     listStockCodes = list(nse.get_stock_codes(cached=False))[1:]
     if len(listStockCodes) > 10:
         print("=> Done! Fetched %d stock codes." % len(listStockCodes))
@@ -71,14 +71,15 @@ def fetchStockData(stockCode):
         tickers = stockCode+".NS",
         period = period,
         duration = duration,
-        proxy = proxyServer
+        proxy = proxyServer,
+        progress=False
     )
     print("Fetching prices of %s..." % stockCode, end='')
     
     if len(data) == 0:
-        print("=> Failed to fetch!")
+        print("=> Failed to fetch!", end='\r', flush=True)
         return None
-    print("=> Done!")
+    print("=> Done!", end='\r', flush=True)
     return data
 
 # Preprocess the acquired data
@@ -179,7 +180,6 @@ def validateBox(data,boxHeight=20):
 
 # Validate if share prices are consolidating
 def validateConsolidation(data, dict, percentage=2.5):
-    print("Validating price consolidation... ")
     hc = data.describe()['Close']['max']
     lc = data.describe()['Close']['min']
     if ((hc - lc) <= (hc*percentage/100)):
@@ -194,7 +194,7 @@ def validateConsolidation(data, dict, percentage=2.5):
 # Validate Moving averages
 def validateMovingAverages(data, dict):
     recent = data.head(1)
-    if(recent['SMA'][0] > recent['LMA'][0]):
+    if(recent['SMA'][0] > recent['LMA'][0] and recent['Close'][0] > recent['SMA'][0]):
         dict['MA-Signal'] = colorText.BOLD + colorText.GREEN + 'Bullish' + colorText.END
     elif(recent['SMA'][0] < recent['LMA'][0]):
         dict['MA-Signal'] = colorText.BOLD + colorText.FAIL + 'Bearish' + colorText.END
@@ -220,29 +220,70 @@ def isBreakingOut(data, dict):
     else:
         dict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "No (Wait for " + str(hc) + ")" + colorText.END
 
+# Find accurate breakout value
+def findBreakout(data, dict, daysToLookback):
+    recent = data.head(1)
+    data = data[1:]
+    hs = round(data.describe()['High']['max'],2)
+    hc = round(data.describe()['Close']['max'],2)
+    rc = round(recent['Close'][0],2)
+    if hs > hc:
+        if ((hs - hc) <= (hs*2/100)):
+            if rc >= hc:
+                dict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "Yes (BO: " + str(hc) + " R: " + str(hs) + ")" + colorText.END
+            else:
+                dict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "NO (BO: " + str(hc) + " R: " + str(hs) + ")" + colorText.END
+        else:    
+            noOfHigherShadows = len(data[data.High > hc])
+            if(daysToLookback/noOfHigherShadows <= 3):
+                if rc >= hs:
+                    dict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "Yes (BO: " + str(hs) + ")" + colorText.END
+                else:
+                    dict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "NO (BO: " + str(hs) + ")" + colorText.END
+            else:
+                if rc >= hc:
+                    dict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "Yes (BO: " + str(hc) + " R: " + str(hs) + ")" + colorText.END
+                else:
+                    dict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "NO (BO: " + str(hc) + " R: " + str(hs) + ")" + colorText.END
+    else:
+        if rc >= hc:
+            dict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "Yes (BO: " + str(hc) + ")" + colorText.END
+        else:
+            dict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "NO (BO: " + str(hc) + ")" + colorText.END
+
+
+# Handle user input
+def promptUserInput():
+    global duration
+    duration = Input("[+]")
+
+
 if __name__ == "__main__":
     os.system("clear")
+    
     fetchStockCodes()
     for stock in listStockCodes:
         try:
             data = fetchStockData(stock)
-            processedData = preprocessData(data, daysToLookback=60)
-            screeningDictionary['Stock'] = colorText.BOLD + colorText.BLUE + stock + colorText.END
-            validateConsolidation(processedData, screeningDictionary, percentage=consolidationPercentage)
-            validateMovingAverages(processedData, screeningDictionary)
-            validateVolume(processedData, screeningDictionary, volumeRatio=volumeRatio)
-            isBreakingOut(processedData, screeningDictionary)
-            validateLTP(processedData, screeningDictionary, minLTP=minLTP, maxLTP=maxLTP)
-            highest, openclose = findBoxBreakout(data)
-            #validateBox(processedData)
-            screenResults = screenResults.append(screeningDictionary,ignore_index=True)
+            processedData = preprocessData(data, daysToLookback=14)
+            if not processedData.empty:
+                screeningDictionary['Stock'] = colorText.BOLD + colorText.BLUE + stock + colorText.END
+                validateConsolidation(processedData, screeningDictionary, percentage=consolidationPercentage)
+                validateMovingAverages(processedData, screeningDictionary)
+                validateVolume(processedData, screeningDictionary, volumeRatio=volumeRatio)
+                #isBreakingOut(processedData, screeningDictionary)
+                findBreakout(processedData, screeningDictionary, daysToLookback=14)
+                validateLTP(processedData, screeningDictionary, minLTP=minLTP, maxLTP=maxLTP)
+                highest, openclose = findBoxBreakout(data)
+                #validateBox(processedData)
+                screenResults = screenResults.append(screeningDictionary,ignore_index=True)
         except KeyboardInterrupt:
             print(colorText.BOLD + colorText.FAIL + "[+] Script terminated by the user." + colorText.END)
             print(tabulate(screenResults, headers='keys', tablefmt='psql'))
             sys.exit(0)
         except Exception as e:
             print(colorText.FAIL + "[+] Exception Occured while Screening! Moving on.." + colorText.END)
-            print(e)
+            raise(e)
             sys.exit(1)
     print(colorText.BOLD + colorText.GREEN + "[+] Screening Completed! Happy Trading! :)" + colorText.END)
     print(tabulate(screenResults, headers='keys', tablefmt='psql'))
@@ -250,15 +291,3 @@ if __name__ == "__main__":
     #showBoxfitLine(highest, daysToLookback=20, stockCode=TEST_STKCODE)
     #showBoxfitLineAverage(highest, daysToLookback=20, stockCode=TEST_STKCODE)
     #showBoxfitLine(openclose, daysToLookback=20, stockCode=TEST_STKCODE)
-
-    '''
-    plt.subplot(211)
-    #plt.hist(highest,bins=np.arange(round(min(highest)),round(max(highest)),1))
-    plt.hist(highest,bins='auto')
-    plt.title("Occurrence of Upper Shadows near the Price")
-    plt.subplot(212)
-    #plt.hist(openclose,bins=np.arange(round(min(openclose)),round(max(openclose)),1))
-    plt.hist(openclose,bins='auto')
-    plt.title("Occurrence of Open Close near the Price")
-    plt.show()
-    '''
