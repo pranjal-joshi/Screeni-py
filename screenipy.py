@@ -128,7 +128,6 @@ def preprocessData(data, daysToLookback=daysToLookback):
     data.insert(7,'LMA',lma['Close'])
     data.insert(8,'VolMA',vol['Volume'])
     data = data[::-1]               # Reverse the dataframe
-    data = data[1:]                 # Eliminate Headers
     data = data.head(daysToLookback)
     data = data.replace(np.nan, 0)
     if DEBUG:
