@@ -17,20 +17,6 @@ import datetime
 # Try Fixing bug with this symbol
 TEST_STKCODE = "HAPPSTMNDS"
 
-# Constants
-DEBUG = False
-consolidationPercentage = 4
-volumeRatio = 2.5
-minLTP = 20.0
-maxLTP = 50000
-period = '365d'
-duration = '1d'
-daysToLookback = 20
-
-nse = Nse()
-np.seterr(divide='ignore', invalid='ignore')
-parser = configparser.ConfigParser()
-
 # Decoration Class
 class colorText:
 	HEAD = '\033[95m'
@@ -41,6 +27,35 @@ class colorText:
 	END = '\033[0m'
 	BOLD = '\033[1m'
 	UNDR = '\033[4m'
+
+# Constants
+DEBUG = False
+consolidationPercentage = 4
+volumeRatio = 2.5
+minLTP = 20.0
+maxLTP = 50000
+period = '365d'
+duration = '1d'
+daysToLookback = 20
+
+art = colorText.GREEN + '''
+     .d8888b.                                             d8b                   
+    d88P  Y88b                                            Y8P                   
+    Y88b.                                                                       
+     "Y888b.    .d8888b 888d888 .d88b.   .d88b.  88888b.  888 88888b.  888  888 
+        "Y88b. d88P"    888P"  d8P  Y8b d8P  Y8b 888 "88b 888 888 "88b 888  888 
+          "888 888      888    88888888 88888888 888  888 888 888  888 888  888 
+    Y88b  d88P Y88b.    888    Y8b.     Y8b.     888  888 888 888 d88P Y88b 888 
+     "Y8888P"   "Y8888P 888     "Y8888   "Y8888  888  888 888 88888P"   "Y88888 
+                                                              888           888 
+                                                              888      Y8b d88P 
+                                                              888       "Y88P"  
+
+''' + colorText.END
+
+nse = Nse()
+np.seterr(divide='ignore', invalid='ignore')
+parser = configparser.ConfigParser()
 
 # Global Variabls
 screenResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP'])
@@ -74,6 +89,7 @@ def clearScreen():
         os.system('cls')
     else:
         os.system('clear')
+    print(art)
 
 # Fetch all stock codes from NSE
 def fetchStockCodes():
@@ -292,13 +308,14 @@ def initExecution():
     3 > Screen only the Consolidating stocks
     4 > Edit user configuration
     5 > Show user configuration
-    6 > Exit''' + colorText.END
+    6 > About Developer
+    7 > Exit''' + colorText.END
     )
     result = input(colorText.BOLD + colorText.FAIL + '[+] Select option: ')
     print(colorText.END, end='')
     try:
         result = int(result)
-        if(result < 0 or result > 6):
+        if(result < 0 or result > 7):
             raise ValueError
         return result
     except:
@@ -327,6 +344,9 @@ if __name__ == "__main__":
     if executeOption == 5:
         showConfigFile()
     if executeOption == 6:
+        print(colorText.BOLD + colorText.WARN + "\n[+] Developer: Pranjal Joshi." + colorText.END)
+        print(colorText.BOLD + colorText.WARN + "[+] More: https://github.com/pranjal-joshi/Screeni-py" + colorText.END)
+    if executeOption == 7:
         print(colorText.BOLD + colorText.FAIL + "[+] Script terminated by the user." + colorText.END)
         sys.exit(0)
     if executeOption > 0 and executeOption < 4:
