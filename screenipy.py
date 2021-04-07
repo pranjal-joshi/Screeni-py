@@ -30,6 +30,7 @@ class colorText:
 
 # Constants
 DEBUG = False
+VERSION = "1.0b"
 consolidationPercentage = 4
 volumeRatio = 2.5
 minLTP = 20.0
@@ -344,6 +345,7 @@ if __name__ == "__main__":
         showConfigFile()
     if executeOption == 6:
         print(colorText.BOLD + colorText.WARN + "\n[+] Developer: Pranjal Joshi." + colorText.END)
+        print(colorText.BOLD + colorText.WARN + ("[+] Version: %s" % VERSION) + colorText.END)
         print(colorText.BOLD + colorText.WARN + "[+] More: https://github.com/pranjal-joshi/Screeni-py" + colorText.END)
     if executeOption == 7:
         print(colorText.BOLD + colorText.FAIL + "[+] Script terminated by the user." + colorText.END)
@@ -375,7 +377,6 @@ if __name__ == "__main__":
                 break
             except Exception as e:
                 print(colorText.FAIL + ("[+] Exception Occured while Screening %s! Skipping this stock.." % stock) + colorText.END)
-                print(processedData)
                 print(e)
         print(tabulate(screenResults, headers='keys', tablefmt='psql'))
         saveResults.to_excel('screenipy-result.xlsx')
