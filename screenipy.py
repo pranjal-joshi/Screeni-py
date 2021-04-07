@@ -7,11 +7,12 @@ import requests
 import yfinance as yf
 from nsetools import Nse
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
 from tabulate import tabulate
 import configparser
 from time import sleep
+import platform
+import datetime
 
 # Try Fixing bug with this symbol
 TEST_STKCODE = "HAPPSTMNDS"
@@ -43,7 +44,16 @@ class colorText:
 
 # Global Variabls
 screenResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP'])
+saveResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP'])
 screeningDictionary = {
+    'Stock': "",
+    'Consolidating': "",
+    'Breaking-Out': "",
+    'MA-Signal': "",
+    'Volume': "",
+    'LTP': 0
+}
+saveDictionary = {
     'Stock': "",
     'Consolidating': "",
     'Breaking-Out': "",
@@ -58,6 +68,12 @@ try:
     proxyServer = urllib.request.getproxies()['http']
 except KeyError:
     proxyServer = ""
+
+def clearScreen():
+    if platform.system() == 'Windows':
+        os.system('cls')
+    else:
+        os.system('clear')
 
 # Fetch all stock codes from NSE
 def fetchStockCodes():
@@ -103,18 +119,6 @@ def preprocessData(data, daysToLookback=daysToLookback):
         print(data)
     return data
 
-# Analyze stock dataframe to determine possibility of box breakout
-def findBoxBreakout(data):
-    highest = []
-    openclose = []
-    for i in range(0,len(data)):
-        highest.append(data.iloc[i]['High'])
-        if data.iloc[i]['Close'] > data.iloc[i]['Open']:      # Green Candle
-            openclose.append(data.iloc[i]['Close'])
-        else:
-            openclose.append(data.iloc[i]['Open'])            # Red Candle
-    return (highest, openclose)
-
 # Linear regression
 def showBoxfitLine(data,daysToLookback=daysToLookback, stockCode=''):
     x = np.arange(daysToLookback+1,1,-1)
@@ -141,29 +145,18 @@ def showBoxfitLineAverage(data,daysToLookback=daysToLookback, stockCode=''):
     plt.title(stockCode)
     plt.show()
 
-# Just a random function to plot averaged line
-def r(daysToLookback=daysToLookback):
-    x = np.arange(1,daysToLookback+1)
-    y = np.random.rand(daysToLookback)
-    z = np.ones(daysToLookback) * y.mean()
-    plt.plot(x,y,'o')
-    plt.plot(x,z)
-    plt.xlabel("Days")
-    plt.ylabel("Price")
-    plt.title("Randomized Price Action")
-    plt.show()
-
 # Validate LTP within limits
-def validateLTP(data, dict, minLTP=minLTP, maxLTP=maxLTP):
+def validateLTP(data, dict, saveDict, minLTP=minLTP, maxLTP=maxLTP):
     recent = data.head(1)
     ltp = round(recent['Close'][0],2)
     if(ltp >= minLTP and ltp <= maxLTP):
         dict['LTP'] = colorText.GREEN + str(ltp) + colorText.END
     else:
         dict['LTP'] = colorText.FAIL + str(ltp) + colorText.END
+    saveDict['LTP'] = str(ltp)
 
 # Validate if share prices are consolidating
-def validateConsolidation(data, dict, percentage=2.5):
+def validateConsolidation(data, dict, saveDict, percentage=2.5):
     hc = data.describe()['Close']['max']
     lc = data.describe()['Close']['min']
     if ((hc - lc) <= (hc*percentage/100) and (hc - lc != 0)):
@@ -174,22 +167,27 @@ def validateConsolidation(data, dict, percentage=2.5):
         if DEBUG:
             print("Consolidation => Invalid!")
         dict['Consolidating'] = colorText.BOLD + colorText.FAIL + "Range = " + str(round((abs((hc-lc)/hc)*100),2)) + "%" + colorText.END
+    saveDict['Consolidating'] = str(round((abs((hc-lc)/hc)*100),2))+"%"
     return round((abs((hc-lc)/hc)*100),2)
 
 # Validate Moving averages
-def validateMovingAverages(data, dict):
+def validateMovingAverages(data, dict, saveDict):
     recent = data.head(1)
     if(recent['SMA'][0] > recent['LMA'][0] and recent['Close'][0] > recent['SMA'][0]):
         dict['MA-Signal'] = colorText.BOLD + colorText.GREEN + 'Bullish' + colorText.END
+        saveDict['MA-Signal'] = 'Bullish'
     elif(recent['SMA'][0] < recent['LMA'][0]):
         dict['MA-Signal'] = colorText.BOLD + colorText.FAIL + 'Bearish' + colorText.END
+        saveDict['MA-Signal'] = 'Bearish'
     else:
         dict['MA-Signal'] = colorText.BOLD + colorText.WARN + 'Neutral' + colorText.END
+        saveDict['MA-Signal'] = 'Neutral'
 
 # Validate if volume of last day is higher than avg
-def validateVolume(data, dict, volumeRatio=2.5):
+def validateVolume(data, dict, saveDict, volumeRatio=2.5):
     recent = data.head(1)
     ratio = round(recent['Volume'][0]/recent['VolMA'][0],2)
+    saveDict['Volume'] = str(ratio)+"x"
     if(ratio >= volumeRatio):
         dict['Volume'] = colorText.BOLD + colorText.GREEN + str(ratio) + "x" + colorText.END
         return True
@@ -198,7 +196,7 @@ def validateVolume(data, dict, volumeRatio=2.5):
         return False
 
 # Find accurate breakout value
-def findBreakout(data, dict, daysToLookback):
+def findBreakout(data, dict, saveDict, daysToLookback):
     recent = data.head(1)
     data = data[1:]
     hs = round(data.describe()['High']['max'],2)
@@ -206,6 +204,7 @@ def findBreakout(data, dict, daysToLookback):
     rc = round(recent['Close'][0],2)
     if hs > hc:
         if ((hs - hc) <= (hs*2/100)):
+            saveDict['Breaking-Out'] = str(hc)
             if rc >= hc:
                 dict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "Yes (BO: " + str(hc) + " R: " + str(hs) + ")" + colorText.END
                 return True
@@ -215,6 +214,7 @@ def findBreakout(data, dict, daysToLookback):
         else:    
             noOfHigherShadows = len(data[data.High > hc])
             if(daysToLookback/noOfHigherShadows <= 3):
+                saveDict['Breaking-Out'] = str(hs)
                 if rc >= hs:
                     dict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "Yes (BO: " + str(hs) + ")" + colorText.END
                     return True
@@ -222,6 +222,7 @@ def findBreakout(data, dict, daysToLookback):
                     dict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "NO (BO: " + str(hs) + ")" + colorText.END
                     return False
             else:
+                saveDict['Breaking-Out'] = str(hc) + ", " + str(hs)
                 if rc >= hc:
                     dict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "Yes (BO: " + str(hc) + " R: " + str(hs) + ")" + colorText.END
                     return True
@@ -229,6 +230,7 @@ def findBreakout(data, dict, daysToLookback):
                     dict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "NO (BO: " + str(hc) + " R: " + str(hs) + ")" + colorText.END
                     return False
     else:
+        saveDict['Breaking-Out'] = str(hc)
         if rc >= hc:
             dict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "Yes (BO: " + str(hc) + ")" + colorText.END
             return True
@@ -302,7 +304,7 @@ def initExecution():
     except:
         print(colorText.BOLD + colorText.FAIL + '\n[+] Please enter a valid numeric option & Try Again!' + colorText.END)
         sleep(2)
-        os.system("clear")
+        clearScreen()
         return initExecution()
 
 # Print config file
@@ -318,7 +320,7 @@ def showConfigFile():
         setConfig(parser)
 
 if __name__ == "__main__":
-    os.system("clear")
+    clearScreen()
     executeOption = initExecution()
     if executeOption == 4:
         setConfig(parser)
@@ -337,28 +339,27 @@ if __name__ == "__main__":
                 processedData = preprocessData(data, daysToLookback=daysToLookback)
                 if not processedData.empty:
                     screeningDictionary['Stock'] = colorText.BOLD + colorText.BLUE + stock + colorText.END
-                    consolidationValue = validateConsolidation(processedData, screeningDictionary, percentage=consolidationPercentage)
-                    validateMovingAverages(processedData, screeningDictionary)
-                    isVolumeHigh = validateVolume(processedData, screeningDictionary, volumeRatio=volumeRatio)
-                    isBreaking = findBreakout(processedData, screeningDictionary, daysToLookback=daysToLookback)
-                    validateLTP(processedData, screeningDictionary, minLTP=minLTP, maxLTP=maxLTP)
-                    highest, openclose = findBoxBreakout(data)
+                    saveDictionary['Stock'] = stock
+                    consolidationValue = validateConsolidation(processedData, screeningDictionary, saveDictionary, percentage=consolidationPercentage)
+                    validateMovingAverages(processedData, screeningDictionary, saveDictionary)
+                    isVolumeHigh = validateVolume(processedData, screeningDictionary, saveDictionary, volumeRatio=volumeRatio)
+                    isBreaking = findBreakout(processedData, screeningDictionary, saveDictionary, daysToLookback=daysToLookback)
+                    validateLTP(processedData, screeningDictionary, saveDictionary, minLTP=minLTP, maxLTP=maxLTP)
                     if (executeOption == 1 or executeOption == 2) and isBreaking and isVolumeHigh:
                         screenResults = screenResults.append(screeningDictionary,ignore_index=True)
-                    if (executeOption == 1 or executeOption == 3) and (consolidationValue <= consolidationPercentage):
+                        saveResults = saveResults.append(saveDictionary, ignore_index=True)
+                    if (executeOption == 1 or executeOption == 3) and (consolidationValue <= consolidationPercentage and consolidationValue != 0):
                         screenResults = screenResults.append(screeningDictionary,ignore_index=True)
+                        saveResults = saveResults.append(saveDictionary, ignore_index=True)
             except KeyboardInterrupt:
                 print(colorText.BOLD + colorText.FAIL + "[+] Script terminated by the user." + colorText.END)
-                print(tabulate(screenResults, headers='keys', tablefmt='psql'))
-                sys.exit(0)
+                break
             except Exception as e:
-                print(processedData)
                 print(colorText.FAIL + ("[+] Exception Occured while Screening %s! Skipping this stock.." % stock) + colorText.END)
-                raise(e)
-                sys.exit(1)
-        print(colorText.BOLD + colorText.GREEN + "[+] Screening Completed! Happy Trading! :)" + colorText.END)
+                print(processedData)
+                print(e)
         print(tabulate(screenResults, headers='keys', tablefmt='psql'))
+        saveResults.to_excel('screenipy-result.xlsx')
+        print(colorText.BOLD + colorText.GREEN + "[+] Results saved to screenipy-result.xlsx" + colorText.END)
+        print(colorText.BOLD + colorText.GREEN + "[+] Screening Completed! Happy Trading! :)" + colorText.END)
         sys.exit(0)
-    #showBoxfitLine(highest, daysToLookback=20, stockCode=TEST_STKCODE)
-    #showBoxfitLineAverage(highest, daysToLookback=20, stockCode=TEST_STKCODE)
-    #showBoxfitLine(openclose, daysToLookback=20, stockCode=TEST_STKCODE)
