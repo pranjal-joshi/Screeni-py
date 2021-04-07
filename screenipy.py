@@ -165,11 +165,13 @@ def showBoxfitLineAverage(data,daysToLookback=daysToLookback, stockCode=''):
 def validateLTP(data, dict, saveDict, minLTP=minLTP, maxLTP=maxLTP):
     recent = data.head(1)
     ltp = round(recent['Close'][0],2)
+    saveDict['LTP'] = str(ltp)
     if(ltp >= minLTP and ltp <= maxLTP):
         dict['LTP'] = colorText.GREEN + str(ltp) + colorText.END
+        return True
     else:
         dict['LTP'] = colorText.FAIL + str(ltp) + colorText.END
-    saveDict['LTP'] = str(ltp)
+        return False
 
 # Validate if share prices are consolidating
 def validateConsolidation(data, dict, saveDict, percentage=2.5):
@@ -261,7 +263,7 @@ def setConfig(parser):
     print('')
     print(colorText.BOLD + colorText.GREEN +'[+] Screeni-py User Configuration:' + colorText.END)
     period = input('[+] Enter number of days for which stock data to be downloaded (Days)(Default = 365): ')
-    daysToLookback = input('[+] Number of recent days to screen for Breakout/Consolidation (Days)(Default = 20): ')
+    daysToLookback = input('[+] Number of recent days to screen for Breakout/Consolidation (Days)(Default = 45): ')
     duration = input('[+] Enter Duration of each candle (Days)(Default = 1): ')
     minLTP = input('[+] Minimum Price of Stock to Buy (in RS)(Default = 20): ')
     maxLTP = input('[+] Maximum Price of Stock to Buy (in RS)(Default = 50000): ')
@@ -365,11 +367,11 @@ if __name__ == "__main__":
                     validateMovingAverages(processedData, screeningDictionary, saveDictionary)
                     isVolumeHigh = validateVolume(processedData, screeningDictionary, saveDictionary, volumeRatio=volumeRatio)
                     isBreaking = findBreakout(processedData, screeningDictionary, saveDictionary, daysToLookback=daysToLookback)
-                    validateLTP(processedData, screeningDictionary, saveDictionary, minLTP=minLTP, maxLTP=maxLTP)
-                    if (executeOption == 1 or executeOption == 2) and isBreaking and isVolumeHigh:
+                    isLtpValid = validateLTP(processedData, screeningDictionary, saveDictionary, minLTP=minLTP, maxLTP=maxLTP)
+                    if (executeOption == 1 or executeOption == 2) and isBreaking and isVolumeHigh and isLtpValid:
                         screenResults = screenResults.append(screeningDictionary,ignore_index=True)
                         saveResults = saveResults.append(saveDictionary, ignore_index=True)
-                    if (executeOption == 1 or executeOption == 3) and (consolidationValue <= consolidationPercentage and consolidationValue != 0):
+                    if (executeOption == 1 or executeOption == 3) and (consolidationValue <= consolidationPercentage and consolidationValue != 0) and isLtpValid:
                         screenResults = screenResults.append(screeningDictionary,ignore_index=True)
                         saveResults = saveResults.append(saveDictionary, ignore_index=True)
             except KeyboardInterrupt:
