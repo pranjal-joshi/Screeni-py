@@ -64,16 +64,16 @@ parser = configparser.ConfigParser()
 screenCounter = 1
 
 # Global Variabls
-screenResults = pd.DataFrame(columns=['Stock','Pattern','Consolidating','Breaking-Out','MA-Signal','Volume','LTP'])
-saveResults = pd.DataFrame(columns=['Stock','Pattern','Consolidating','Breaking-Out','MA-Signal','Volume','LTP'])
+screenResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP','Pattern'])
+saveResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP','Pattern'])
 screeningDictionary = {
     'Stock': "",
-    'Pattern': "",
     'Consolidating': "",
     'Breaking-Out': "",
     'MA-Signal': "",
     'Volume': "",
-    'LTP': 0
+    'LTP': 0,
+    'Pattern': ""
 }
 saveDictionary = {
     'Stock': "",
@@ -82,7 +82,8 @@ saveDictionary = {
     'Breaking-Out': "",
     'MA-Signal': "",
     'Volume': "",
-    'LTP': 0
+    'LTP': 0,
+    'Pattern': ""
 }
 listStockCodes = []
 
@@ -220,7 +221,7 @@ def validateVolume(data, dict, saveDict, volumeRatio=2.5):
     recent = data.head(1)
     ratio = round(recent['Volume'][0]/recent['VolMA'][0],2)
     saveDict['Volume'] = str(ratio)+"x"
-    if(ratio >= volumeRatio and ratio != np.nan and (not math.isinf(ratio))):
+    if(ratio >= volumeRatio and ratio != np.nan and (not math.isinf(ratio)) and (ratio != 20)):
         dict['Volume'] = colorText.BOLD + colorText.GREEN + str(ratio) + "x" + colorText.END
         return True
     else:
@@ -279,6 +280,8 @@ def validateInsideBar(data, dict, saveDict, daysToLookback=4):
         dict['Pattern'] = colorText.BOLD + colorText.GREEN + ("Inside Bar (%d days)" % daysToLookback) + colorText.END
         saveDict['Pattern'] = "Inside Bar (%d days)" % daysToLookback
         return True
+    dict['Pattern'] = ''
+    saveDict['Pattern'] = ''
     return False
 
 
@@ -384,13 +387,11 @@ if __name__ == "__main__":
         sys.exit(0)
     if executeOption > 0 and executeOption < 5:
         getConfig(parser)
-        if(executeOption == 4):
-            daysForInsideBar = 4
-            try:
-                daysForInsideBar = int(input(colorText.BOLD + colorText.WARN + '\n[+] Enter days to look back for formation of Inside Bar: '))
-                print('')
-            except:
-                pass
+        try:
+            daysForInsideBar = int(input(colorText.BOLD + colorText.WARN + '\n[+] Enter days to look back for formation of Inside Bar: '))
+            print('')
+        except:
+            pass
         fetchStockCodes()
         print(colorText.BOLD + colorText.WARN + "[+] Starting Stock Screening.. Press Ctrl+C to stop!\n")
         for stock in listStockCodes:
