@@ -311,6 +311,8 @@ def setConfig(parser):
         parser.write(fp)
         fp.close()
         print(colorText.BOLD + colorText.GREEN +'[+] User configuration saved.' + colorText.END)
+        print(colorText.BOLD + colorText.GREEN +'[+] Restart the program now.' + colorText.END)
+        input('')
     except:
         print(colorText.BOLD + colorText.FAIL +'[+] Failed to save user config. Aborting..' + colorText.END)
         sys.exit(1)
@@ -426,4 +428,5 @@ if __name__ == "__main__":
         saveResults.to_excel('screenipy-result.xlsx')
         print(colorText.BOLD + colorText.GREEN + "[+] Results saved to screenipy-result.xlsx" + colorText.END)
         print(colorText.BOLD + colorText.GREEN + "[+] Screening Completed! Happy Trading! :)" + colorText.END)
+        input('')
         sys.exit(0)
