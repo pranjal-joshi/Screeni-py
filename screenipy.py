@@ -206,7 +206,7 @@ def validateVolume(data, dict, saveDict, volumeRatio=2.5):
     recent = data.head(1)
     ratio = round(recent['Volume'][0]/recent['VolMA'][0],2)
     saveDict['Volume'] = str(ratio)+"x"
-    if(ratio >= volumeRatio):
+    if(ratio >= volumeRatio and ratio != np.nan and ratio != np.inf):
         dict['Volume'] = colorText.BOLD + colorText.GREEN + str(ratio) + "x" + colorText.END
         return True
     else:
