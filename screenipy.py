@@ -13,6 +13,8 @@ import configparser
 from time import sleep
 import platform
 import datetime
+import math
+import random
 
 # Try Fixing bug with this symbol
 TEST_STKCODE = "HAPPSTMNDS"
@@ -38,6 +40,8 @@ maxLTP = 50000
 period = '365d'
 duration = '1d'
 daysToLookback = 20
+daysForInsideBar = 4
+shuffleEnabled = False
 
 art = colorText.GREEN + '''
      .d8888b.                                             d8b                   
@@ -57,12 +61,14 @@ art = colorText.GREEN + '''
 nse = Nse()
 np.seterr(divide='ignore', invalid='ignore')
 parser = configparser.ConfigParser()
+screenCounter = 1
 
 # Global Variabls
-screenResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP'])
-saveResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP'])
+screenResults = pd.DataFrame(columns=['Stock','Pattern','Consolidating','Breaking-Out','MA-Signal','Volume','LTP'])
+saveResults = pd.DataFrame(columns=['Stock','Pattern','Consolidating','Breaking-Out','MA-Signal','Volume','LTP'])
 screeningDictionary = {
     'Stock': "",
+    'Pattern': "",
     'Consolidating': "",
     'Breaking-Out': "",
     'MA-Signal': "",
@@ -71,6 +77,7 @@ screeningDictionary = {
 }
 saveDictionary = {
     'Stock': "",
+    'Pattern': "",
     'Consolidating': "",
     'Breaking-Out': "",
     'MA-Signal': "",
@@ -99,12 +106,18 @@ def fetchStockCodes():
     listStockCodes = list(nse.get_stock_codes(cached=False))[1:]
     if len(listStockCodes) > 10:
         print(colorText.GREEN + ("=> Done! Fetched %d stock codes." % len(listStockCodes)) + colorText.END)
+        if shuffleEnabled:
+            random.shuffle(listStockCodes)
+            print(colorText.WARN + "[+] Stock shuffling is active." + colorText.END)
+        else:
+            print(colorText.WARN + "[+] Stock shuffling is inactive." + colorText.END)
     else:
         print(colorText.FAIL + "=> Error getting stock codes from NSE!" + colorText.END)
         sys.exit("Exiting script..")
 
 # Fetch stock price data from Yahoo finance
 def fetchStockData(stockCode):
+    global screenCounter
     data = yf.download(
         tickers = stockCode+".NS",
         period = period,
@@ -113,11 +126,12 @@ def fetchStockData(stockCode):
         progress=False
     )
     sys.stdout.write("\r\033[K")
-    print(colorText.BOLD + colorText.GREEN + ("Fetching data & Analyzing %s..." % stockCode) + colorText.END, end='')
+    print(colorText.BOLD + colorText.GREEN + ("[%d%%] Fetching data & Analyzing %s..." % (int(screenCounter/len(listStockCodes)*100), stockCode)) + colorText.END, end='')
     if len(data) == 0:
         print(colorText.BOLD + colorText.FAIL + "=> Failed to fetch!" + colorText.END, end='\r', flush=True)
         return None
     print(colorText.BOLD + colorText.GREEN + "=> Done!" + colorText.END, end='\r', flush=True)
+    screenCounter += 1
     return data
 
 # Preprocess the acquired data
@@ -167,10 +181,10 @@ def validateLTP(data, dict, saveDict, minLTP=minLTP, maxLTP=maxLTP):
     ltp = round(recent['Close'][0],2)
     saveDict['LTP'] = str(ltp)
     if(ltp >= minLTP and ltp <= maxLTP):
-        dict['LTP'] = colorText.GREEN + str(ltp) + colorText.END
+        dict['LTP'] = colorText.GREEN + ("%.2f" % ltp) + colorText.END
         return True
     else:
-        dict['LTP'] = colorText.FAIL + str(ltp) + colorText.END
+        dict['LTP'] = colorText.FAIL + ("%.2f" % ltp) + colorText.END
         return False
 
 # Validate if share prices are consolidating
@@ -206,7 +220,7 @@ def validateVolume(data, dict, saveDict, volumeRatio=2.5):
     recent = data.head(1)
     ratio = round(recent['Volume'][0]/recent['VolMA'][0],2)
     saveDict['Volume'] = str(ratio)+"x"
-    if(ratio >= volumeRatio and ratio != np.nan and ratio != np.inf):
+    if(ratio >= volumeRatio and ratio != np.nan and (not math.isinf(ratio))):
         dict['Volume'] = colorText.BOLD + colorText.GREEN + str(ratio) + "x" + colorText.END
         return True
     else:
@@ -256,6 +270,17 @@ def findBreakout(data, dict, saveDict, daysToLookback):
             dict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "NO (BO: " + str(hc) + ")" + colorText.END
             return False
 
+# Validate 'Inside Bar' structure for recent days
+def validateInsideBar(data, dict, saveDict, daysToLookback=4):
+    data = data.head(daysToLookback)
+    lowsData = data.sort_values(by=['Low'], ascending=False)
+    highsData = data.sort_values(by=['High'], ascending=True)
+    if(highsData.equals(lowsData)):
+        dict['Pattern'] = colorText.BOLD + colorText.GREEN + ("Inside Bar (%d days)" % daysToLookback) + colorText.END
+        saveDict['Pattern'] = "Inside Bar (%d days)" % daysToLookback
+        return True
+    return False
+
 
 # Handle user input and save config
 def setConfig(parser):
@@ -269,6 +294,7 @@ def setConfig(parser):
     maxLTP = input('[+] Maximum Price of Stock to Buy (in RS)(Default = 50000): ')
     volumeRatio = input('[+] How many times the volume should be more than average for the breakout? (Number)(Default = 2.5): ')
     consolidationPercentage = input('[+] How many % the price should be in range to consider it as consolidation? (Number)(Default = 4): ')
+    shuffle = str(input('[+] Shuffle stocks rather than screening alphabetically? (Y/N): ')).lower()
     parser.set('config','period',period + "d")
     parser.set('config','daysToLookback',daysToLookback)
     parser.set('config','duration',duration + "d")
@@ -276,6 +302,7 @@ def setConfig(parser):
     parser.set('config','maxPrice',maxLTP)
     parser.set('config','volumeRatio',volumeRatio)
     parser.set('config','consolidationPercentage',consolidationPercentage)
+    parser.set('config','shuffle',shuffle)
     try:
         fp = open('screenipy.ini','w')
         parser.write(fp)
@@ -287,7 +314,7 @@ def setConfig(parser):
 
 # Load user config from file
 def getConfig(parser):
-    global duration, period, minLTP, maxLTP, volumeRatio, consolidationPercentage, daysToLookback
+    global duration, period, minLTP, maxLTP, volumeRatio, consolidationPercentage, daysToLookback, shuffleEnabled
     if len(parser.read('screenipy.ini')):
         duration = parser.get('config','duration')
         period = parser.get('config','period')
@@ -296,6 +323,8 @@ def getConfig(parser):
         volumeRatio = float(parser.get('config','volumeRatio'))
         consolidationPercentage = float(parser.get('config','consolidationPercentage'))
         daysToLookback = int(parser.get('config','daysToLookback'))
+        if str(parser.get('config','shuffle')).lower() == 'y':
+            shuffleEnabled = True
         print(colorText.BOLD + colorText.GREEN +'[+] User configuration loaded.' + colorText.END)
     else:
         print(colorText.BOLD + colorText.FAIL + "[+] User config not found!" + colorText.END)
@@ -306,18 +335,19 @@ def getConfig(parser):
 def initExecution():
     print(colorText.BOLD + colorText.WARN + '[+] Press a number to start stock screening: ' + colorText.END)
     print(colorText.BOLD + '''    1 > Screen stocks for Breakout or Consolidation
-    2 > Screen only the stocks with recent Breakout & Volume
-    3 > Screen only the Consolidating stocks
-    4 > Edit user configuration
-    5 > Show user configuration
-    6 > About Developer
-    7 > Exit''' + colorText.END
+    2 > Screen for the stocks with recent Breakout & Volume
+    3 > Screen for the Consolidating stocks
+    4 > Screen for the "Inside Bar" (Tight Flag) Pattern
+    5 > Edit user configuration
+    6 > Show user configuration
+    7 > About Developer
+    8 > Exit''' + colorText.END
     )
     result = input(colorText.BOLD + colorText.FAIL + '[+] Select option: ')
     print(colorText.END, end='')
     try:
         result = int(result)
-        if(result < 0 or result > 7):
+        if(result < 0 or result > 8):
             raise ValueError
         return result
     except:
@@ -341,19 +371,26 @@ def showConfigFile():
 if __name__ == "__main__":
     clearScreen()
     executeOption = initExecution()
-    if executeOption == 4:
-        setConfig(parser)
     if executeOption == 5:
-        showConfigFile()
+        setConfig(parser)
     if executeOption == 6:
+        showConfigFile()
+    if executeOption == 7:
         print(colorText.BOLD + colorText.WARN + "\n[+] Developer: Pranjal Joshi." + colorText.END)
         print(colorText.BOLD + colorText.WARN + ("[+] Version: %s" % VERSION) + colorText.END)
         print(colorText.BOLD + colorText.WARN + "[+] More: https://github.com/pranjal-joshi/Screeni-py" + colorText.END)
-    if executeOption == 7:
+    if executeOption == 8:
         print(colorText.BOLD + colorText.FAIL + "[+] Script terminated by the user." + colorText.END)
         sys.exit(0)
-    if executeOption > 0 and executeOption < 4:
+    if executeOption > 0 and executeOption < 5:
         getConfig(parser)
+        if(executeOption == 4):
+            daysForInsideBar = 4
+            try:
+                daysForInsideBar = int(input(colorText.BOLD + colorText.WARN + '\n[+] Enter days to look back for formation of Inside Bar: '))
+                print('')
+            except:
+                pass
         fetchStockCodes()
         print(colorText.BOLD + colorText.WARN + "[+] Starting Stock Screening.. Press Ctrl+C to stop!\n")
         for stock in listStockCodes:
@@ -368,14 +405,18 @@ if __name__ == "__main__":
                     isVolumeHigh = validateVolume(processedData, screeningDictionary, saveDictionary, volumeRatio=volumeRatio)
                     isBreaking = findBreakout(processedData, screeningDictionary, saveDictionary, daysToLookback=daysToLookback)
                     isLtpValid = validateLTP(processedData, screeningDictionary, saveDictionary, minLTP=minLTP, maxLTP=maxLTP)
+                    isInsideBar = validateInsideBar(processedData, screeningDictionary, saveDictionary, daysToLookback=daysForInsideBar)
                     if (executeOption == 1 or executeOption == 2) and isBreaking and isVolumeHigh and isLtpValid:
                         screenResults = screenResults.append(screeningDictionary,ignore_index=True)
                         saveResults = saveResults.append(saveDictionary, ignore_index=True)
                     if (executeOption == 1 or executeOption == 3) and (consolidationValue <= consolidationPercentage and consolidationValue != 0) and isLtpValid:
                         screenResults = screenResults.append(screeningDictionary,ignore_index=True)
                         saveResults = saveResults.append(saveDictionary, ignore_index=True)
+                    if executeOption == 4 and isLtpValid and isInsideBar:
+                        screenResults = screenResults.append(screeningDictionary,ignore_index=True)
+                        saveResults = saveResults.append(saveDictionary, ignore_index=True)
             except KeyboardInterrupt:
-                print(colorText.BOLD + colorText.FAIL + "[+] Script terminated by the user." + colorText.END)
+                print(colorText.BOLD + colorText.FAIL + "\n[+] Script terminated by the user." + colorText.END)
                 break
             except Exception as e:
                 print(colorText.FAIL + ("[+] Exception Occured while Screening %s! Skipping this stock.." % stock) + colorText.END)
