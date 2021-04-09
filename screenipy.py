@@ -483,6 +483,8 @@ if __name__ == "__main__":
             except Exception as e:
                 print(colorText.FAIL + ("[+] Exception Occured while Screening %s! Skipping this stock.." % stock) + colorText.END)
                 print(e)
+        screenResults.sort_values(by=['Stock'], ascending=True, inplace=True)
+        saveResults.sort_values(by=['Stock'], ascending=True, inplace=True)
         print(tabulate(screenResults, headers='keys', tablefmt='psql'))
         saveResults.to_excel('screenipy-result.xlsx')
         print(colorText.BOLD + colorText.GREEN + "[+] Results saved to screenipy-result.xlsx" + colorText.END)
