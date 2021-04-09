@@ -41,7 +41,7 @@ minLTP = 20.0
 maxLTP = 50000
 period = '365d'
 duration = '1d'
-daysToLookback = 40
+daysToLookback = 15
 daysForInsideBar = 3
 shuffleEnabled = False
 
@@ -308,11 +308,11 @@ def setConfig(parser):
     print('')
     print(colorText.BOLD + colorText.GREEN +'[+] Screeni-py User Configuration:' + colorText.END)
     period = input('[+] Enter number of days for which stock data to be downloaded (Days)(Default = 365): ')
-    daysToLookback = input('[+] Number of recent days to screen for Breakout/Consolidation (Days)(Default = 40): ')
+    daysToLookback = input('[+] Number of recent days to screen for Breakout/Consolidation (Days)(Default = 15): ')
     duration = input('[+] Enter Duration of each candle (Days)(Default = 1): ')
     minLTP = input('[+] Minimum Price of Stock to Buy (in RS)(Default = 20): ')
-    maxLTP = input('[+] Maximum Price of Stock to Buy (in RS)(Default = 50000): ')
-    volumeRatio = input('[+] How many times the volume should be more than average for the breakout? (Number)(Default = 2.5): ')
+    maxLTP = input('[+] Maximum Price of Stock to Buy (in RS)(Default = 20000): ')
+    volumeRatio = input('[+] How many times the volume should be more than its 20-Days average for the breakout? (Number)(Default = 2.5): ')
     consolidationPercentage = input('[+] How many % the price should be in range to consider it as consolidation? (Number)(Default = 10): ')
     shuffle = str(input('[+] Shuffle stocks rather than screening alphabetically? (Y/N): ')).lower()
     parser.set('config','period',period + "d")
