@@ -402,7 +402,7 @@ def checkForUpdate():
             resp = requests.get("https://api.github.com/repos/pranjal-joshi/Screeni-py/releases/latest")
         if(float(resp.json()['tag_name']) > now):
             url = resp.json()['assets'][0]['browser_download_url']
-            size = int(resp.json()['assets'][0]['size']/1024*1024)
+            size = int(resp.json()['assets'][0]['size']/(1024*1024))
             if platform.system() != 'Windows':
                 url = resp.json()['assets'][1]['browser_download_url']
                 size = int(resp.json()['assets'][1]['size']/(1024*1024))
