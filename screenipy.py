@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Pyinstaller compile: pyinstaller --onefile screenipy.py  --hidden-import cmath
+# Pyinstaller compile: pyinstaller --icon=icon.ico --onefile screenipy.py  --hidden-import cmath
 
 import os
 import sys
