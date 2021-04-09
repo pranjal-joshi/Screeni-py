@@ -35,14 +35,14 @@ class colorText:
 # Constants
 DEBUG = False
 VERSION = "1.01"
-consolidationPercentage = 4
+consolidationPercentage = 10
 volumeRatio = 2.5
 minLTP = 20.0
 maxLTP = 50000
 period = '365d'
 duration = '1d'
-daysToLookback = 20
-daysForInsideBar = 4
+daysToLookback = 40
+daysForInsideBar = 3
 shuffleEnabled = False
 
 art = colorText.GREEN + '''
@@ -308,12 +308,12 @@ def setConfig(parser):
     print('')
     print(colorText.BOLD + colorText.GREEN +'[+] Screeni-py User Configuration:' + colorText.END)
     period = input('[+] Enter number of days for which stock data to be downloaded (Days)(Default = 365): ')
-    daysToLookback = input('[+] Number of recent days to screen for Breakout/Consolidation (Days)(Default = 45): ')
+    daysToLookback = input('[+] Number of recent days to screen for Breakout/Consolidation (Days)(Default = 40): ')
     duration = input('[+] Enter Duration of each candle (Days)(Default = 1): ')
     minLTP = input('[+] Minimum Price of Stock to Buy (in RS)(Default = 20): ')
     maxLTP = input('[+] Maximum Price of Stock to Buy (in RS)(Default = 50000): ')
     volumeRatio = input('[+] How many times the volume should be more than average for the breakout? (Number)(Default = 2.5): ')
-    consolidationPercentage = input('[+] How many % the price should be in range to consider it as consolidation? (Number)(Default = 4): ')
+    consolidationPercentage = input('[+] How many % the price should be in range to consider it as consolidation? (Number)(Default = 10): ')
     shuffle = str(input('[+] Shuffle stocks rather than screening alphabetically? (Y/N): ')).lower()
     parser.set('config','period',period + "d")
     parser.set('config','daysToLookback',daysToLookback)
@@ -331,7 +331,7 @@ def setConfig(parser):
         print(colorText.BOLD + colorText.GREEN +'[+] Restart the program now.' + colorText.END)
         input('')
         sys.exit(0)
-    except:
+    except Exception as e:
         print(colorText.BOLD + colorText.FAIL +'[+] Failed to save user config. Aborting..' + colorText.END)
         sys.exit(1)
 
