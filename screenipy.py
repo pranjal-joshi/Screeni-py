@@ -405,6 +405,7 @@ def showConfigFile():
         print(colorText.BOLD + colorText.GREEN +'[+] Screeni-py User Configuration:' + colorText.END)
         print("\n"+f.read())
         f.close()
+        input('')
     except:
         print(colorText.BOLD + colorText.FAIL + "[+] User Configuration not found!" + colorText.END)
         print(colorText.BOLD + colorText.WARN + "[+] Configure the limits to continue." + colorText.END)
