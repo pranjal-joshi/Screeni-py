@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Pyinstaller compile: pyinstaller --icon=icon.ico --onefile screenipy.py  --hidden-import cmath
+# Pyinstaller compile: pyinstaller --onefile screenipy.py  --hidden-import cmath
 
 import os
 import sys
@@ -34,16 +34,17 @@ class colorText:
 
 # Constants
 DEBUG = False
-VERSION = "1.01"
+VERSION = "1.02"
 consolidationPercentage = 10
-volumeRatio = 2.5
+volumeRatio = 2
 minLTP = 20.0
 maxLTP = 50000
 period = '365d'
 duration = '1d'
-daysToLookback = 15
+daysToLookback = 20
 daysForInsideBar = 3
 shuffleEnabled = False
+stageTwo = False
 
 art = colorText.GREEN + '''
      .d8888b.                                             d8b                   
@@ -61,6 +62,11 @@ art = colorText.GREEN + '''
 ''' + colorText.END
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
+[1.02]
+1. Feature added to screen only STAGE-2 stocks.
+2. Auto generate default config if not found.
+3. Minor bug-fixes.
+
 [1.01]
 1. Inside Bar detection added.
 2. OTA Software Update Implemented.
@@ -144,7 +150,11 @@ def fetchStockData(stockCode):
         progress=False
     )
     sys.stdout.write("\r\033[K")
-    print(colorText.BOLD + colorText.GREEN + ("[%d%%] Fetching data & Analyzing %s..." % (int(screenCounter/len(listStockCodes)*100), stockCode)) + colorText.END, end='')
+    try:
+        #print(colorText.BOLD + colorText.GREEN + ("[%d%%] Fetching data & Analyzing %s..." % (int(screenCounter/len(listStockCodes)*100), stockCode)) + colorText.END, end='')
+        print(colorText.BOLD + colorText.GREEN + ("[%d%%] Screened %d, Found %d. Fetching data & Analyzing %s..." % (int(screenCounter/len(listStockCodes)*100), screenCounter, len(screenResults), stockCode)) + colorText.END, end='')
+    except ZeroDivisionError:
+        pass
     if len(data) == 0:
         print(colorText.BOLD + colorText.FAIL + "=> Failed to fetch!" + colorText.END, end='\r', flush=True)
         return None
@@ -161,44 +171,25 @@ def preprocessData(data, daysToLookback=daysToLookback):
     data.insert(7,'LMA',lma['Close'])
     data.insert(8,'VolMA',vol['Volume'])
     data = data[::-1]               # Reverse the dataframe
-    data = data.head(daysToLookback)
+    fullData = data
+    trimmedData = data.head(daysToLookback)
     data = data.replace(np.nan, 0)
     if DEBUG:
         print(data)
-    return data
-
-# Linear regression
-def showBoxfitLine(data,daysToLookback=daysToLookback, stockCode=''):
-    x = np.arange(daysToLookback+1,1,-1)
-    y = np.array(data)
-    m,c = np.polyfit(x,y,1)
-    print("Slope = %f\tIntercept = %f\tLine of angle with X-axis = %f" % (round(m,2),round(c,2),np.rad2deg(np.arctan(m))))
-    plt.plot(x,y,'o')
-    plt.plot(x,m*x+c)
-    plt.xlabel("Days")
-    plt.ylabel("Price")
-    plt.title(stockCode)
-    plt.show()
-
-# Simple Average
-def showBoxfitLineAverage(data,daysToLookback=daysToLookback, stockCode=''):
-    x = np.arange(daysToLookback+1,1,-1)
-    y = np.array(data)
-    z = np.ones(daysToLookback) * y.mean()
-    print("Intercept = %f" % z[0])
-    plt.plot(x,y,'o')
-    plt.plot(x,z)
-    plt.xlabel("Days")
-    plt.ylabel("Price")
-    plt.title(stockCode)
-    plt.show()
+    return (fullData, trimmedData)
 
 # Validate LTP within limits
 def validateLTP(data, dict, saveDict, minLTP=minLTP, maxLTP=maxLTP):
+    global stageTwo
     recent = data.head(1)
     ltp = round(recent['Close'][0],2)
     saveDict['LTP'] = str(ltp)
-    if(ltp >= minLTP and ltp <= maxLTP):
+    verifyStageTwo = True
+    if(stageTwo):
+        yearlyLow = data.head(300).min()['Low']
+        if ltp < (2 * yearlyLow):
+            verifyStageTwo = False
+    if(ltp >= minLTP and ltp <= maxLTP and verifyStageTwo):
         dict['LTP'] = colorText.GREEN + ("%.2f" % ltp) + colorText.END
         return True
     else:
@@ -303,41 +294,68 @@ def validateInsideBar(data, dict, saveDict, daysToLookback=4):
 
 
 # Handle user input and save config
-def setConfig(parser):
-    parser.add_section('config')
-    print('')
-    print(colorText.BOLD + colorText.GREEN +'[+] Screeni-py User Configuration:' + colorText.END)
-    period = input('[+] Enter number of days for which stock data to be downloaded (Days)(Default = 365): ')
-    daysToLookback = input('[+] Number of recent days to screen for Breakout/Consolidation (Days)(Default = 15): ')
-    duration = input('[+] Enter Duration of each candle (Days)(Default = 1): ')
-    minLTP = input('[+] Minimum Price of Stock to Buy (in RS)(Default = 20): ')
-    maxLTP = input('[+] Maximum Price of Stock to Buy (in RS)(Default = 20000): ')
-    volumeRatio = input('[+] How many times the volume should be more than its 20-Days average for the breakout? (Number)(Default = 2.5): ')
-    consolidationPercentage = input('[+] How many % the price should be in range to consider it as consolidation? (Number)(Default = 10): ')
-    shuffle = str(input('[+] Shuffle stocks rather than screening alphabetically? (Y/N): ')).lower()
-    parser.set('config','period',period + "d")
-    parser.set('config','daysToLookback',daysToLookback)
-    parser.set('config','duration',duration + "d")
-    parser.set('config','minPrice',minLTP)
-    parser.set('config','maxPrice',maxLTP)
-    parser.set('config','volumeRatio',volumeRatio)
-    parser.set('config','consolidationPercentage',consolidationPercentage)
-    parser.set('config','shuffle',shuffle)
-    try:
-        fp = open('screenipy.ini','w')
-        parser.write(fp)
-        fp.close()
-        print(colorText.BOLD + colorText.GREEN +'[+] User configuration saved.' + colorText.END)
-        print(colorText.BOLD + colorText.GREEN +'[+] Restart the program now.' + colorText.END)
-        input('')
-        sys.exit(0)
-    except Exception as e:
-        print(colorText.BOLD + colorText.FAIL +'[+] Failed to save user config. Aborting..' + colorText.END)
-        sys.exit(1)
+def setConfig(parser, default=False):
+    if default:
+        global duration, period, minLTP, maxLTP, volumeRatio, consolidationPercentage, daysToLookback
+        parser.add_section('config')
+        parser.set('config','period',period)
+        parser.set('config','daysToLookback',str(daysToLookback))
+        parser.set('config','duration',duration)
+        parser.set('config','minPrice',str(minLTP))
+        parser.set('config','maxPrice',str(maxLTP))
+        parser.set('config','volumeRatio',str(volumeRatio))
+        parser.set('config','consolidationPercentage',str(consolidationPercentage))
+        parser.set('config','shuffle','y')
+        parser.set('config','onlyStageTwoStocks','y')
+        try:
+            fp = open('screenipy.ini','w')
+            parser.write(fp)
+            fp.close()
+            print(colorText.BOLD + colorText.GREEN +'[+] Default configuration generated as user configuration is not found!' + colorText.END)
+            print(colorText.BOLD + colorText.GREEN +'[+] Use Option > 5 to edit in future.' + colorText.END)
+            print(colorText.BOLD + colorText.GREEN +'[+] Restart the program now.' + colorText.END)
+            input('')
+            sys.exit(0)
+        except IOError:
+            print(colorText.BOLD + colorText.FAIL +'[+] Failed to save user config. Aborting..' + colorText.END)
+            sys.exit(1)
+    else:
+        parser.add_section('config')
+        print('')
+        print(colorText.BOLD + colorText.GREEN +'[+] Screeni-py User Configuration:' + colorText.END)
+        period = input('[+] Enter number of days for which stock data to be downloaded (Days)(Optimal = 365): ')
+        daysToLookback = input('[+] Number of recent days to screen for Breakout/Consolidation (Days)(Optimal = 20): ')
+        duration = input('[+] Enter Duration of each candle (Days)(Optimal = 1): ')
+        minLTP = input('[+] Minimum Price of Stock to Buy (in RS)(Optimal = 20): ')
+        maxLTP = input('[+] Maximum Price of Stock to Buy (in RS)(Optimal = 50000): ')
+        volumeRatio = input('[+] How many times the volume should be more than average for the breakout? (Number)(Optimal = 2.5): ')
+        consolidationPercentage = input('[+] How many % the price should be in range to consider it as consolidation? (Number)(Optimal = 10): ')
+        shuffle = str(input('[+] Shuffle stocks rather than screening alphabetically? (Y/N): ')).lower()
+        stageTwoPrompt = str(input('[+] Screen only for Stage-2 stocks?\n(What are the stages? => https://www.investopedia.com/articles/trading/08/stock-cycle-trend-price.asp)\n(Y/N): ')).lower()
+        parser.set('config','period',period + "d")
+        parser.set('config','daysToLookback',daysToLookback)
+        parser.set('config','duration',duration + "d")
+        parser.set('config','minPrice',minLTP)
+        parser.set('config','maxPrice',maxLTP)
+        parser.set('config','volumeRatio',volumeRatio)
+        parser.set('config','consolidationPercentage',consolidationPercentage)
+        parser.set('config','shuffle',shuffle)
+        parser.set('config','onlyStageTwoStocks',stageTwoPrompt)
+        try:
+            fp = open('screenipy.ini','w')
+            parser.write(fp)
+            fp.close()
+            print(colorText.BOLD + colorText.GREEN +'[+] User configuration saved.' + colorText.END)
+            print(colorText.BOLD + colorText.GREEN +'[+] Restart the program now.' + colorText.END)
+            input('')
+            sys.exit(0)
+        except IOError:
+            print(colorText.BOLD + colorText.FAIL +'[+] Failed to save user config. Aborting..' + colorText.END)
+            sys.exit(1)
 
 # Load user config from file
 def getConfig(parser):
-    global duration, period, minLTP, maxLTP, volumeRatio, consolidationPercentage, daysToLookback, shuffleEnabled
+    global duration, period, minLTP, maxLTP, volumeRatio, consolidationPercentage, daysToLookback, shuffleEnabled, stageTwo
     if len(parser.read('screenipy.ini')):
         duration = parser.get('config','duration')
         period = parser.get('config','period')
@@ -348,11 +366,11 @@ def getConfig(parser):
         daysToLookback = int(parser.get('config','daysToLookback'))
         if str(parser.get('config','shuffle')).lower() == 'y':
             shuffleEnabled = True
+        if str(parser.get('config','onlyStageTwoStocks')).lower() == 'y':
+            stageTwo = True
         print(colorText.BOLD + colorText.GREEN +'[+] User configuration loaded.' + colorText.END)
     else:
-        print(colorText.BOLD + colorText.FAIL + "[+] User config not found!" + colorText.END)
-        print(colorText.BOLD + colorText.WARN + "[+] Configure the limits to continue." + colorText.END)
-        setConfig(parser)
+        setConfig(parser, default=True)
 
 # Manage Execution flow
 def initExecution():
@@ -402,7 +420,7 @@ def checkForUpdate():
             resp = requests.get("https://api.github.com/repos/pranjal-joshi/Screeni-py/releases/latest")
         if(float(resp.json()['tag_name']) > now):
             url = resp.json()['assets'][0]['browser_download_url']
-            size = int(resp.json()['assets'][0]['size']/(1024*1024))
+            size = int(resp.json()['assets'][0]['size']/1024*1024)
             if platform.system() != 'Windows':
                 url = resp.json()['assets'][1]['browser_download_url']
                 size = int(resp.json()['assets'][1]['size']/(1024*1024))
@@ -426,8 +444,11 @@ def checkForUpdate():
                     raise(e)
                     input('')
                     sys.exit(1)
+        elif(float(resp.json()['tag_name']) < now):
+            print(colorText.BOLD + colorText.FAIL + ('[+] This version (v%s) is in Development mode and unreleased!' % VERSION) + colorText.END)
     except Exception as e:
         print("[+] Failure while checking update due to error.")
+        print(e)
     
 if __name__ == "__main__":
     clearScreen()
@@ -449,7 +470,7 @@ if __name__ == "__main__":
     if executeOption > 0 and executeOption < 5:
         getConfig(parser)
         try:
-            daysForInsideBar = int(input(colorText.BOLD + colorText.WARN + '\n[+] Enter days to look back for formation of Inside Bar: '))
+            daysForInsideBar = int(input(colorText.BOLD + colorText.WARN + '\n[+] Enter days to look back for formation of Inside Bar (Optimal = 3 to 4): '))
             print('')
         except:
             pass
@@ -458,7 +479,7 @@ if __name__ == "__main__":
         for stock in listStockCodes:
             try:
                 data = fetchStockData(stock)
-                processedData = preprocessData(data, daysToLookback=daysToLookback)
+                fullData, processedData = preprocessData(data, daysToLookback=daysToLookback)
                 if not processedData.empty:
                     screeningDictionary['Stock'] = colorText.BOLD + colorText.BLUE + stock + colorText.END
                     saveDictionary['Stock'] = stock
@@ -466,7 +487,7 @@ if __name__ == "__main__":
                     validateMovingAverages(processedData, screeningDictionary, saveDictionary)
                     isVolumeHigh = validateVolume(processedData, screeningDictionary, saveDictionary, volumeRatio=volumeRatio)
                     isBreaking = findBreakout(processedData, screeningDictionary, saveDictionary, daysToLookback=daysToLookback)
-                    isLtpValid = validateLTP(processedData, screeningDictionary, saveDictionary, minLTP=minLTP, maxLTP=maxLTP)
+                    isLtpValid = validateLTP(fullData, screeningDictionary, saveDictionary, minLTP=minLTP, maxLTP=maxLTP)
                     isInsideBar = validateInsideBar(processedData, screeningDictionary, saveDictionary, daysToLookback=daysForInsideBar)
                     if (executeOption == 1 or executeOption == 2) and isBreaking and isVolumeHigh and isLtpValid:
                         screenResults = screenResults.append(screeningDictionary,ignore_index=True)
