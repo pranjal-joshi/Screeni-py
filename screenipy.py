@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Pyinstaller compile: pyinstaller --onefile screenipy.py  --hidden-import cmath
+# Pyinstaller compile: pyinstaller --onefile --icon=icon.ico screenipy.py  --hidden-import cmath
 
 import os
 import sys
@@ -64,8 +64,9 @@ art = colorText.GREEN + '''
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.02]
 1. Feature added to screen only STAGE-2 stocks.
-2. Auto generate default config if not found.
-3. Minor bug-fixes.
+2. OTA update download bug-fixed.
+3. Auto generate default config if not found.
+4. Minor bug-fixes.
 
 [1.01]
 1. Inside Bar detection added.
@@ -419,11 +420,11 @@ def checkForUpdate():
         else:
             resp = requests.get("https://api.github.com/repos/pranjal-joshi/Screeni-py/releases/latest")
         if(float(resp.json()['tag_name']) > now):
-            url = resp.json()['assets'][0]['browser_download_url']
-            size = int(resp.json()['assets'][0]['size']/1024*1024)
+            url = resp.json()['assets'][1]['browser_download_url']
+            size = int(resp.json()['assets'][1]['size']/(1024*1024))
             if platform.system() != 'Windows':
-                url = resp.json()['assets'][1]['browser_download_url']
-                size = int(resp.json()['assets'][1]['size']/(1024*1024))
+                url = resp.json()['assets'][0]['browser_download_url']
+                size = int(resp.json()['assets'][0]['size']/(1024*1024))
             action = str(input(colorText.BOLD + colorText.WARN + ('\n[+] New Software update (v%s) available. Download Now (Size: %dMB)? [Y/N]: ' % (str(resp.json()['tag_name']),size)))).lower()
             if(action == 'y'):
                 try:
