@@ -34,7 +34,7 @@ class colorText:
 
 # Constants
 DEBUG = False
-VERSION = "1.02"
+VERSION = "1.03"
 consolidationPercentage = 10
 volumeRatio = 2
 minLTP = 20.0
@@ -62,11 +62,9 @@ art = colorText.GREEN + '''
 ''' + colorText.END
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
-[1.02]
-1. Feature added to screen only STAGE-2 stocks.
-2. OTA update download bug-fixed.
-3. Auto generate default config if not found.
-4. Minor bug-fixes.
+[1.00 - Beta]
+1. Initial Release for beta testing
+2. Minor Bug fixes
 
 [1.01]
 1. Inside Bar detection added.
@@ -75,9 +73,15 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 4. Results will be now also stored in the excel (screenipy-result.xlsx) file.
 5. UI cosmetic updates for pretty-printing!
 
-[1.00 - Beta]
-1. Initial Release for beta testing
-2. Minor Bug fixes
+[1.02]
+1. Feature added to screen only STAGE-2 stocks.
+2. OTA update download bug-fixed.
+3. Auto generate default config if not found.
+4. Minor bug-fixes.
+
+[1.03]
+1. Result excel file will not be overwritten now. Each result file will be saved with timestamp.
+2. Mino bug-fixes.
 
 --- END ---
 ''' + colorText.END
@@ -411,6 +415,15 @@ def showConfigFile():
         print(colorText.BOLD + colorText.WARN + "[+] Configure the limits to continue." + colorText.END)
         setConfig(parser)
 
+# Print about developers and repository
+def showDevInfo():
+        print('\n'+changelog)
+        print(colorText.BOLD + colorText.WARN + "\n[+] Developer: Pranjal Joshi." + colorText.END)
+        print(colorText.BOLD + colorText.WARN + ("[+] Version: %s" % VERSION) + colorText.END)
+        print(colorText.BOLD + colorText.WARN + "[+] More: https://github.com/pranjal-joshi/Screeni-py" + colorText.END)
+        print(colorText.BOLD + colorText.WARN + "[+] Download latest software from https://github.com/pranjal-joshi/Screeni-py/releases/latest" + colorText.END)
+        input('')
+
 # Download latest release from Github Release
 def checkForUpdate():
     try:
@@ -461,11 +474,7 @@ if __name__ == "__main__":
     if executeOption == 6:
         showConfigFile()
     if executeOption == 7:
-        print(colorText.BOLD + colorText.WARN + "\n[+] Developer: Pranjal Joshi." + colorText.END)
-        print(colorText.BOLD + colorText.WARN + ("[+] Version: %s" % VERSION) + colorText.END)
-        print(colorText.BOLD + colorText.WARN + "[+] More: https://github.com/pranjal-joshi/Screeni-py" + colorText.END)
-        print('\n'+changelog)
-        input('')
+        showDevInfo()
     if executeOption == 8:
         print(colorText.BOLD + colorText.FAIL + "[+] Script terminated by the user." + colorText.END)
         sys.exit(0)
@@ -509,7 +518,8 @@ if __name__ == "__main__":
         screenResults.sort_values(by=['Stock'], ascending=True, inplace=True)
         saveResults.sort_values(by=['Stock'], ascending=True, inplace=True)
         print(tabulate(screenResults, headers='keys', tablefmt='psql'))
-        saveResults.to_excel('screenipy-result.xlsx')
+        filename = 'screenipy-result_'+datetime.datetime.now().strftime("%d-%m-%y_%H.%M.%S")+".xlsx"
+        saveResults.to_excel(filename)
         print(colorText.BOLD + colorText.GREEN + "[+] Results saved to screenipy-result.xlsx" + colorText.END)
         print(colorText.BOLD + colorText.GREEN + "[+] Screening Completed! Happy Trading! :)" + colorText.END)
         input('')
