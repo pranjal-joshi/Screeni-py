@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Pyinstaller compile: pyinstaller --onefile --icon=icon.ico screenipy.py  --hidden-import cmath
+# Pyinstaller compile: pyinstaller --onefile --icon=icon.ico screenipy.py  --hidden-import cmath --hidden-import talib.stream
 
 import os
 import sys
@@ -17,20 +17,11 @@ import platform
 import datetime
 import math
 import random
+from CandlePatterns import CandlePatterns
+from ColorText import colorText
 
 # Try Fixing bug with this symbol
 TEST_STKCODE = "HAPPSTMNDS"
-
-# Decoration Class
-class colorText:
-	HEAD = '\033[95m'
-	BLUE = '\033[94m'
-	GREEN = '\033[92m'
-	WARN = '\033[93m'
-	FAIL = '\033[91m'
-	END = '\033[0m'
-	BOLD = '\033[1m'
-	UNDR = '\033[4m'
 
 # Constants
 DEBUG = False
@@ -81,12 +72,14 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [1.03]
 1. Result excel file will not be overwritten now. Each result file will be saved with timestamp.
-2. Mino bug-fixes.
+2. Candlestick pattern recognition added
+3. Mino bug-fixes.
 
 --- END ---
 ''' + colorText.END
 
 nse = Nse()
+candlePatterns = CandlePatterns()
 np.seterr(divide='ignore', invalid='ignore')
 parser = configparser.ConfigParser()
 screenCounter = 1
@@ -156,7 +149,6 @@ def fetchStockData(stockCode):
     )
     sys.stdout.write("\r\033[K")
     try:
-        #print(colorText.BOLD + colorText.GREEN + ("[%d%%] Fetching data & Analyzing %s..." % (int(screenCounter/len(listStockCodes)*100), stockCode)) + colorText.END, end='')
         print(colorText.BOLD + colorText.GREEN + ("[%d%%] Screened %d, Found %d. Fetching data & Analyzing %s..." % (int(screenCounter/len(listStockCodes)*100), screenCounter, len(screenResults), stockCode)) + colorText.END, end='')
     except ZeroDivisionError:
         pass
@@ -480,11 +472,14 @@ if __name__ == "__main__":
         sys.exit(0)
     if executeOption > 0 and executeOption < 5:
         getConfig(parser)
+        '''
+        # Disabled after implementation of CandlePatterns class
         try:
             daysForInsideBar = int(input(colorText.BOLD + colorText.WARN + '\n[+] Enter days to look back for formation of Inside Bar (Optimal = 3 to 4): '))
             print('')
         except:
             pass
+        '''
         fetchStockCodes()
         print(colorText.BOLD + colorText.WARN + "[+] Starting Stock Screening.. Press Ctrl+C to stop!\n")
         for stock in listStockCodes:
@@ -499,14 +494,15 @@ if __name__ == "__main__":
                     isVolumeHigh = validateVolume(processedData, screeningDictionary, saveDictionary, volumeRatio=volumeRatio)
                     isBreaking = findBreakout(processedData, screeningDictionary, saveDictionary, daysToLookback=daysToLookback)
                     isLtpValid = validateLTP(fullData, screeningDictionary, saveDictionary, minLTP=minLTP, maxLTP=maxLTP)
-                    isInsideBar = validateInsideBar(processedData, screeningDictionary, saveDictionary, daysToLookback=daysForInsideBar)
+                    #isInsideBar = validateInsideBar(processedData, screeningDictionary, saveDictionary, daysToLookback=daysForInsideBar)
+                    isCandlePattern = candlePatterns.findPattern(processedData, screeningDictionary, saveDictionary)
                     if (executeOption == 1 or executeOption == 2) and isBreaking and isVolumeHigh and isLtpValid:
                         screenResults = screenResults.append(screeningDictionary,ignore_index=True)
                         saveResults = saveResults.append(saveDictionary, ignore_index=True)
                     if (executeOption == 1 or executeOption == 3) and (consolidationValue <= consolidationPercentage and consolidationValue != 0) and isLtpValid:
                         screenResults = screenResults.append(screeningDictionary,ignore_index=True)
                         saveResults = saveResults.append(saveDictionary, ignore_index=True)
-                    if executeOption == 4 and isLtpValid and isInsideBar:
+                    if executeOption == 4 and isLtpValid and isCandlePattern:
                         screenResults = screenResults.append(screeningDictionary,ignore_index=True)
                         saveResults = saveResults.append(saveDictionary, ignore_index=True)
             except KeyboardInterrupt:
@@ -514,7 +510,6 @@ if __name__ == "__main__":
                 break
             except Exception as e:
                 print(colorText.FAIL + ("[+] Exception Occured while Screening %s! Skipping this stock.." % stock) + colorText.END)
-                print(e)
         screenResults.sort_values(by=['Stock'], ascending=True, inplace=True)
         saveResults.sort_values(by=['Stock'], ascending=True, inplace=True)
         print(tabulate(screenResults, headers='keys', tablefmt='psql'))
