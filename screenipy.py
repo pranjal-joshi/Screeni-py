@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Pyinstaller compile: pyinstaller --onefile --icon=icon.ico screenipy.py  --hidden-import cmath --hidden-import talib
+# Pyinstaller compile: pyinstaller --onefile --icon=icon.ico screenipy.py  --hidden-import cmath --hidden-import talib.stream
 
 import os
 import sys
@@ -72,7 +72,8 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [1.03]
 1. Result excel file will not be overwritten now. Each result file will be saved with timestamp.
-2. Mino bug-fixes.
+2. Candlestick pattern recognition added
+3. Mino bug-fixes.
 
 --- END ---
 ''' + colorText.END
