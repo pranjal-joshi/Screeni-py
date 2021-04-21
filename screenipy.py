@@ -17,8 +17,9 @@ import platform
 import datetime
 import math
 import random
-from CandlePatterns import CandlePatterns
 from ColorText import colorText
+from otaUpdater import OTAUpdater
+from CandlePatterns import CandlePatterns
 
 # Try Fixing bug with this symbol
 TEST_STKCODE = "HAPPSTMNDS"
@@ -72,8 +73,7 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [1.03]
 1. Result excel file will not be overwritten now. Each result file will be saved with timestamp.
-2. Candlestick pattern recognition added
-3. Mino bug-fixes.
+2. Candlestick pattern recognition added.
 
 --- END ---
 ''' + colorText.END
@@ -415,51 +415,10 @@ def showDevInfo():
         print(colorText.BOLD + colorText.WARN + "[+] More: https://github.com/pranjal-joshi/Screeni-py" + colorText.END)
         print(colorText.BOLD + colorText.WARN + "[+] Download latest software from https://github.com/pranjal-joshi/Screeni-py/releases/latest" + colorText.END)
         input('')
-
-# Download latest release from Github Release
-def checkForUpdate():
-    try:
-        resp = None
-        now = float(VERSION)
-        if proxyServer:
-            resp = requests.get("https://api.github.com/repos/pranjal-joshi/Screeni-py/releases/latest",proxies={'https':proxyServer})
-        else:
-            resp = requests.get("https://api.github.com/repos/pranjal-joshi/Screeni-py/releases/latest")
-        if(float(resp.json()['tag_name']) > now):
-            url = resp.json()['assets'][1]['browser_download_url']
-            size = int(resp.json()['assets'][1]['size']/(1024*1024))
-            if platform.system() != 'Windows':
-                url = resp.json()['assets'][0]['browser_download_url']
-                size = int(resp.json()['assets'][0]['size']/(1024*1024))
-            action = str(input(colorText.BOLD + colorText.WARN + ('\n[+] New Software update (v%s) available. Download Now (Size: %dMB)? [Y/N]: ' % (str(resp.json()['tag_name']),size)))).lower()
-            if(action == 'y'):
-                try:
-                    print(colorText.BOLD + colorText.WARN + ('Downloading Update of %dMBs, This may take a few minutes, Please Wait...' % size) + colorText.END)
-                    download = requests.get(url, proxies={'https':proxyServer})
-                    fn = 'screenipy.exe'
-                    if platform.system() != 'Windows':
-                        fn = 'screenipy.bin'
-                    with open(fn,'wb') as f:
-                        f.write(download.content)
-                    print(colorText.BOLD + colorText.GREEN + '[+] Update Completed.\n[+] Restart the program now.' + colorText.END)
-                    if platform.system() != 'Windows':
-                        os.system('chmod +x screenipy.bin')
-                    input('')
-                    sys.exit(0)
-                except Exception as e:
-                    print(colorText.BOLD + colorText.WARN + '[+] Error occured while updating!' + colorText.END)
-                    raise(e)
-                    input('')
-                    sys.exit(1)
-        elif(float(resp.json()['tag_name']) < now):
-            print(colorText.BOLD + colorText.FAIL + ('[+] This version (v%s) is in Development mode and unreleased!' % VERSION) + colorText.END)
-    except Exception as e:
-        print("[+] Failure while checking update due to error.")
-        print(e)
     
 if __name__ == "__main__":
     clearScreen()
-    checkForUpdate()
+    OTAUpdater.checkForUpdate(proxyServer, VERSION)
     executeOption = initExecution()
     if executeOption == 5:
         setConfig(parser)
