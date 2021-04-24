@@ -1,6 +1,8 @@
 # Screeni-py
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/pranjal-joshi/Screeni-py) ![GitHub all releases](https://img.shields.io/github/downloads/pranjal-joshi/Screeni-py/total?color=Green&label=Downloads) ![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/pranjal-joshi/Screeni-py) ![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed-raw/pranjal-joshi/Screeni-py) ![GitHub contributors](https://img.shields.io/github/contributors/pranjal-joshi/Screeni-py) ![GitHub](https://img.shields.io/github/license/pranjal-joshi/Screeni-py)
 
+## [Quick Download](https://github.com/pranjal-joshi/Screeni-py/releases/latest)
+
 ### A Python-based stock screener for NSE, India.
 
 **Screenipy** is an advanced stock screener to find potential breakout stocks from NSE and tell it's possible breakout values. It also helps to find the stocks which are consolidating and may breakout.
