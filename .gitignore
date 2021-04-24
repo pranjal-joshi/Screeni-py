@@ -1,7 +1,9 @@
 venv/
 build/
 dist/
+test/*.ini
 __pycache__/
 .vscode/
 *.spec
 *.xlsx
+*.pkl
