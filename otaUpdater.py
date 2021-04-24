@@ -39,14 +39,14 @@ sleep 3
 echo "[+] Screenipy Software Updater!"
 echo "[+] Downloading Software Update..."
 echo "[+] This may take some time as per your Internet Speed, Please Wait..."
-wget -q """ + url + """
+wget -q """ + url + """ -O screenipy.bin
 echo "[+] Update Completed!"
 rm updater.sh
         """
         f = open("updater.sh",'w')
         f.write(bashFile)
         f.close()
-        subprocess.Popen('bash updater.bat', shell=True)
+        subprocess.Popen('bash updater.sh', shell=True)
         sys.exit(0)
 
     # Check for update and download if available

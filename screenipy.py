@@ -26,7 +26,7 @@ TEST_STKCODE = "HAPPSTMNDS"
 
 # Constants
 DEBUG = False
-VERSION = "1.03"
+VERSION = "1.04"
 consolidationPercentage = 10
 volumeRatio = 2
 minLTP = 20.0
@@ -74,6 +74,10 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 [1.03]
 1. Result excel file will not be overwritten now. Each result file will be saved with timestamp.
 2. Candlestick pattern recognition added.
+
+[1.04]
+1. OTA Software Update bug-fixed.
+2. Minor Improvements.
 
 --- END ---
 ''' + colorText.END
@@ -418,7 +422,7 @@ def showDevInfo():
     
 if __name__ == "__main__":
     clearScreen()
-    OTAUpdater.checkForUpdate(proxyServer, VERSION='1.0')
+    OTAUpdater.checkForUpdate(proxyServer, VERSION)
     executeOption = initExecution()
     if executeOption == 5:
         setConfig(parser)
