@@ -418,7 +418,7 @@ def showDevInfo():
     
 if __name__ == "__main__":
     clearScreen()
-    OTAUpdater.checkForUpdate(proxyServer, VERSION)
+    OTAUpdater.checkForUpdate(proxyServer, VERSION='1.0')
     executeOption = initExecution()
     if executeOption == 5:
         setConfig(parser)
@@ -431,15 +431,12 @@ if __name__ == "__main__":
         sys.exit(0)
     if executeOption > 0 and executeOption < 5:
         getConfig(parser)
-        '''
-        # Disabled after implementation of CandlePatterns class
         try:
-            daysForInsideBar = int(input(colorText.BOLD + colorText.WARN + '\n[+] Enter days to look back for formation of Inside Bar (Optimal = 3 to 4): '))
-            print('')
-        except:
-            pass
-        '''
-        fetchStockCodes()
+            fetchStockCodes()
+        except urllib.error.URLError:
+            print(colorText.BOLD + colorText.FAIL + "\n\n[+] Oops! It looks like you don't have an Internet connectivity at the moment! Press any key to exit!" + colorText.END)
+            input('')
+            sys.exit(0)
         print(colorText.BOLD + colorText.WARN + "[+] Starting Stock Screening.. Press Ctrl+C to stop!\n")
         for stock in listStockCodes:
             try:
