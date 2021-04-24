@@ -10,10 +10,48 @@ import requests
 import os
 import platform
 import sys
+import subprocess
 
 class OTAUpdater:
+
+    # Download and replace exe through other process for windows
+    def updateForWindows(url):
+        batFile = """@echo off
+color a
+echo [+] Screenipy Software Updater!
+echo [+] Downloading Software Update...
+echo [+] This may take some time as per your Internet Speed, Please Wait...
+powershell.exe -Command (new-object System.Net.WebClient).DownloadFile('""" + url + """','screenipy.exe')
+echo [+] Software Update Completed! You can now run 'Screenipy.exe' as usual!
+pause
+del updater.bat & exit
+        """
+        f = open("updater.bat",'w')
+        f.write(batFile)
+        f.close()
+        subprocess.Popen('start updater.bat', shell=True)
+        sys.exit(0)
+
+    # Download and replace exe through other process for windows
+    def updateForLinux(url):
+        bashFile = """#!/bin/bash
+sleep 3
+echo "[+] Screenipy Software Updater!"
+echo "[+] Downloading Software Update..."
+echo "[+] This may take some time as per your Internet Speed, Please Wait..."
+wget -q """ + url + """
+echo "[+] Update Completed!"
+rm updater.sh
+        """
+        f = open("updater.sh",'w')
+        f.write(bashFile)
+        f.close()
+        subprocess.Popen('bash updater.bat', shell=True)
+        sys.exit(0)
+
     # Check for update and download if available
     def checkForUpdate(proxyServer, VERSION="1.0"):
+        url = None
         try:
             resp = None
             now = float(VERSION)
@@ -21,15 +59,16 @@ class OTAUpdater:
                 resp = requests.get("https://api.github.com/repos/pranjal-joshi/Screeni-py/releases/latest",proxies={'https':proxyServer})
             else:
                 resp = requests.get("https://api.github.com/repos/pranjal-joshi/Screeni-py/releases/latest")
+            url = resp.json()['assets'][1]['browser_download_url']
+            size = int(resp.json()['assets'][1]['size']/(1024*1024))
+            if platform.system() != 'Windows':
+                url = resp.json()['assets'][0]['browser_download_url']
+                size = int(resp.json()['assets'][0]['size']/(1024*1024))
             if(float(resp.json()['tag_name']) > now):
-                url = resp.json()['assets'][1]['browser_download_url']
-                size = int(resp.json()['assets'][1]['size']/(1024*1024))
-                if platform.system() != 'Windows':
-                    url = resp.json()['assets'][0]['browser_download_url']
-                    size = int(resp.json()['assets'][0]['size']/(1024*1024))
                 action = str(input(colorText.BOLD + colorText.WARN + ('\n[+] New Software update (v%s) available. Download Now (Size: %dMB)? [Y/N]: ' % (str(resp.json()['tag_name']),size)))).lower()
                 if(action == 'y'):
                     try:
+                        '''
                         print(colorText.BOLD + colorText.WARN + ('Downloading Update of %dMBs, This may take a few minutes, Please Wait...' % size) + colorText.END)
                         download = requests.get(url, proxies={'https':proxyServer})
                         fn = 'screenipy.exe'
@@ -44,6 +83,11 @@ class OTAUpdater:
                             os.system('chmod +x screenipy.bin')
                         input('')
                         sys.exit(0)
+                        '''
+                        if platform.system() == 'Windows':
+                            OTAUpdater.updateForWindows(url)
+                        else:
+                            OTAUpdater.updateForLinux(url)
                     except Exception as e:
                         print(colorText.BOLD + colorText.WARN + '[+] Error occured while updating!' + colorText.END)
                         raise(e)
@@ -52,5 +96,7 @@ class OTAUpdater:
             elif(float(resp.json()['tag_name']) < now):
                 print(colorText.BOLD + colorText.FAIL + ('[+] This version (v%s) is in Development mode and unreleased!' % VERSION) + colorText.END)
         except Exception as e:
-            print("[+] Failure while checking update due to error.")
+            print(colorText.BOLD + colorText.FAIL + "[+] Failure while checking update!" + colorText.END)
             print(e)
+            if url != None:
+                print(colorText.BOLD + colorText.BLUE + ("[+] Download update manually from %s\n" % url) + colorText.END)
