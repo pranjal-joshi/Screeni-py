@@ -37,6 +37,8 @@ daysToLookback = 20
 daysForInsideBar = 3
 shuffleEnabled = False
 stageTwo = False
+daysForLowestVolume = 30
+lastScreened = 'last_screened_results.pkl'
 
 art = colorText.GREEN + '''
      .d8888b.                                             d8b                   
@@ -82,6 +84,8 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 [1.05]
 1. More candlestick pattern added for recognition.
 2. Option added to find stock with lowest volume in last 'N'-days to early detect possibility of breakout.
+3. Last screened results will be stored and can be viewed with Option > 7.
+4. Minor Bug-fixes and improvements.
 
 --- END ---
 ''' + colorText.END
@@ -387,6 +391,25 @@ def getConfig(parser):
     else:
         setConfig(parser, default=True)
 
+# Save last screened result to pickle file
+def setLastScreenedResults(df):
+    try:
+        df.sort_values(by=['Stock'], ascending=True, inplace=True)
+        df.to_pickle(lastScreened)
+    except:
+        input(colorText.BOLD + colorText.FAIL + '[+] Failed to save recently screened result table on disk! Skipping..' + colorText.END)
+
+# Load last screened result to pickle file
+def getLastScreenedResults():
+    try:
+        df = pd.read_pickle(lastScreened)
+        print(colorText.BOLD + colorText.GREEN + '\n[+] Showing recently screened results..\n' + colorText.END)
+        print(tabulate(df, headers='keys', tablefmt='psql'))
+        input(colorText.BOLD + colorText.GREEN + '[+] Press any key to exit!' + colorText.END)
+    except:
+        print(colorText.BOLD + colorText.FAIL + '[+] Failed to load recently screened result table from disk! Skipping..' + colorText.END)
+
+
 # Manage Execution flow
 def initExecution():
     print(colorText.BOLD + colorText.WARN + '[+] Press a number to start stock screening: ' + colorText.END)
@@ -396,8 +419,9 @@ def initExecution():
     4 > Screen for the stocks with Lowest Volume in last 'N'-days (Early Breakout Detection)
     5 > Edit user configuration
     6 > Show user configuration
-    7 > About Developer
-    8 > Exit''' + colorText.END
+    7 > Show Last Screened Results
+    8 > About Developer
+    9 > Exit''' + colorText.END
     )
     result = input(colorText.BOLD + colorText.FAIL + '[+] Select option: ')
     print(colorText.END, end='')
@@ -452,8 +476,11 @@ if __name__ == "__main__":
     if executeOption == 6:
         showConfigFile()
     if executeOption == 7:
-        showDevInfo()
+        getLastScreenedResults()
+        sys.exit(0)
     if executeOption == 8:
+        showDevInfo()
+    if executeOption == 9:
         print(colorText.BOLD + colorText.FAIL + "[+] Script terminated by the user." + colorText.END)
         sys.exit(0)
     if executeOption > 0 and executeOption < 5:
@@ -493,11 +520,13 @@ if __name__ == "__main__":
                 break
             except Exception as e:
                 print(colorText.FAIL + ("[+] Exception Occured while Screening %s! Skipping this stock.." % stock) + colorText.END)
+                print(e)
         screenResults.sort_values(by=['Stock'], ascending=True, inplace=True)
         saveResults.sort_values(by=['Stock'], ascending=True, inplace=True)
         print(tabulate(screenResults, headers='keys', tablefmt='psql'))
         filename = 'screenipy-result_'+datetime.datetime.now().strftime("%d-%m-%y_%H.%M.%S")+".xlsx"
         saveResults.to_excel(filename)
+        setLastScreenedResults(screenResults)
         print(colorText.BOLD + colorText.GREEN + "[+] Results saved to screenipy-result.xlsx" + colorText.END)
         print(colorText.BOLD + colorText.GREEN + "[+] Screening Completed! Happy Trading! :)" + colorText.END)
         input('')
