@@ -440,7 +440,7 @@ if __name__ == "__main__":
     executeOption = initExecution()
     if executeOption == 4:
         try:
-            daysForLowestVolume = int(input(colorText.BOLD + colorText.WARN + '\n[+] The Volume should be lowest since last how many days? '))
+            daysForLowestVolume = int(input(colorText.BOLD + colorText.WARN + '\n[+] The Volume should be lowest since last how many candles? '))
         except ValueError:
             print(colorText.END)
             print(colorText.BOLD + colorText.FAIL + '[+] Error: Non-numeric value entered! Screening aborted.' + colorText.END)
