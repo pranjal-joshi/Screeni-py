@@ -26,7 +26,7 @@ TEST_STKCODE = "HAPPSTMNDS"
 
 # Constants
 DEBUG = False
-VERSION = "1.04"
+VERSION = "1.05"
 consolidationPercentage = 10
 volumeRatio = 2
 minLTP = 20.0
@@ -78,6 +78,10 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 [1.04]
 1. OTA Software Update bug-fixed.
 2. Minor Improvements.
+
+[1.05]
+1. More candlestick pattern added for recognition.
+2. Option added to find stock with lowest volume in last 'N'-days to early detect possibility of breakout.
 
 --- END ---
 ''' + colorText.END
@@ -293,6 +297,16 @@ def validateInsideBar(data, dict, saveDict, daysToLookback=4):
     saveDict['Pattern'] = ''
     return False
 
+# Validate if recent volume is lowest of last 'N' Days
+def validateLowestVolume(data, daysForLowestVolume):
+    if daysForLowestVolume == None:
+        daysForLowestVolume = 30
+    data = data.head(daysForLowestVolume)
+    recent = data.head(1)
+    if((recent['Volume'][0] <= data.describe()['Volume']['min']) and recent['Volume'][0] != np.nan):
+        return True
+    return False
+
 
 # Handle user input and save config
 def setConfig(parser, default=False):
@@ -379,7 +393,7 @@ def initExecution():
     print(colorText.BOLD + '''    1 > Screen stocks for Breakout or Consolidation
     2 > Screen for the stocks with recent Breakout & Volume
     3 > Screen for the Consolidating stocks
-    4 > Screen for the "Inside Bar" (Tight Flag) Pattern
+    4 > Screen for the stocks with Lowest Volume in last 'N'-days (Early Breakout Detection)
     5 > Edit user configuration
     6 > Show user configuration
     7 > About Developer
@@ -424,6 +438,15 @@ if __name__ == "__main__":
     clearScreen()
     OTAUpdater.checkForUpdate(proxyServer, VERSION)
     executeOption = initExecution()
+    if executeOption == 4:
+        try:
+            daysForLowestVolume = int(input(colorText.BOLD + colorText.WARN + '\n[+] The Volume should be lowest since last how many days? '))
+        except ValueError:
+            print(colorText.END)
+            print(colorText.BOLD + colorText.FAIL + '[+] Error: Non-numeric value entered! Screening aborted.' + colorText.END)
+            input('')
+            sys.exit(0)
+        print(colorText.END)
     if executeOption == 5:
         setConfig(parser)
     if executeOption == 6:
@@ -454,7 +477,7 @@ if __name__ == "__main__":
                     isVolumeHigh = validateVolume(processedData, screeningDictionary, saveDictionary, volumeRatio=volumeRatio)
                     isBreaking = findBreakout(processedData, screeningDictionary, saveDictionary, daysToLookback=daysToLookback)
                     isLtpValid = validateLTP(fullData, screeningDictionary, saveDictionary, minLTP=minLTP, maxLTP=maxLTP)
-                    #isInsideBar = validateInsideBar(processedData, screeningDictionary, saveDictionary, daysToLookback=daysForInsideBar)
+                    isLowestVolume = validateLowestVolume(processedData, daysForLowestVolume)
                     isCandlePattern = candlePatterns.findPattern(processedData, screeningDictionary, saveDictionary)
                     if (executeOption == 1 or executeOption == 2) and isBreaking and isVolumeHigh and isLtpValid:
                         screenResults = screenResults.append(screeningDictionary,ignore_index=True)
@@ -462,7 +485,7 @@ if __name__ == "__main__":
                     if (executeOption == 1 or executeOption == 3) and (consolidationValue <= consolidationPercentage and consolidationValue != 0) and isLtpValid:
                         screenResults = screenResults.append(screeningDictionary,ignore_index=True)
                         saveResults = saveResults.append(saveDictionary, ignore_index=True)
-                    if executeOption == 4 and isLtpValid and isCandlePattern:
+                    if executeOption == 4 and isLtpValid and isLowestVolume:
                         screenResults = screenResults.append(screeningDictionary,ignore_index=True)
                         saveResults = saveResults.append(saveDictionary, ignore_index=True)
             except KeyboardInterrupt:
