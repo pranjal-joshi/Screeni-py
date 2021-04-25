@@ -24,11 +24,33 @@ class CandlePatterns:
             dict['Pattern'] = colorText.BOLD + colorText.GREEN + 'Morning Star' + colorText.END
             saveDict['Pattern'] = 'Morning Star'
             return True
+
+        check = talib.CDLMORNINGDOJISTAR(data['Open'], data['High'], data['Low'], data['Close'])
+        if(check.tail(1).item() != 0):
+            dict['Pattern'] = colorText.BOLD + colorText.GREEN + 'Morning Doji Star' + colorText.END
+            saveDict['Pattern'] = 'Morning Doji Star'
+            return True
         
         check = talib.CDLEVENINGSTAR(data['Open'], data['High'], data['Low'], data['Close'])
         if(check.tail(1).item() != 0):
             dict['Pattern'] = colorText.BOLD + colorText.FAIL + 'Evening Star' + colorText.END
             saveDict['Pattern'] = 'Evening Star'
+            return True
+
+        check = talib.CDLEVENINGDOJISTAR(data['Open'], data['High'], data['Low'], data['Close'])
+        if(check.tail(1).item() != 0):
+            dict['Pattern'] = colorText.BOLD + colorText.FAIL + 'Evening Doji Star' + colorText.END
+            saveDict['Pattern'] = 'Evening Doji Star'
+            return True
+
+        check = talib.CDLLADDERBOTTOM(data['Open'], data['High'], data['Low'], data['Close'])
+        if(check.tail(1).item() != 0):
+            if(check.tail(1).item() > 0):
+                dict['Pattern'] = colorText.BOLD + colorText.GREEN + 'Ladder Bottom' + colorText.END
+                saveDict['Pattern'] = 'Bullish Ladder Bottom'
+            else:
+                dict['Pattern'] = colorText.BOLD + colorText.FAIL + 'Ladder Bottom' + colorText.END
+                saveDict['Pattern'] = 'Bearish Ladder Bottom'
             return True
 
         check = talib.CDL3LINESTRIKE(data['Open'], data['High'], data['Low'], data['Close'])
@@ -71,6 +93,42 @@ class CandlePatterns:
                 dict['Pattern'] = colorText.BOLD + colorText.FAIL + 'Bearish Engulfing' + colorText.END
                 saveDict['Pattern'] = 'Bearish Engulfing'
             return True
+
+        check = talib.CDLHARAMI(data['Open'], data['High'], data['Low'], data['Close'])
+        if(check.tail(1).item() != 0):
+            if(check.tail(1).item() > 0):
+                dict['Pattern'] = colorText.BOLD + colorText.GREEN + 'Bullish Harami' + colorText.END
+                saveDict['Pattern'] = 'Bullish Harami'
+            else:
+                dict['Pattern'] = colorText.BOLD + colorText.FAIL + 'Bearish Harami' + colorText.END
+                saveDict['Pattern'] = 'Bearish Harami'
+            return True
+
+        check = talib.CDLHARAMICROSS(data['Open'], data['High'], data['Low'], data['Close'])
+        if(check.tail(1).item() != 0):
+            if(check.tail(1).item() > 0):
+                dict['Pattern'] = colorText.BOLD + colorText.GREEN + 'Bullish Harami Cross' + colorText.END
+                saveDict['Pattern'] = 'Bullish Harami Cross'
+            else:
+                dict['Pattern'] = colorText.BOLD + colorText.FAIL + 'Bearish Harami Cross' + colorText.END
+                saveDict['Pattern'] = 'Bearish Harami Cross'
+            return True
+
+        check = talib.CDLMARUBOZU(data['Open'], data['High'], data['Low'], data['Close'])
+        if(check.tail(1).item() != 0):
+            if(check.tail(1).item() > 0):
+                dict['Pattern'] = colorText.BOLD + colorText.GREEN + 'Bullish Marubozu' + colorText.END
+                saveDict['Pattern'] = 'Bullish Marubozu'
+            else:
+                dict['Pattern'] = colorText.BOLD + colorText.FAIL + 'Bearish Marubozu' + colorText.END
+                saveDict['Pattern'] = 'Bearish Marubozu'
+            return True
+
+        check = talib.CDLHANGINGMAN(data['Open'], data['High'], data['Low'], data['Close'])
+        if(check.tail(1).item() != 0):
+            dict['Pattern'] = colorText.BOLD + colorText.FAIL + 'Inverted Hammer' + colorText.END
+            saveDict['Pattern'] = 'Inverted Hammer'
+            return True
         
         check = talib.CDLHAMMER(data['Open'], data['High'], data['Low'], data['Close'])
         if(check.tail(1).item() != 0):
@@ -80,16 +138,34 @@ class CandlePatterns:
 
         check = talib.CDLINVERTEDHAMMER(data['Open'], data['High'], data['Low'], data['Close'])
         if(check.tail(1).item() != 0):
-            dict['Pattern'] = colorText.BOLD + colorText.FAIL + 'Inverted Hammer' + colorText.END
+            dict['Pattern'] = colorText.BOLD + colorText.GREEN + 'Inverted Hammer' + colorText.END
             saveDict['Pattern'] = 'Inverted Hammer'
             return True
 
-        
+        check = talib.CDLSHOOTINGSTAR(data['Open'], data['High'], data['Low'], data['Close'])
+        if(check.tail(1).item() != 0):
+            dict['Pattern'] = colorText.BOLD + colorText.FAIL + 'Shooting Star' + colorText.END
+            saveDict['Pattern'] = 'Shooting Star'
+            return True
+
+        check = talib.CDLDRAGONFLYDOJI(data['Open'], data['High'], data['Low'], data['Close'])
+        if(check.tail(1).item() != 0):
+            dict['Pattern'] = colorText.BOLD + colorText.GREEN + 'Dragonfly Doji' + colorText.END
+            saveDict['Pattern'] = 'Dragonfly Doji'
+            return True
+
+        check = talib.CDLGRAVESTONEDOJI(data['Open'], data['High'], data['Low'], data['Close'])
+        if(check.tail(1).item() != 0):
+            dict['Pattern'] = colorText.BOLD + colorText.FAIL + 'Gravestone Doji' + colorText.END
+            saveDict['Pattern'] = 'Gravestone Doji'
+            return True
+
         check = talib.CDLDOJI(data['Open'], data['High'], data['Low'], data['Close'])
         if(check.tail(1).item() != 0):
             dict['Pattern'] = colorText.BOLD + 'Doji' + colorText.END
             saveDict['Pattern'] = 'Doji'
             return True
+
         dict['Pattern'] = ''
         saveDict['Pattern'] = ''
         return False
