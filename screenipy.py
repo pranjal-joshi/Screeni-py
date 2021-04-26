@@ -26,7 +26,7 @@ TEST_STKCODE = "HAPPSTMNDS"
 
 # Constants
 DEBUG = False
-VERSION = "1.05"
+VERSION = "1.06"
 consolidationPercentage = 10
 volumeRatio = 2
 minLTP = 20.0
@@ -87,6 +87,11 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 3. Last screened results will be stored and can be viewed with Option > 7.
 4. Minor Bug-fixes and improvements.
 
+[1.06]
+1. Option > 0 added - Screen stocks by enterning it's name (stock code).
+2. Stability fixes and improvements.
+3. Last screened results will be stored and can be viewed with Option > 7.
+
 --- END ---
 ''' + colorText.END
 
@@ -134,20 +139,27 @@ def clearScreen():
     print(art)
 
 # Fetch all stock codes from NSE
-def fetchStockCodes():
+def fetchStockCodes(executeOption):
     global listStockCodes
-    print(colorText.BOLD + "[+] Getting Stock Codes From NSE... ", end='')
-    listStockCodes = list(nse.get_stock_codes(cached=False))[1:]
-    if len(listStockCodes) > 10:
-        print(colorText.GREEN + ("=> Done! Fetched %d stock codes." % len(listStockCodes)) + colorText.END)
-        if shuffleEnabled:
-            random.shuffle(listStockCodes)
-            print(colorText.WARN + "[+] Stock shuffling is active." + colorText.END)
-        else:
-            print(colorText.WARN + "[+] Stock shuffling is inactive." + colorText.END)
+    if executeOption == 0:
+        stockCode = None
+        while stockCode == None or stockCode == "":
+            stockCode = str(input(colorText.BOLD + colorText.BLUE + "[+] Enter Stock Code(s) for screening (Multiple codes should be seperated by ,): ")).upper()    
+        stockCode = stockCode.replace(" ","")
+        listStockCodes = stockCode.split(',')
     else:
-        print(colorText.FAIL + "=> Error getting stock codes from NSE!" + colorText.END)
-        sys.exit("Exiting script..")
+        print(colorText.BOLD + "[+] Getting Stock Codes From NSE... ", end='')
+        listStockCodes = list(nse.get_stock_codes(cached=False))[1:]
+        if len(listStockCodes) > 10:
+            print(colorText.GREEN + ("=> Done! Fetched %d stock codes." % len(listStockCodes)) + colorText.END)
+            if shuffleEnabled:
+                random.shuffle(listStockCodes)
+                print(colorText.WARN + "[+] Stock shuffling is active." + colorText.END)
+            else:
+                print(colorText.WARN + "[+] Stock shuffling is inactive." + colorText.END)
+        else:
+            print(colorText.FAIL + "=> Error getting stock codes from NSE!" + colorText.END)
+            sys.exit("Exiting script..")
 
 # Fetch stock price data from Yahoo finance
 def fetchStockData(stockCode):
@@ -413,7 +425,8 @@ def getLastScreenedResults():
 # Manage Execution flow
 def initExecution():
     print(colorText.BOLD + colorText.WARN + '[+] Press a number to start stock screening: ' + colorText.END)
-    print(colorText.BOLD + '''    1 > Screen stocks for Breakout or Consolidation
+    print(colorText.BOLD + '''    0 > Screen stocks by stock name (NSE Stock Code)
+    1 > Screen stocks for Breakout or Consolidation
     2 > Screen for the stocks with recent Breakout & Volume
     3 > Screen for the Consolidating stocks
     4 > Screen for the stocks with Lowest Volume in last 'N'-days (Early Breakout Detection)
@@ -455,6 +468,7 @@ def showDevInfo():
         print(colorText.BOLD + colorText.WARN + "\n[+] Developer: Pranjal Joshi." + colorText.END)
         print(colorText.BOLD + colorText.WARN + ("[+] Version: %s" % VERSION) + colorText.END)
         print(colorText.BOLD + colorText.WARN + "[+] More: https://github.com/pranjal-joshi/Screeni-py" + colorText.END)
+        print(colorText.BOLD + colorText.WARN + "[+] Post Feedback/Issues here: https://github.com/pranjal-joshi/Screeni-py/issues" + colorText.END)
         print(colorText.BOLD + colorText.WARN + "[+] Download latest software from https://github.com/pranjal-joshi/Screeni-py/releases/latest" + colorText.END)
         input('')
     
@@ -483,10 +497,10 @@ if __name__ == "__main__":
     if executeOption == 9:
         print(colorText.BOLD + colorText.FAIL + "[+] Script terminated by the user." + colorText.END)
         sys.exit(0)
-    if executeOption > 0 and executeOption < 5:
+    if executeOption >= 0 and executeOption < 5:
         getConfig(parser)
         try:
-            fetchStockCodes()
+            fetchStockCodes(executeOption)
         except urllib.error.URLError:
             print(colorText.BOLD + colorText.FAIL + "\n\n[+] Oops! It looks like you don't have an Internet connectivity at the moment! Press any key to exit!" + colorText.END)
             input('')
@@ -506,6 +520,9 @@ if __name__ == "__main__":
                     isLtpValid = validateLTP(fullData, screeningDictionary, saveDictionary, minLTP=minLTP, maxLTP=maxLTP)
                     isLowestVolume = validateLowestVolume(processedData, daysForLowestVolume)
                     isCandlePattern = candlePatterns.findPattern(processedData, screeningDictionary, saveDictionary)
+                    if executeOption == 0:
+                        screenResults = screenResults.append(screeningDictionary,ignore_index=True)
+                        saveResults = saveResults.append(saveDictionary, ignore_index=True)
                     if (executeOption == 1 or executeOption == 2) and isBreaking and isVolumeHigh and isLtpValid:
                         screenResults = screenResults.append(screeningDictionary,ignore_index=True)
                         saveResults = saveResults.append(saveDictionary, ignore_index=True)
