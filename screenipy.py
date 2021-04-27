@@ -26,7 +26,7 @@ TEST_STKCODE = "HAPPSTMNDS"
 
 # Constants
 DEBUG = False
-VERSION = "1.06"
+VERSION = "1.07"
 consolidationPercentage = 10
 volumeRatio = 2
 minLTP = 20.0
@@ -91,6 +91,10 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 1. Option > 0 added - Screen stocks by enterning it's name (stock code).
 2. Stability fixes and improvements.
 3. Last screened results will be stored and can be viewed with Option > 7.
+
+[1.07]
+1. Program Window will not automatically close now.
+2. Bug fixes and improvements.
 
 --- END ---
 ''' + colorText.END
@@ -158,7 +162,7 @@ def fetchStockCodes(executeOption):
             else:
                 print(colorText.WARN + "[+] Stock shuffling is inactive." + colorText.END)
         else:
-            print(colorText.FAIL + "=> Error getting stock codes from NSE!" + colorText.END)
+            input(colorText.FAIL + "=> Error getting stock codes from NSE! Press any key to exit!" + colorText.END)
             sys.exit("Exiting script..")
 
 # Fetch stock price data from Yahoo finance
@@ -344,11 +348,12 @@ def setConfig(parser, default=False):
             fp.close()
             print(colorText.BOLD + colorText.GREEN +'[+] Default configuration generated as user configuration is not found!' + colorText.END)
             print(colorText.BOLD + colorText.GREEN +'[+] Use Option > 5 to edit in future.' + colorText.END)
-            print(colorText.BOLD + colorText.GREEN +'[+] Restart the program now.' + colorText.END)
+            print(colorText.BOLD + colorText.GREEN +'[+] Close and Restart the program now.' + colorText.END)
             input('')
             sys.exit(0)
         except IOError:
-            print(colorText.BOLD + colorText.FAIL +'[+] Failed to save user config. Aborting..' + colorText.END)
+            print(colorText.BOLD + colorText.FAIL +'[+] Failed to save user config. Exiting..' + colorText.END)
+            input('')
             sys.exit(1)
     else:
         parser.add_section('config')
@@ -381,7 +386,8 @@ def setConfig(parser, default=False):
             input('')
             sys.exit(0)
         except IOError:
-            print(colorText.BOLD + colorText.FAIL +'[+] Failed to save user config. Aborting..' + colorText.END)
+            print(colorText.BOLD + colorText.FAIL +'[+] Failed to save user config. Exiting..' + colorText.END)
+            input('')
             sys.exit(1)
 
 # Load user config from file
@@ -417,7 +423,7 @@ def getLastScreenedResults():
         df = pd.read_pickle(lastScreened)
         print(colorText.BOLD + colorText.GREEN + '\n[+] Showing recently screened results..\n' + colorText.END)
         print(tabulate(df, headers='keys', tablefmt='psql'))
-        input(colorText.BOLD + colorText.GREEN + '[+] Press any key to exit!' + colorText.END)
+        input(colorText.BOLD + colorText.GREEN + '[+] Press any key to continue..' + colorText.END)
     except:
         print(colorText.BOLD + colorText.FAIL + '[+] Failed to load recently screened result table from disk! Skipping..' + colorText.END)
 
@@ -440,7 +446,7 @@ def initExecution():
     print(colorText.END, end='')
     try:
         result = int(result)
-        if(result < 0 or result > 8):
+        if(result < 0 or result > 9):
             raise ValueError
         return result
     except:
@@ -471,10 +477,13 @@ def showDevInfo():
         print(colorText.BOLD + colorText.WARN + "[+] Post Feedback/Issues here: https://github.com/pranjal-joshi/Screeni-py/issues" + colorText.END)
         print(colorText.BOLD + colorText.WARN + "[+] Download latest software from https://github.com/pranjal-joshi/Screeni-py/releases/latest" + colorText.END)
         input('')
-    
-if __name__ == "__main__":
-    clearScreen()
-    OTAUpdater.checkForUpdate(proxyServer, VERSION)
+
+# Main function
+def main():
+    global daysForLowestVolume, screenResults, saveResults, screenCounter
+    screenCounter = 1
+    screenResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP','Pattern'])
+    saveResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP','Pattern'])
     executeOption = initExecution()
     if executeOption == 4:
         try:
@@ -483,17 +492,20 @@ if __name__ == "__main__":
             print(colorText.END)
             print(colorText.BOLD + colorText.FAIL + '[+] Error: Non-numeric value entered! Screening aborted.' + colorText.END)
             input('')
-            sys.exit(0)
+            main()
         print(colorText.END)
     if executeOption == 5:
         setConfig(parser)
+        main()
     if executeOption == 6:
         showConfigFile()
+        main()
     if executeOption == 7:
         getLastScreenedResults()
-        sys.exit(0)
+        main()
     if executeOption == 8:
         showDevInfo()
+        main()
     if executeOption == 9:
         print(colorText.BOLD + colorText.FAIL + "[+] Script terminated by the user." + colorText.END)
         sys.exit(0)
@@ -547,4 +559,9 @@ if __name__ == "__main__":
         print(colorText.BOLD + colorText.GREEN + "[+] Results saved to screenipy-result.xlsx" + colorText.END)
         print(colorText.BOLD + colorText.GREEN + "[+] Screening Completed! Happy Trading! :)" + colorText.END)
         input('')
-        sys.exit(0)
+        main()
+
+if __name__ == "__main__":
+    clearScreen()
+    OTAUpdater.checkForUpdate(proxyServer, VERSION)
+    main()
