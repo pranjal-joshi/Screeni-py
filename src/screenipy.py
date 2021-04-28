@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
-# Pyinstaller compile: pyinstaller --onefile --icon=src\icon.ico src\screenipy.py  --hidden-import cmath --hidden-import talib.stream
+# Pyinstaller compile Windows: pyinstaller --onefile --icon=src\icon.ico src\screenipy.py  --hidden-import cmath --hidden-import talib.stream
+# Pyinstaller compile Linux  : pyinstaller --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream
 
 import os
 import sys
@@ -17,7 +18,7 @@ import classes.ConfigManager as ConfigManager
 import classes.Screener as Screener
 import classes.Utility as Utility
 from classes.ColorText import colorText
-from classes.otaUpdater import OTAUpdater
+from classes.OtaUpdater import OTAUpdater
 from classes.CandlePatterns import CandlePatterns
 from classes.Changelog import *
 
