@@ -6,18 +6,16 @@ import os
 import sys
 import urllib
 import requests
-import yfinance as yf
-from nsetools import Nse
 import numpy as np
 import pandas as pd
 from tabulate import tabulate
-import configparser
 from time import sleep
 import platform
 import datetime
 import math
-import random
-from ColorText import colorText
+import classes.Fetcher as Fetcher
+import classes.ConfigManager as ConfigManager
+from classes.ColorText import colorText
 from otaUpdater import OTAUpdater
 from CandlePatterns import CandlePatterns
 
@@ -27,16 +25,7 @@ TEST_STKCODE = "HAPPSTMNDS"
 # Constants
 DEBUG = False
 VERSION = "1.07"
-consolidationPercentage = 10
-volumeRatio = 2
-minLTP = 20.0
-maxLTP = 50000
-period = '365d'
-duration = '1d'
-daysToLookback = 20
 daysForInsideBar = 3
-shuffleEnabled = False
-stageTwo = False
 daysForLowestVolume = 30
 lastScreened = 'last_screened_results.pkl'
 
@@ -99,10 +88,8 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 --- END ---
 ''' + colorText.END
 
-nse = Nse()
 candlePatterns = CandlePatterns()
 np.seterr(divide='ignore', invalid='ignore')
-parser = configparser.ConfigParser()
 screenCounter = 1
 
 # Global Variabls
@@ -127,7 +114,6 @@ saveDictionary = {
     'LTP': 0,
     'Pattern': ""
 }
-listStockCodes = []
 
 # Get system wide proxy for networking
 try:
@@ -142,53 +128,8 @@ def clearScreen():
         os.system('clear')
     print(art)
 
-# Fetch all stock codes from NSE
-def fetchStockCodes(executeOption):
-    global listStockCodes
-    if executeOption == 0:
-        stockCode = None
-        while stockCode == None or stockCode == "":
-            stockCode = str(input(colorText.BOLD + colorText.BLUE + "[+] Enter Stock Code(s) for screening (Multiple codes should be seperated by ,): ")).upper()    
-        stockCode = stockCode.replace(" ","")
-        listStockCodes = stockCode.split(',')
-    else:
-        print(colorText.BOLD + "[+] Getting Stock Codes From NSE... ", end='')
-        listStockCodes = list(nse.get_stock_codes(cached=False))[1:]
-        if len(listStockCodes) > 10:
-            print(colorText.GREEN + ("=> Done! Fetched %d stock codes." % len(listStockCodes)) + colorText.END)
-            if shuffleEnabled:
-                random.shuffle(listStockCodes)
-                print(colorText.WARN + "[+] Stock shuffling is active." + colorText.END)
-            else:
-                print(colorText.WARN + "[+] Stock shuffling is inactive." + colorText.END)
-        else:
-            input(colorText.FAIL + "=> Error getting stock codes from NSE! Press any key to exit!" + colorText.END)
-            sys.exit("Exiting script..")
-
-# Fetch stock price data from Yahoo finance
-def fetchStockData(stockCode):
-    global screenCounter
-    data = yf.download(
-        tickers = stockCode+".NS",
-        period = period,
-        duration = duration,
-        proxy = proxyServer,
-        progress=False
-    )
-    sys.stdout.write("\r\033[K")
-    try:
-        print(colorText.BOLD + colorText.GREEN + ("[%d%%] Screened %d, Found %d. Fetching data & Analyzing %s..." % (int(screenCounter/len(listStockCodes)*100), screenCounter, len(screenResults), stockCode)) + colorText.END, end='')
-    except ZeroDivisionError:
-        pass
-    if len(data) == 0:
-        print(colorText.BOLD + colorText.FAIL + "=> Failed to fetch!" + colorText.END, end='\r', flush=True)
-        return None
-    print(colorText.BOLD + colorText.GREEN + "=> Done!" + colorText.END, end='\r', flush=True)
-    screenCounter += 1
-    return data
-
 # Preprocess the acquired data
-def preprocessData(data, daysToLookback=daysToLookback):
+def preprocessData(data, daysToLookback=ConfigManager.daysToLookback):
     sma = data.rolling(window=50).mean()
     lma = data.rolling(window=200).mean()
     vol = data.rolling(window=20).mean()
@@ -204,7 +145,7 @@ def preprocessData(data, daysToLookback=daysToLookback):
     return (fullData, trimmedData)
 
 # Validate LTP within limits
-def validateLTP(data, dict, saveDict, minLTP=minLTP, maxLTP=maxLTP):
+def validateLTP(data, dict, saveDict, minLTP=ConfigManager.minLTP, maxLTP=ConfigManager.maxLTP):
     global stageTwo
     recent = data.head(1)
     ltp = round(recent['Close'][0],2)
@@ -327,88 +268,6 @@ def validateLowestVolume(data, daysForLowestVolume):
         return True
     return False
 
-
-# Handle user input and save config
-def setConfig(parser, default=False):
-    if default:
-        global duration, period, minLTP, maxLTP, volumeRatio, consolidationPercentage, daysToLookback
-        parser.add_section('config')
-        parser.set('config','period',period)
-        parser.set('config','daysToLookback',str(daysToLookback))
-        parser.set('config','duration',duration)
-        parser.set('config','minPrice',str(minLTP))
-        parser.set('config','maxPrice',str(maxLTP))
-        parser.set('config','volumeRatio',str(volumeRatio))
-        parser.set('config','consolidationPercentage',str(consolidationPercentage))
-        parser.set('config','shuffle','y')
-        parser.set('config','onlyStageTwoStocks','y')
-        try:
-            fp = open('screenipy.ini','w')
-            parser.write(fp)
-            fp.close()
-            print(colorText.BOLD + colorText.GREEN +'[+] Default configuration generated as user configuration is not found!' + colorText.END)
-            print(colorText.BOLD + colorText.GREEN +'[+] Use Option > 5 to edit in future.' + colorText.END)
-            print(colorText.BOLD + colorText.GREEN +'[+] Close and Restart the program now.' + colorText.END)
-            input('')
-            sys.exit(0)
-        except IOError:
-            print(colorText.BOLD + colorText.FAIL +'[+] Failed to save user config. Exiting..' + colorText.END)
-            input('')
-            sys.exit(1)
-    else:
-        parser.add_section('config')
-        print('')
-        print(colorText.BOLD + colorText.GREEN +'[+] Screeni-py User Configuration:' + colorText.END)
-        period = input('[+] Enter number of days for which stock data to be downloaded (Days)(Optimal = 365): ')
-        daysToLookback = input('[+] Number of recent days to screen for Breakout/Consolidation (Days)(Optimal = 20): ')
-        duration = input('[+] Enter Duration of each candle (Days)(Optimal = 1): ')
-        minLTP = input('[+] Minimum Price of Stock to Buy (in RS)(Optimal = 20): ')
-        maxLTP = input('[+] Maximum Price of Stock to Buy (in RS)(Optimal = 50000): ')
-        volumeRatio = input('[+] How many times the volume should be more than average for the breakout? (Number)(Optimal = 2.5): ')
-        consolidationPercentage = input('[+] How many % the price should be in range to consider it as consolidation? (Number)(Optimal = 10): ')
-        shuffle = str(input('[+] Shuffle stocks rather than screening alphabetically? (Y/N): ')).lower()
-        stageTwoPrompt = str(input('[+] Screen only for Stage-2 stocks?\n(What are the stages? => https://www.investopedia.com/articles/trading/08/stock-cycle-trend-price.asp)\n(Y/N): ')).lower()
-        parser.set('config','period',period + "d")
-        parser.set('config','daysToLookback',daysToLookback)
-        parser.set('config','duration',duration + "d")
-        parser.set('config','minPrice',minLTP)
-        parser.set('config','maxPrice',maxLTP)
-        parser.set('config','volumeRatio',volumeRatio)
-        parser.set('config','consolidationPercentage',consolidationPercentage)
-        parser.set('config','shuffle',shuffle)
-        parser.set('config','onlyStageTwoStocks',stageTwoPrompt)
-        try:
-            fp = open('screenipy.ini','w')
-            parser.write(fp)
-            fp.close()
-            print(colorText.BOLD + colorText.GREEN +'[+] User configuration saved.' + colorText.END)
-            print(colorText.BOLD + colorText.GREEN +'[+] Restart the program now.' + colorText.END)
-            input('')
-            sys.exit(0)
-        except IOError:
-            print(colorText.BOLD + colorText.FAIL +'[+] Failed to save user config. Exiting..' + colorText.END)
-            input('')
-            sys.exit(1)
-
-# Load user config from file
-def getConfig(parser):
-    global duration, period, minLTP, maxLTP, volumeRatio, consolidationPercentage, daysToLookback, shuffleEnabled, stageTwo
-    if len(parser.read('screenipy.ini')):
-        duration = parser.get('config','duration')
-        period = parser.get('config','period')
-        minLTP = float(parser.get('config','minprice'))
-        maxLTP = float(parser.get('config','maxprice'))
-        volumeRatio = float(parser.get('config','volumeRatio'))
-        consolidationPercentage = float(parser.get('config','consolidationPercentage'))
-        daysToLookback = int(parser.get('config','daysToLookback'))
-        if str(parser.get('config','shuffle')).lower() == 'y':
-            shuffleEnabled = True
-        if str(parser.get('config','onlyStageTwoStocks')).lower() == 'y':
-            stageTwo = True
-        print(colorText.BOLD + colorText.GREEN +'[+] User configuration loaded.' + colorText.END)
-    else:
-        setConfig(parser, default=True)
-
 # Save last screened result to pickle file
 def setLastScreenedResults(df):
     try:
@@ -455,19 +314,6 @@ def initExecution():
         clearScreen()
         return initExecution()
 
-# Print config file
-def showConfigFile():
-    try:
-        f = open('screenipy.ini','r')
-        print(colorText.BOLD + colorText.GREEN +'[+] Screeni-py User Configuration:' + colorText.END)
-        print("\n"+f.read())
-        f.close()
-        input('')
-    except:
-        print(colorText.BOLD + colorText.FAIL + "[+] User Configuration not found!" + colorText.END)
-        print(colorText.BOLD + colorText.WARN + "[+] Configure the limits to continue." + colorText.END)
-        setConfig(parser)
-
 # Print about developers and repository
 def showDevInfo():
         print('\n'+changelog)
@@ -495,10 +341,10 @@ def main():
             main()
         print(colorText.END)
     if executeOption == 5:
-        setConfig(parser)
+        ConfigManager.tools.setConfig(ConfigManager.parser)
         main()
     if executeOption == 6:
-        showConfigFile()
+        ConfigManager.tools.showConfigFile()
         main()
     if executeOption == 7:
         getLastScreenedResults()
@@ -510,18 +356,23 @@ def main():
         print(colorText.BOLD + colorText.FAIL + "[+] Script terminated by the user." + colorText.END)
         sys.exit(0)
     if executeOption >= 0 and executeOption < 5:
-        getConfig(parser)
+        ConfigManager.tools.getConfig(ConfigManager.parser)
         try:
-            fetchStockCodes(executeOption)
+            Fetcher.tools.fetchStockCodes(executeOption)
         except urllib.error.URLError:
             print(colorText.BOLD + colorText.FAIL + "\n\n[+] Oops! It looks like you don't have an Internet connectivity at the moment! Press any key to exit!" + colorText.END)
             input('')
             sys.exit(0)
         print(colorText.BOLD + colorText.WARN + "[+] Starting Stock Screening.. Press Ctrl+C to stop!\n")
-        for stock in listStockCodes:
+        for stock in Fetcher.listStockCodes:
             try:
-                data = fetchStockData(stock)
-                fullData, processedData = preprocessData(data, daysToLookback=daysToLookback)
+                data = Fetcher.tools.fetchStockData(stock, 
+                            ConfigManager.period,
+                            ConfigManager.duration,
+                            proxyServer,
+                            screenResults
+                        )
+                fullData, processedData = preprocessData(data, daysToLookback=ConfigManager.daysToLookback)
                 if not processedData.empty:
                     screeningDictionary['Stock'] = colorText.BOLD + colorText.BLUE + stock + colorText.END
                     saveDictionary['Stock'] = stock
@@ -550,6 +401,7 @@ def main():
             except Exception as e:
                 print(colorText.FAIL + ("[+] Exception Occured while Screening %s! Skipping this stock.." % stock) + colorText.END)
                 print(e)
+                raise(e)
         screenResults.sort_values(by=['Stock'], ascending=True, inplace=True)
         saveResults.sort_values(by=['Stock'], ascending=True, inplace=True)
         print(tabulate(screenResults, headers='keys', tablefmt='psql'))

@@ -5,7 +5,7 @@
  *  Description         :   Class for handling OTA updates
 '''
 
-from ColorText import colorText
+from classes.ColorText import colorText
 import requests
 import os
 import platform
