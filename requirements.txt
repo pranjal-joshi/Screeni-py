@@ -11,6 +11,7 @@ cryptography==2.6.1
 dateutils==0.6.12
 distlib==0.3.0
 distro==1.4.0
+distro-info==0.21
 entrypoints==0.3
 et-xmlfile==1.0.1
 html5lib==1.0.1
@@ -35,6 +36,7 @@ PyGObject==3.30.4
 pyinstaller==4.2
 pyinstaller-hooks-contrib==2021.1
 pyparsing==2.4.6
+python-apt==1.8.4.3
 python-dateutil==2.8.1
 pytoml==0.1.21
 pytz==2021.1
@@ -47,6 +49,7 @@ TA-Lib==0.4.19
 tabulate==0.8.9
 toml==0.10.2
 typing-extensions==3.7.4.3
+unattended-upgrades==0.1
 urllib3==1.25.8
 webencodings==0.5.1
 yfinance==0.1.59
