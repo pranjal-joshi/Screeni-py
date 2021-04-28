@@ -47,7 +47,6 @@ TA-Lib==0.4.19
 tabulate==0.8.9
 toml==0.10.2
 typing-extensions==3.7.4.3
-unattended-upgrades==0.1
 urllib3==1.25.8
 webencodings==0.5.1
 yfinance==0.1.59
