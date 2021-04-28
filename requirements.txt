@@ -35,7 +35,6 @@ PyGObject==3.30.4
 pyinstaller==4.2
 pyinstaller-hooks-contrib==2021.1
 pyparsing==2.4.6
-python-apt==1.8.4.3
 python-dateutil==2.8.1
 pytoml==0.1.21
 pytz==2021.1
