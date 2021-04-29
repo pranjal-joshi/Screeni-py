@@ -7,7 +7,7 @@
 
 import pandas as pd
 import talib
-from ColorText import colorText
+from classes.ColorText import colorText
 
 class CandlePatterns:
     def __init__(self):
