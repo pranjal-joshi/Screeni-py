@@ -17,7 +17,12 @@ from screenipy import *
 import classes.ConfigManager as ConfigManager
 
 # Generate default configuration if not exist
-ConfigManager.tools.setConfig(ConfigManager.parser,default=True)
+def test_generate_default_config(mocker, capsys):
+    mocker.patch('builtins.input',side_effect=['\n'])
+    with pytest.raises(SystemExit):
+        ConfigManager.tools.setConfig(ConfigManager.parser,default=True)
+    out, err = capsys.readouterr()
+    assert err == ''
 
 def test_option_0(mocker):
     try:
