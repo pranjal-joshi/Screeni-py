@@ -6,7 +6,6 @@
 '''
 
 import pytest
-from _pytest.monkeypatch import MonkeyPatch
 import sys
 import os
 import numpy as np
@@ -17,7 +16,8 @@ sys.path.append(os.path.abspath('../src'))
 from screenipy import *
 import classes.ConfigManager as ConfigManager
 
-monkeypatch = MonkeyPatch()
+# Generate default configuration if not exist
+ConfigManager.tools.setConfig(ConfigManager.parser,default=True)
 
 def test_option_0(mocker):
     try:
