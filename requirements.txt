@@ -1,6 +1,5 @@
 appdirs
 cachecontrol
-colorama
 contextlib2
 distlib
 distro
@@ -9,13 +8,46 @@ ipaddr
 lockfile
 nsetools
 openpyxl
-packaging
 pep517
+pip
 pip-chill
 progress
 pyinstaller
+pytest-mock
 pytoml
 retrying
-TA-lib
+ta-lib
 tabulate
 yfinance
+altgraph # Installed as dependency for pyinstaller
+atomicwrites # Installed as dependency for pytest
+attrs # Installed as dependency for pytest
+certifi # Installed as dependency for requests
+chardet # Installed as dependency for requests
+colorama # Installed as dependency for pytest
+dateutils # Installed as dependency for nsetools
+et-xmlfile # Installed as dependency for openpyxl
+future # Installed as dependency for pefile
+idna # Installed as dependency for requests
+iniconfig # Installed as dependency for pytest
+lxml # Installed as dependency for yfinance
+msgpack # Installed as dependency for cachecontrol
+multitasking # Installed as dependency for yfinance
+numpy # Installed as dependency for yfinance, pandas
+packaging # Installed as dependency for pytest
+pandas # Installed as dependency for yfinance
+pefile # Installed as dependency for pyinstaller
+pluggy # Installed as dependency for pytest
+py # Installed as dependency for pytest
+pyinstaller-hooks-contrib # Installed as dependency for pyinstaller
+pyparsing # Installed as dependency for packaging
+pytest # Installed as dependency for pytest-mock
+python-dateutil # Installed as dependency for dateutils, pandas
+pytz # Installed as dependency for dateutils, pandas
+requests # Installed as dependency for yfinance, cachecontrol
+setuptools # Installed as dependency for pyinstaller
+six # Installed as dependency for retrying, html5lib, packaging, python-dateutil, nsetools
+toml # Installed as dependency for pep517, pytest
+urllib3 # Installed as dependency for requests
+webencodings # Installed as dependency for html5lib
+pywin32-ctypes # Installed as dependency for pyinstaller
