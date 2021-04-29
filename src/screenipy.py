@@ -23,7 +23,7 @@ from classes.CandlePatterns import CandlePatterns
 from classes.Changelog import *
 
 # Try Fixing bug with this symbol
-TEST_STKCODE = "HAPPSTMNDS"
+TEST_STKCODE = "SBIN"
 
 # Constants
 daysForLowestVolume = 30
@@ -87,7 +87,7 @@ def initExecution():
         return initExecution()
 
 # Main function
-def main():
+def main(testing=False):
     global daysForLowestVolume, screenResults, saveResults
     Fetcher.screenCounter = 1
     screenResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP','Pattern'])
@@ -157,6 +157,8 @@ def main():
                     if executeOption == 4 and isLtpValid and isLowestVolume:
                         screenResults = screenResults.append(screeningDictionary,ignore_index=True)
                         saveResults = saveResults.append(saveDictionary, ignore_index=True)
+                if testing and len(screenResults):
+                    break
             except KeyboardInterrupt:
                 print(colorText.BOLD + colorText.FAIL + "\n[+] Script terminated by the user." + colorText.END)
                 break

@@ -19,7 +19,7 @@ daysToLookback = 20
 shuffleEnabled = False
 stageTwo = False
 
-parser = configparser.ConfigParser()
+parser = configparser.ConfigParser(strict=False)
 
 # This Class manages read/write of user configuration
 class tools:
