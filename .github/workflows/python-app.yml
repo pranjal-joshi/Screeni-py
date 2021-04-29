@@ -22,5 +22,10 @@ jobs:
         python-version: 3.9
     - name: Install dependencies for TA-Lib
       run: |
-        sh install_talib.sh
+        echo "[+] Github Actions -> Install dependencies for TA-Lib"
+        tar -xzf ta-lib-0.4.0-src.tar.gz
+        cd ta-lib/
+        ./configure --prefix=/usr
+        make
+        sudo make install
     
