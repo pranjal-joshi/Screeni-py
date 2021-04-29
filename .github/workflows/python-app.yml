@@ -22,5 +22,5 @@ jobs:
         python-version: 3.9
     - name: Install dependencies for TA-Lib
       run: |
-        sh scripts/install_talib.sh
+        sh install_talib.sh
     
