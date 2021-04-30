@@ -112,6 +112,6 @@ def test_option_9(mocker, capsys):
 def test_ota_updater():
     try:
         OTAUpdater.checkForUpdate(proxyServer, VERSION)
-        assert OTAUpdater.checkForUpdate.url != None
+        assert ("exe" in OTAUpdater.checkForUpdate.url or "bin" in OTAUpdater.checkForUpdate.url)
     except StopIteration:
         pass
