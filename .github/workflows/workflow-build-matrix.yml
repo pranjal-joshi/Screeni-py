@@ -86,7 +86,11 @@ jobs:
         id: read_release
         shell: bash
         run: |
-          echo "::set-output name=RELEASE_BODY::$(cat src/release.md)"
+          r=$(cat src/release.md)
+          r="${r//'%'/'%25'}"
+          r="${r//$'\n'/'%0A'}"
+          r="${r//$'\r'/'%0D'}"
+          echo "::set-output name=RELEASE_BODY::$r"
 
       - name: Upload Binaries to Release
         uses: svenstaro/upload-release-action@v2
