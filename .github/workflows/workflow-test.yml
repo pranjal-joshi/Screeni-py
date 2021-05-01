@@ -54,17 +54,17 @@ jobs:
     - name: Create Pull Request (new-features -> main)
       id: create_pr
       uses: peter-evans/create-pull-request@v3
-        with:
-          token: ${{ secrets.PAT }}
-          commit-message: Screenipy Test - Passed. PR created.
-          author: ${{ github.actor }}
-          branch: new-features
-          delete-branch: false
-          title: '[Screenipy Test] New Feature - Test Passed.'
-          body: |
-            **Changelog:**
-            To be added here by other GitHub action...
-          draft: false
+      with:
+        token: ${{ secrets.PAT }}
+        commit-message: Screenipy Test - Passed. PR created.
+        author: ${{ github.actor }}
+        branch: new-features
+        delete-branch: false
+        title: '[Screenipy Test] New Feature - Test Passed.'
+        body: |
+          **Changelog:**
+          To be added here by other GitHub action...
+        draft: false
           
 
 
