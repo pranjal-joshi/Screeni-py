@@ -84,6 +84,7 @@ jobs:
 
       - name: Read release.md
         id: read_release
+        shell: bash
         run: echo "::set-output name=RELEASE_BODY::$(cat src/release.md)"
 
       - name: Upload Binaries to Release
@@ -95,3 +96,4 @@ jobs:
           tag: ${{ github.ref }}
           release_name: Screenipy - v${{ steps.get_version.outputs.VERSION }}
           body: ${{ steps.get_version.outputs.RELEASE_BODY }}
+          overwrite: true
