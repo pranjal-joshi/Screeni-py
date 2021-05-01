@@ -66,21 +66,18 @@ jobs:
     - name: Create Pull Request (new-features -> main)
       id: create_pr
       uses: peter-evans/create-pull-request@v3
-      #env:
-      #  GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
       with:
         commit-message: Screenipy Test - Passed. PR created.
         committer: GitHub <noreply@github.com>
         author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
         signoff: false
         branch: new-features
-        base: main
         delete-branch: false
         title: '[Screenipy Test] New Feature - Test Passed.'
         body: |
           **Changelog:**
           To be added here by other GitHub action...
-        draft: false
+        draft: true
           
 
 
