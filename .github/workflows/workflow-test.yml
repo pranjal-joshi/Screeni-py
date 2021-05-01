@@ -59,6 +59,7 @@ jobs:
     runs-on: ubuntu-18.04
     needs: [Test-Source]
 
+    steps:
     - name: Checkout Repo before PR
       uses: actions/checkout@v2
 
