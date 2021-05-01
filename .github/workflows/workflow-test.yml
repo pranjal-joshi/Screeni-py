@@ -52,7 +52,8 @@ jobs:
         pytest -v
 
     - name: Create Pull Request (new-features -> main)
-        uses: peter-evans/create-pull-request@v3
+      id: create_pr
+      uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.PAT }}
           commit-message: Screenipy Test - Passed. PR created.
