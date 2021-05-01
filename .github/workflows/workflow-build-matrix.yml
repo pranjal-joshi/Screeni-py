@@ -101,5 +101,5 @@ jobs:
           tag: ${{ github.ref }}
           release_name: Screenipy - v${{ steps.get_version.outputs.VERSION }}
           body: |
-            "${{ steps.read_release.outputs.RELEASE_BODY }}"
+            ${{ steps.read_release.outputs.RELEASE_BODY }}
           overwrite: true
