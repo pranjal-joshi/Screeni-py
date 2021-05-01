@@ -73,8 +73,9 @@ jobs:
         committer: GitHub <noreply@github.com>
         author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
         signoff: false
-        branch: new-features
-        base: main
+        #branch: new-features
+        #base: main
+        branch: main
         delete-branch: false
         title: '[Screenipy Test] New Feature - Test Passed.'
         body: |
