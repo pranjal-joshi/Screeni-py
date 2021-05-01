@@ -53,6 +53,9 @@ jobs:
         cd test/
         pytest -v
 
+    - name: Checkout Repo before PR
+      uses: actions/checkout@v2
+
     - name: Create Pull Request (new-features -> main)
       id: create_pr
       uses: peter-evans/create-pull-request@v3
