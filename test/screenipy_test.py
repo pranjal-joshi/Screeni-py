@@ -115,3 +115,4 @@ def test_ota_updater():
         assert ("exe" in OTAUpdater.checkForUpdate.url or "bin" in OTAUpdater.checkForUpdate.url)
     except StopIteration:
         pass
+    
