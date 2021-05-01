@@ -10,6 +10,8 @@ on:
     branches: [ new-features ]
 
 jobs:
+
+  # Test code on Linux
   Test:
 
     runs-on: ubuntu-18.04
@@ -59,6 +61,7 @@ jobs:
         commit-message: Screenipy Test - Passed. PR created.
         author: ${{ github.actor }}
         branch: new-features
+        base: main
         delete-branch: false
         title: '[Screenipy Test] New Feature - Test Passed.'
         body: |
