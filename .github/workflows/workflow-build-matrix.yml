@@ -97,5 +97,6 @@ jobs:
           asset_name: ${{ matrix.FILE_NAME }}
           tag: ${{ github.ref }}
           release_name: Screenipy - v${{ steps.get_version.outputs.VERSION }}
-          body: "${{ steps.read_release.outputs.RELEASE_BODY }}"
+          body: |
+            "${{ steps.read_release.outputs.RELEASE_BODY }}"
           overwrite: true
