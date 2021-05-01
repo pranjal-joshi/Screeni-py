@@ -69,7 +69,6 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
       with:
-        token:
         commit-message: Screenipy Test - Passed. PR created.
         committer: GitHub <noreply@github.com>
         author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
