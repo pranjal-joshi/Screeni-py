@@ -53,6 +53,12 @@ jobs:
         cd test/
         pytest -v
 
+  # Job to create PR
+  Create-Pull-Request:
+
+    runs-on: ubuntu-18.04
+    needs: [Test-Source]
+
     - name: Checkout Repo before PR
       uses: actions/checkout@v2
 
@@ -63,7 +69,9 @@ jobs:
       #  GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
       with:
         commit-message: Screenipy Test - Passed. PR created.
-        author: ${{ github.actor }}
+        committer: GitHub <noreply@github.com>
+        author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+        signoff: false
         branch: new-features
         base: main
         delete-branch: false
