@@ -86,7 +86,7 @@ jobs:
         id: read_release
         shell: bash
         run: |
-          echo "::set-output name=RELEASE_BODY::$(cat src/release.md)"
+          echo ::set-output name=RELEASE_BODY::$(cat src/release.md)
           echo ${{ steps.get_version.outputs.RELEASE_BODY }}
 
       - name: Upload Binaries to Release
