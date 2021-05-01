@@ -87,7 +87,7 @@ jobs:
         shell: bash
         run: |
           echo ::set-output name=RELEASE_BODY::$(cat src/release.md)
-          echo ${{ steps.get_version.outputs.RELEASE_BODY }}
+          echo ${{ steps.read_release.outputs.RELEASE_BODY }}
 
       - name: Upload Binaries to Release
         uses: svenstaro/upload-release-action@v2
@@ -97,5 +97,5 @@ jobs:
           asset_name: ${{ matrix.FILE_NAME }}
           tag: ${{ github.ref }}
           release_name: Screenipy - v${{ steps.get_version.outputs.VERSION }}
-          body: "${{ steps.get_version.outputs.RELEASE_BODY }}"
+          body: "${{ steps.read_release.outputs.RELEASE_BODY }}"
           overwrite: true
