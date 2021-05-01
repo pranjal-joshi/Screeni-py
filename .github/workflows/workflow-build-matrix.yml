@@ -84,8 +84,7 @@ jobs:
 
       - name: Read release.md
         id: read_release
-        shell: bash
-        run: echo "release_body=$(<src/release.md)" >>$GITHUB_ENV
+        run: echo "::set-output name=RELEASE_BODY::$(cat src/release.md)"
 
       - name: Upload Binaries to Release
         uses: svenstaro/upload-release-action@v2
@@ -95,4 +94,4 @@ jobs:
           asset_name: ${{ matrix.FILE_NAME }}
           tag: ${{ github.ref }}
           release_name: Screenipy - v${{ steps.get_version.outputs.VERSION }}
-          body: ${{ env.release_body }}
+          body: ${{ steps.get_version.outputs.RELEASE_BODY }}
