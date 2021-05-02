@@ -12,9 +12,51 @@ on:
 jobs:
 
   # Test the source-code
+  # Test-Source:
+
+  #   runs-on: ubuntu-18.04
+
+  #   steps:
+  #   - uses: actions/checkout@v2
+
+  #   - name: Set up Python 3.9.4
+  #     uses: actions/setup-python@v2
+  #     with:
+  #       python-version: 3.9.4
+
+  #   - name: Install dependencies for TA-Lib
+  #     run: |
+  #       echo "[+] Github Actions -> Install dependencies for TA-Lib"
+  #       cd .github/dependencies/
+  #       pwd
+  #       tar -xzf ta-lib-0.4.0-src.tar.gz
+  #       cd ta-lib/
+  #       ./configure --prefix=/usr
+  #       make
+  #       sudo make install
+
+  #   - name: Install dependencies using pip
+  #     run: |
+  #       python -m pip install --upgrade pip
+  #       pip install flake8 pytest pytest-mock
+  #       if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+  #   - name: Lint with flake8
+  #     run: |
+  #       # stop the build if there are Python syntax errors or undefined names
+  #       flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+  #       # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+  #       flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        
+  #   - name: Run a Test with pytest
+  #     run: |
+  #       cd test/
+  #       pytest -v
+
+  # Test the source-code
   Test-Source:
 
-    runs-on: ubuntu-18.04
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v2
@@ -26,20 +68,16 @@ jobs:
 
     - name: Install dependencies for TA-Lib
       run: |
-        echo "[+] Github Actions -> Install dependencies for TA-Lib"
+        python -m pip install --upgrade pip
         cd .github/dependencies/
-        pwd
-        tar -xzf ta-lib-0.4.0-src.tar.gz
-        cd ta-lib/
-        ./configure --prefix=/usr
-        make
-        sudo make install
+        echo %cd%
+        pip install TA_Lib-0.4.19-cp39-cp39-win_amd64.whl
 
     - name: Install dependencies using pip
       run: |
         python -m pip install --upgrade pip
         pip install flake8 pytest pytest-mock
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install -r requirements.txt
 
     - name: Lint with flake8
       run: |
@@ -63,6 +101,10 @@ jobs:
     - name: Checkout Repo before PR
       uses: actions/checkout@v2
 
+    - name: Create Changelog
+      uses: scottbrenner/generate-changelog-action@master
+      id: create_changelog
+
     - name: Create Pull Request (new-features -> main)
       uses: repo-sync/pull-request@v2
       with:
@@ -70,43 +112,8 @@ jobs:
         destination_branch: "main"
         pr_title: "[Screenipy Test] New Features Added - Test Passed"
         pr_body: |
-          **Changelog**:
-          To be added by some git action!
+          ${{ steps.create_changelog.outputs.changelog }}
         pr_label: "enhancement"
-        pr_draft: true
+        pr_draft: false
         pr_allow_empty: true
         github_token: ${{ secrets.GITHUB_TOKEN }}
-
-  # Job to create PR
-  # Create-Pull-Request:
-
-  #   runs-on: ubuntu-18.04
-  #   needs: [Test-Source]
-
-  #   steps:
-  #   - name: Checkout Repo before PR
-  #     uses: actions/checkout@v2
-
-  #   - name: Create Pull Request (new-features -> main)
-  #     id: create_pr
-  #     uses: peter-evans/create-pull-request@v3
-  #     env:
-  #       GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
-  #     with:
-  #       commit-message: Screenipy Test - Passed. PR created.
-  #       committer: GitHub <noreply@github.com>
-  #       author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
-  #       signoff: false
-  #       #branch: new-features
-  #       #base: main
-  #       branch: main
-  #       delete-branch: false
-  #       title: '[Screenipy Test] New Feature - Test Passed.'
-  #       body: |
-  #         **Changelog:**
-  #         To be added here by other GitHub action...
-  #       draft: false
-          
-
-
-    
