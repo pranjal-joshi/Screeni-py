@@ -56,16 +56,14 @@ jobs:
     steps:
     - name: Checkout Repo before PR
       uses: actions/checkout@v2
-
-    # - name: Create Changelog
-    #   uses: scottbrenner/generate-changelog-action@master
-    #   id: create_changelog
+      with:
+        fetch-depth: 0
 
     - name: Build Changelog
       id: create_changelog
       uses: mikepenz/release-changelog-builder-action@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Create Pull Request (new-features -> main)
       id: create_pr
