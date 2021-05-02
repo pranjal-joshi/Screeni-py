@@ -1,7 +1,7 @@
 # Screeni-py
-[![Screenipy CI - New Features](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-ci.yml/badge.svg?branch=new-features)](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-ci.yml) ![GitHub release (latest by date)](https://img.shields.io/github/v/release/pranjal-joshi/Screeni-py) ![GitHub all releases](https://img.shields.io/github/downloads/pranjal-joshi/Screeni-py/total?color=Green&label=Downloads) ![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/pranjal-joshi/Screeni-py) ![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed-raw/pranjal-joshi/Screeni-py) ![GitHub contributors](https://img.shields.io/github/contributors/pranjal-joshi/Screeni-py) ![GitHub](https://img.shields.io/github/license/pranjal-joshi/Screeni-py)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/pranjal-joshi/Screeni-py) ![GitHub all releases](https://img.shields.io/github/downloads/pranjal-joshi/Screeni-py/total?color=Green&label=Downloads) ![GitHub](https://img.shields.io/github/license/pranjal-joshi/Screeni-py)
 
-## [Quick Download](https://github.com/pranjal-joshi/Screeni-py/releases/latest)
+[![Screenipy Test - New Features](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-test.yml/badge.svg?branch=new-features)](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-test.yml) [![Screenipy Build & Release](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-build-matrix.yml/badge.svg)](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-build-matrix.yml) ![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/pranjal-joshi/Screeni-py) 
 
 ## [Quick Download](https://github.com/pranjal-joshi/Screeni-py/releases/latest)
 
