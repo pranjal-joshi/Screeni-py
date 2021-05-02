@@ -1,5 +1,8 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+# Project             :   Screenipy
+# Author              :   Pranjal Joshi
+# Created             :   27/04/2021
+# Description         :   Workflow for CI - Testing source and PR main for release
+
 
 name: Screenipy Test - New Features
 
@@ -65,10 +68,10 @@ jobs:
         destination_branch: "main"
         pr_title: "[Screenipy Test] New Features Added - Test Passed"
         pr_body: |
-          **This PR has been generated automatically** by `Screenipy Test - New Features` workflow due to test passed for a latest push on the `new-features` branch.
+          **This PR has been generated automatically** by **Screenipy Test - New Features** workflow due to test passed for a latest push on the **new-features** branch.
           
           View commits for changelog.
-        pr_label: "enhancement"
+        pr_label: "Test-Passed"
         pr_draft: false
         pr_allow_empty: true
         github_token: ${{ secrets.GITHUB_TOKEN }}
