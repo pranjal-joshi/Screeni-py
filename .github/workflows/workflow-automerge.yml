@@ -15,13 +15,13 @@ jobs:
   # Auto merge PR
   Auto-Merge:
 
-  runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
-  steps:
-    - name: Auto Merging PR (new-features -> main)
-      uses: "pascalgn/automerge-action@v0.13.1"
-      env:
-        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-        MERGE_LABELS: "Test-Passed"
-        MERGE_FILTER_AUTHOR: "github-actions"
+    steps:
+      - name: Auto Merging PR (new-features -> main)
+        uses: "pascalgn/automerge-action@v0.13.1"
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          MERGE_LABELS: "Test-Passed"
+          MERGE_FILTER_AUTHOR: "github-actions"
 
