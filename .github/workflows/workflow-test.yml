@@ -59,11 +59,21 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Get the GitHub Tag version
+      id: get_tags
+      shell: bash
+      run: |
+        echo ::set-output name=FROM_TAG::${git tag | sort -V | tail -2 | head -n 1}
+        echo ::set-output name=TO_TAG::${git tag | sort -V | tail -1}
+
     - name: Build Changelog
       id: create_changelog
       uses: mikepenz/release-changelog-builder-action@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        fromTag: ${{ steps.get_tags.outputs.FROM_TAG}}
+        toTag: ${{ steps.get_tags.outputs.TO_TAG}}
 
     - name: Create Pull Request (new-features -> main)
       id: create_pr
