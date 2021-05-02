@@ -1,0 +1,27 @@
+# Project             :   Screenipy
+# Author              :   Pranjal Joshi
+# Created             :   02/05/2021
+# Description         :   Workflow for automerging PR on main branch opened by CI workflow from new-features branch.
+
+name: Screenipy - Auto Merge PR
+
+on:
+  pull_request:
+    types:
+      - opened
+
+jobs:
+
+  # Auto merge PR
+  Auto-Merge:
+
+  runs-on: ubuntu-latest
+
+  steps:
+    - name: Auto Merging PR (new-features -> main)
+      uses: "pascalgn/automerge-action@v0.13.1"
+      env:
+        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        MERGE_LABELS: "Test-Passed"
+        MERGE_FILTER_AUTHOR: "github-actions"
+
