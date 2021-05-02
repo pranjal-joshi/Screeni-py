@@ -53,6 +53,30 @@ jobs:
         cd test/
         pytest -v
 
+  Job to create PR
+  Create-Pull-Request:
+
+    runs-on: ubuntu-18.04
+    needs: [Test-Source]
+
+    steps:
+    - name: Checkout Repo before PR
+      uses: actions/checkout@v2
+
+    - name: Create Pull Request (new-features -> main)
+      uses: repo-sync/pull-request@v2
+      with:
+        source_branch: "new-features"
+        destination_branch: "main"
+        pr_title: "[Screenipy Test] New Features Added - Test Passed"
+        pr_body: |
+          **Changelog**:
+          To be added by some git action!
+        pr_label: "enhancement"
+        pr_draft: true
+        pr_allow_empty: true
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+
   # Job to create PR
   # Create-Pull-Request:
 
