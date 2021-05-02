@@ -53,7 +53,7 @@ jobs:
         cd test/
         pytest -v
 
-  Job to create PR
+  # Job to create PR
   Create-Pull-Request:
 
     runs-on: ubuntu-18.04
