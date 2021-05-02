@@ -1,0 +1,89 @@
+# Project             :   Screenipy
+# Author              :   Pranjal Joshi
+# Created             :   27/04/2021
+# Description         :   Workflow for CI - Testing source and PR main for release
+
+
+name: Screenipy Test - New Features
+
+on:
+  push:
+    branches: [ new-features ]
+
+jobs:
+
+  # Test the source-code
+  Test-Source:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python 3.9.4
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9.4
+
+    - name: Install dependencies for TA-Lib
+      run: |
+        python -m pip install --upgrade pip
+        cd .github/dependencies/
+        echo %cd%
+        pip install TA_Lib-0.4.19-cp39-cp39-win_amd64.whl
+
+    - name: Install dependencies using pip
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest pytest-mock
+        pip install -r requirements.txt
+
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        
+    - name: Run a Test with pytest
+      run: |
+        cd test/
+        pytest -v
+
+  # Job to create PR
+  Create-Pull-Request:
+
+    runs-on: ubuntu-18.04
+    needs: [Test-Source]
+
+    steps:
+    - name: Checkout Repo before PR
+      uses: actions/checkout@v2
+    
+    - name: Create Pull Request (new-features -> main)
+      id: create_pr
+      uses: repo-sync/pull-request@v2
+      with:
+        source_branch: "new-features"
+        destination_branch: "main"
+        pr_title: "[Screenipy Test] New Features Added - Test Passed"
+        pr_body: |
+          **This PR has been generated automatically** by **Screenipy Test - New Features** workflow due to test passed for a latest push on the **new-features** branch.
+          
+          View commits for changelog.
+        pr_label: "Test-Passed"
+        pr_draft: false
+        pr_allow_empty: true
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Create PR Log file
+      shell: bash
+      run: |
+        echo ${{steps.create_pr.outputs.pr_url}} >> pr.txt
+        echo ${{steps.create_pr.outputs.pr_number}} >> pr.txt
+
+    - name: Save PR Log File
+      uses: actions/upload-artifact@v2
+      with:
+        name: PR_Log.txt
+        path: pr.txt

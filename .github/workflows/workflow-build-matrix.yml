@@ -1,0 +1,105 @@
+# Project             :   Screenipy
+# Author              :   Pranjal Joshi
+# Created             :   30/04/2021
+# Description         :   Workflow for building screenipy on pushing a tag
+
+name: Screenipy Build & Release
+
+on:
+  push:
+    #branches: [ pre-main ]
+    tags:
+      - '*'
+
+jobs:
+
+  # Job for builing packages
+  Build:
+    name: Build Packages
+    #needs: Create-Release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            TARGET: Windows
+            CMD_BUILD: |
+              pyinstaller --onefile --icon=src\icon.ico src\screenipy.py  --hidden-import cmath --hidden-import talib.stream
+            DEP_BUILD: |
+              python -m pip install --upgrade pip
+              cd .github/dependencies/
+              echo %cd%
+              pip install TA_Lib-0.4.19-cp39-cp39-win_amd64.whl
+              cd ..
+              cd ..
+              python -m pip install --upgrade pip
+              pip install -r requirements.txt
+            OUT_PATH: .\dist\screenipy.exe
+            FILE_NAME: screenipy.exe
+          
+          - os: ubuntu-18.04
+            TARGET: Linux
+            CMD_BUILD: |
+              pyinstaller --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream
+              mv /home/runner/work/Screeni-py/Screeni-py/dist/screenipy /home/runner/work/Screeni-py/Screeni-py/dist/screenipy.bin
+              chmod +x /home/runner/work/Screeni-py/Screeni-py/dist/screenipy.bin
+            DEP_BUILD: |
+              cd .github/dependencies/
+              pwd
+              tar -xzf ta-lib-0.4.0-src.tar.gz
+              cd ta-lib/
+              ./configure --prefix=/usr
+              make
+              sudo make install
+              cd /home/runner/work/Screeni-py/Screeni-py/
+              python -m pip install --upgrade pip
+              pip install -r requirements.txt
+            OUT_PATH: /home/runner/work/Screeni-py/Screeni-py/dist/screenipy.bin
+            FILE_NAME: screenipy.bin
+          
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Get the GitHub Tag version
+        id: get_version
+        shell: bash
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
+      - name: Set up Python 3.9.4
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9.4
+
+      - name: Install dependencies for ${{ matrix.TARGET }}
+        run: ${{ matrix.DEP_BUILD }}
+
+      - name: Build for ${{ matrix.TARGET }}
+        run: ${{ matrix.CMD_BUILD }}
+
+      - name: Save Binaries as Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.FILE_NAME }}
+          path: ${{ matrix.OUT_PATH }}
+
+      - name: Read release.md
+        id: read_release
+        shell: bash
+        run: |
+          r=$(cat src/release.md)
+          r="${r//'%'/'%25'}"
+          r="${r//$'\n'/'%0A'}"
+          r="${r//$'\r'/'%0D'}"
+          echo "::set-output name=RELEASE_BODY::$r"
+
+      - name: Upload Binaries to Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ matrix.OUT_PATH }}
+          asset_name: ${{ matrix.FILE_NAME }}
+          tag: ${{ github.ref }}
+          release_name: Screenipy - v${{ steps.get_version.outputs.VERSION }}
+          body: |
+            ${{ steps.read_release.outputs.RELEASE_BODY }}
+          overwrite: true
