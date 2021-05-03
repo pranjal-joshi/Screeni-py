@@ -169,10 +169,8 @@ def main(testing=False):
         screenResults.sort_values(by=['Stock'], ascending=True, inplace=True)
         saveResults.sort_values(by=['Stock'], ascending=True, inplace=True)
         print(tabulate(screenResults, headers='keys', tablefmt='psql'))
-        filename = 'screenipy-result_'+datetime.datetime.now().strftime("%d-%m-%y_%H.%M.%S")+".xlsx"
-        saveResults.to_excel(filename)
         Utility.tools.setLastScreenedResults(screenResults)
-        print(colorText.BOLD + colorText.GREEN + "[+] Results saved to screenipy-result.xlsx" + colorText.END)
+        Utility.tools.promptSaveResults(saveResults)
         print(colorText.BOLD + colorText.GREEN + "[+] Screening Completed! Happy Trading! :)" + colorText.END)
         input('')
         main()

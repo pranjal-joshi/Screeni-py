@@ -26,7 +26,7 @@ def test_generate_default_config(mocker, capsys):
 
 def test_option_0(mocker):
     try:
-        mocker.patch('builtins.input',side_effect=['0', TEST_STKCODE])
+        mocker.patch('builtins.input',side_effect=['0', TEST_STKCODE,'y'])
         main(testing=True)
         assert len(screenResults) == 1
     except StopIteration:
@@ -34,7 +34,7 @@ def test_option_0(mocker):
 
 def test_option_1(mocker):
     try:
-        mocker.patch('builtins.input',side_effect=['1'])
+        mocker.patch('builtins.input',side_effect=['1','y'])
         main(testing=True)
         assert len(screenResults) > 0
     except StopIteration:
@@ -42,7 +42,7 @@ def test_option_1(mocker):
 
 def test_option_2(mocker):
     try:
-        mocker.patch('builtins.input',side_effect=['2'])
+        mocker.patch('builtins.input',side_effect=['2','y'])
         main(testing=True)
         assert len(screenResults) > 0
     except StopIteration:
@@ -50,7 +50,7 @@ def test_option_2(mocker):
 
 def test_option_3(mocker):
     try:
-        mocker.patch('builtins.input',side_effect=['3'])
+        mocker.patch('builtins.input',side_effect=['3','y'])
         main(testing=True)
         assert len(screenResults) > 0
     except StopIteration:
@@ -58,7 +58,7 @@ def test_option_3(mocker):
 
 def test_option_4(mocker):
     try:
-        mocker.patch('builtins.input',side_effect=['4','7'])
+        mocker.patch('builtins.input',side_effect=['4','7','y'])
         main(testing=True)
         assert len(screenResults) > 0
     except StopIteration:
