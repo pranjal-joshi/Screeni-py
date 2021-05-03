@@ -50,5 +50,9 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 1. Program Window will not automatically close now.
 2. Bug fixes and improvements.
 
+[1.08]
+1. Prompt added for saving excel after screening.
+2. Program back-end architecture updated.
+
 --- END ---
 ''' + colorText.END
