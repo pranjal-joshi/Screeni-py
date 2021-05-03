@@ -8,6 +8,7 @@
 import os
 import sys
 import platform
+import datetime
 import pandas as pd
 from tabulate import tabulate
 from classes.ColorText import colorText
@@ -67,3 +68,14 @@ class tools:
             input(colorText.BOLD + colorText.GREEN + '[+] Press any key to continue..' + colorText.END)
         except:
             print(colorText.BOLD + colorText.FAIL + '[+] Failed to load recently screened result table from disk! Skipping..' + colorText.END)
+
+    # Save screened results to excel
+    def promptSaveResults(df):
+        try:
+            response = str(input(colorText.BOLD + colorText.WARN + '[>] Do you want to save the results in excel file? [Y/N]: ')).upper()
+        except ValueError:
+            response = 'Y'
+        if response != 'N':
+            filename = 'screenipy-result_'+datetime.datetime.now().strftime("%d-%m-%y_%H.%M.%S")+".xlsx"
+            df.to_excel(filename)
+            print(colorText.BOLD + colorText.GREEN + ("[+] Results saved to %s" % filename) + colorText.END)
