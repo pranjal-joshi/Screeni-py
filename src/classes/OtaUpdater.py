@@ -35,6 +35,8 @@ del updater.bat & exit
     # Download and replace exe through other process for windows
     def updateForLinux(url):
         bashFile = """#!/bin/bash
+echo ""
+echo "[+] Starting Screeni-py updater, Please Wait..."
 sleep 3
 echo "[+] Screenipy Software Updater!"
 echo "[+] Downloading Software Update..."
