@@ -3,7 +3,6 @@
 
 [![Screenipy Test - New Features](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-test.yml/badge.svg?branch=new-features)](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-test.yml) [![Screenipy Build & Release](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-build-matrix.yml/badge.svg)](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-build-matrix.yml) ![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/pranjal-joshi/Screeni-py) 
 
-## [Quick Download](https://github.com/pranjal-joshi/Screeni-py/releases/latest)
 
 ## [Quick Download](https://github.com/pranjal-joshi/Screeni-py/releases/latest)
 
