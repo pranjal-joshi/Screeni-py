@@ -11,10 +11,18 @@ import os
 import numpy as np
 import pandas as pd
 import configparser
+import requests
+import json
 
 sys.path.append(os.path.abspath('../src'))
 from screenipy import *
 import classes.ConfigManager as ConfigManager
+
+
+def test_if_release_version_increamented():
+    r = requests.get("https://api.github.com/repos/pranjal-joshi/Screeni-py/releases/latest")
+    last_release = float(r.json()['tag_name'])
+    assert float(VERSION) > last_release
 
 # Generate default configuration if not exist
 def test_generate_default_config(mocker, capsys):
