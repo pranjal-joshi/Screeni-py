@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.07"
+VERSION = "1.08"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
