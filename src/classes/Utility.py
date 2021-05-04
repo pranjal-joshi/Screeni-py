@@ -79,3 +79,14 @@ class tools:
             filename = 'screenipy-result_'+datetime.datetime.now().strftime("%d-%m-%y_%H.%M.%S")+".xlsx"
             df.to_excel(filename)
             print(colorText.BOLD + colorText.GREEN + ("[+] Results saved to %s" % filename) + colorText.END)
+
+    # Prompt for asking RSI
+    def promptRSIValues():
+        try:
+            minRSI, maxRSI = int(input(colorText.BOLD + colorText.WARN + "\n[+] Enter Min RSI value: " + colorText.END)), int(input(colorText.BOLD + colorText.WARN + "[+] Enter Max RSI value: " + colorText.END))
+            if (minRSI >= 0 and minRSI <= 100) and (maxRSI >= 0 and maxRSI <= 100) and (minRSI <= maxRSI):
+                return (minRSI, maxRSI)
+            else:
+                raise ValueError
+        except ValueError:
+            return (0,0)
