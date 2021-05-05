@@ -1,8 +1,4 @@
-# Screeni-py
-
 # Make sure to download the latest release! ![GitHub release (latest by date)](https://img.shields.io/github/v/release/pranjal-joshi/Screeni-py)
-
-## A Python-based stock screener for NSE, India.
 
 ## What's New?
 1. **RSI** based screening added. Checkout `Option > 5`.
