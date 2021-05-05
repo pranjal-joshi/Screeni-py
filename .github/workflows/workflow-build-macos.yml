@@ -1,0 +1,51 @@
+# Project             :   Screenipy
+# Author              :   Pranjal Joshi
+# Created             :   30/04/2021
+# Description         :   Workflow for building screenipy on pushing a tag
+
+name: Screenipy Build for MacOS
+
+on:
+  push:
+    branches: [ new-features ]
+    #tags:
+    #  - '*'
+
+jobs:
+
+  # Job for builing packages
+  Build:
+    name: Build Packages
+    
+    runs-on: macos-latest
+          
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.9.4
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9.4
+
+      - name: Install dependencies
+        run: |
+          brew install ta-lib
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build
+        run: |
+          pyinstaller --windowed --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream
+          mv /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy-macos.bin
+          chmod +x /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy-macos.bin
+          echo "[+] Showing files in /dist"
+          ls -alh /Users/runner/work/Screeni-py/Screeni-py/dist/
+          open /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy.app
+
+      - name: Save Binaries as Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          #name: screenipy-macos.bin
+          #path: /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy-macos.bin
+          name: screenipy.app
+          path: /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy.app

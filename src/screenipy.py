@@ -31,8 +31,8 @@ np.seterr(divide='ignore', invalid='ignore')
 
 # Global Variabls
 candlePatterns = CandlePatterns()
-screenResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP','Pattern'])
-saveResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP','Pattern'])
+screenResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP','RSI','Pattern'])
+saveResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP','RSI','Pattern'])
 screeningDictionary = {
     'Stock': "",
     'Consolidating': "",
@@ -40,6 +40,7 @@ screeningDictionary = {
     'MA-Signal': "",
     'Volume': "",
     'LTP': 0,
+    'RSI': 0,
     'Pattern': ""
 }
 saveDictionary = {
@@ -50,6 +51,7 @@ saveDictionary = {
     'MA-Signal': "",
     'Volume': "",
     'LTP': 0,
+    'RSI': 0,
     'Pattern': ""
 }
 
@@ -67,17 +69,18 @@ def initExecution():
     2 > Screen for the stocks with recent Breakout & Volume
     3 > Screen for the Consolidating stocks
     4 > Screen for the stocks with Lowest Volume in last 'N'-days (Early Breakout Detection)
-    5 > Edit user configuration
-    6 > Show user configuration
-    7 > Show Last Screened Results
-    8 > About Developer
-    9 > Exit''' + colorText.END
+    5 > Screen for the stocks with RSI
+    6 > Edit user configuration
+    7 > Show user configuration
+    8 > Show Last Screened Results
+    9 > About Developer
+    10 > Exit''' + colorText.END
     )
     result = input(colorText.BOLD + colorText.FAIL + '[+] Select option: ')
     print(colorText.END, end='')
     try:
         result = int(result)
-        if(result < 0 or result > 9):
+        if(result < 0 or result > 10):
             raise ValueError
         return result
     except:
@@ -90,8 +93,10 @@ def initExecution():
 def main(testing=False):
     global daysForLowestVolume, screenResults, saveResults
     Fetcher.screenCounter = 1
-    screenResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP','Pattern'])
-    saveResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP','Pattern'])
+    minRSI = 0
+    maxRSI = 100
+    screenResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP','RSI','Pattern'])
+    saveResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP','RSI','Pattern'])
     executeOption = initExecution()
     if executeOption == 4:
         try:
@@ -103,21 +108,27 @@ def main(testing=False):
             main()
         print(colorText.END)
     if executeOption == 5:
+        minRSI, maxRSI = Utility.tools.promptRSIValues()
+        if (not minRSI and not maxRSI):
+            print(colorText.BOLD + colorText.FAIL + '\n[+] Error: Invalid values for RSI! Values should be in range of 0 to 100. Screening aborted.' + colorText.END)
+            input('')
+            main()
+    if executeOption == 6:
         ConfigManager.tools.setConfig(ConfigManager.parser)
         main()
-    if executeOption == 6:
+    if executeOption == 7:
         ConfigManager.tools.showConfigFile()
         main()
-    if executeOption == 7:
+    if executeOption == 8:
         Utility.tools.getLastScreenedResults()
         main()
-    if executeOption == 8:
+    if executeOption == 9:
         Utility.tools.showDevInfo()
         main()
-    if executeOption == 9:
+    if executeOption == 10:
         print(colorText.BOLD + colorText.FAIL + "[+] Script terminated by the user." + colorText.END)
         sys.exit(0)
-    if executeOption >= 0 and executeOption < 5:
+    if executeOption >= 0 and executeOption < 6:
         ConfigManager.tools.getConfig(ConfigManager.parser)
         try:
             Fetcher.tools.fetchStockCodes(executeOption)
@@ -144,6 +155,7 @@ def main(testing=False):
                     isBreaking = Screener.tools.findBreakout(processedData, screeningDictionary, saveDictionary, daysToLookback=ConfigManager.daysToLookback)
                     isLtpValid = Screener.tools.validateLTP(fullData, screeningDictionary, saveDictionary, minLTP=ConfigManager.minLTP, maxLTP=ConfigManager.maxLTP)
                     isLowestVolume = Screener.tools.validateLowestVolume(processedData, daysForLowestVolume)
+                    isValidRsi = Screener.tools.validateRSI(processedData, screeningDictionary, saveDictionary, minRSI, maxRSI)
                     isCandlePattern = candlePatterns.findPattern(processedData, screeningDictionary, saveDictionary)
                     if executeOption == 0:
                         screenResults = screenResults.append(screeningDictionary,ignore_index=True)
@@ -155,6 +167,9 @@ def main(testing=False):
                         screenResults = screenResults.append(screeningDictionary,ignore_index=True)
                         saveResults = saveResults.append(saveDictionary, ignore_index=True)
                     if executeOption == 4 and isLtpValid and isLowestVolume:
+                        screenResults = screenResults.append(screeningDictionary,ignore_index=True)
+                        saveResults = saveResults.append(saveDictionary, ignore_index=True)
+                    if executeOption == 5 and isLtpValid and isValidRsi:
                         screenResults = screenResults.append(screeningDictionary,ignore_index=True)
                         saveResults = saveResults.append(saveDictionary, ignore_index=True)
                 if testing and len(screenResults):

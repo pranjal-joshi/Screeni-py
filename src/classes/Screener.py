@@ -9,6 +9,7 @@ import sys
 import math
 import numpy as np
 import pandas as pd
+import talib
 import classes.ConfigManager as ConfigManager
 from classes.ColorText import colorText
 
@@ -20,10 +21,13 @@ class tools:
         sma = data.rolling(window=50).mean()
         lma = data.rolling(window=200).mean()
         vol = data.rolling(window=20).mean()
+        rsi = talib.RSI(data['Close'], timeperiod=14)
         data.insert(6,'SMA',sma['Close'])
         data.insert(7,'LMA',lma['Close'])
         data.insert(8,'VolMA',vol['Volume'])
+        data.insert(9,'RSI',rsi)
         data = data[::-1]               # Reverse the dataframe
+        data = data.fillna(0)
         fullData = data
         trimmedData = data.head(daysToLookback)
         data = data.replace(np.nan, 0)
@@ -146,4 +150,14 @@ class tools:
         recent = data.head(1)
         if((recent['Volume'][0] <= data.describe()['Volume']['min']) and recent['Volume'][0] != np.nan):
             return True
+        return False
+
+    # validate if RSI is within given range
+    def validateRSI(data, dict, saveDict, minRSI, maxRSI):
+        rsi = int(data.head(1)['RSI'][0])
+        saveDict['RSI'] = rsi
+        if(rsi >= minRSI and rsi <= maxRSI) and (rsi <= 70 and rsi >= 30):
+            dict['RSI'] = colorText.BOLD + colorText.GREEN + str(rsi) + colorText.END
+            return True
+        dict['RSI'] = colorText.BOLD + colorText.FAIL + str(rsi) + colorText.END
         return False
