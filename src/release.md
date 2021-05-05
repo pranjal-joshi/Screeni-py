@@ -10,6 +10,7 @@
 ## Downloads
 * For **Windows** users, download **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.09/screenipy.exe)**
 * For **Linux** users, download **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.09/screenipy.bin)**
+* For **MacOS** users, download **[screenipy_macos.app](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.09/screenipy_macos.app)**
 
 ## How to use?
 
