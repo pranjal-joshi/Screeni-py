@@ -189,6 +189,7 @@ def main(testing=False):
         print(colorText.BOLD + colorText.GREEN + "[+] Screening Completed! Happy Trading! :)" + colorText.END)
         input('')
         main()
+        
 
 if __name__ == "__main__":
     Utility.tools.clearScreen()
