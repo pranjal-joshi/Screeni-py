@@ -22,7 +22,8 @@ echo [+] Screenipy Software Updater!
 echo [+] Downloading Software Update...
 echo [+] This may take some time as per your Internet Speed, Please Wait...
 powershell.exe -Command (new-object System.Net.WebClient).DownloadFile('""" + url + """','screenipy.exe')
-echo [+] Software Update Completed! You can now run 'Screenipy.exe' as usual!
+echo [+] Newly downloaded file saved in %cd%
+echo [+] Software Update Completed! Run'screenipy.exe' again as usual to continue..
 pause
 del updater.bat & exit
         """
@@ -35,12 +36,15 @@ del updater.bat & exit
     # Download and replace exe through other process for windows
     def updateForLinux(url):
         bashFile = """#!/bin/bash
+echo ""
+echo "[+] Starting Screeni-py updater, Please Wait..."
 sleep 3
 echo "[+] Screenipy Software Updater!"
 echo "[+] Downloading Software Update..."
 echo "[+] This may take some time as per your Internet Speed, Please Wait..."
+echo "[+] Newly downloaded file saved in $(pwd)"
 wget -q """ + url + """ -O screenipy.bin
-echo "[+] Update Completed!"
+echo "[+] Update Completed! Run 'screenipy.bin' again as usual to continue.."
 rm updater.sh
         """
         f = open("updater.sh",'w')

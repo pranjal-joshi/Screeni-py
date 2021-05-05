@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.08"
+VERSION = "1.09"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -53,6 +53,10 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 [1.08]
 1. Prompt added for saving excel after screening.
 2. Program back-end architecture updated.
+
+[1.09]
+1. RSI based screening added.
+2. Minor Performance Improvements.
 
 --- END ---
 ''' + colorText.END
