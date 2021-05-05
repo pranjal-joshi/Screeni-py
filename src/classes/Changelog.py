@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.09"
+VERSION = "1.10"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -57,6 +57,9 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 [1.09]
 1. RSI based screening added.
 2. Minor Performance Improvements.
+
+[1.10]
+1. Trend detection for the timeframe of analysis added.
 
 --- END ---
 ''' + colorText.END

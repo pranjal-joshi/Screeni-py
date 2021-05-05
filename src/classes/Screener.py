@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 import talib
 import classes.ConfigManager as ConfigManager
+from scipy.signal import argrelextrema
 from classes.ColorText import colorText
 
 # This Class contains methods for stock analysis and screening validation
@@ -30,7 +31,6 @@ class tools:
         data = data.fillna(0)
         fullData = data
         trimmedData = data.head(daysToLookback)
-        data = data.replace(np.nan, 0)
         return (fullData, trimmedData)
 
     # Validate LTP within limits
@@ -161,3 +161,29 @@ class tools:
             return True
         dict['RSI'] = colorText.BOLD + colorText.FAIL + str(rsi) + colorText.END
         return False
+
+    # Find out trend for days to lookback
+    def findTrend(data, dict, saveDict, daysToLookback=ConfigManager.daysToLookback):
+        data = data.head(daysToLookback)
+        data = data[::-1]
+        data = data.set_index(np.arange(len(data)))
+        data['tops'] = data['Close'].iloc[list(argrelextrema(np.array(data['Close']), np.greater_equal, order=1)[0])]
+        data = data.fillna(0)
+        slope,c = np.polyfit(data.index[data.tops > 0], data['tops'][data.tops > 0], 1)
+        angle = np.rad2deg(np.arctan(slope))
+        if(slope <= 2.5 and slope >= -2.5):
+            dict['Trend'] = colorText.BOLD + colorText.WARN + "Sideways" + colorText.END
+            saveDict['Trend'] = 'Sideways'
+        elif slope >= 2.5:
+            dict['Trend'] = colorText.BOLD + colorText.GREEN + "Uptrend" + colorText.END
+            saveDict['Trend'] = 'Uptrend'
+        elif slope <= -2.5:
+            dict['Trend'] = colorText.BOLD + colorText.FAIL + "Downtrend" + colorText.END
+            saveDict['Trend'] = 'Downtrend'
+        return saveDict['Trend']
+        # Debugging - Experiment with data
+        # import matplotlib.pyplot as plt
+        # plt.scatter(data.index[data.tops > 0], data['tops'][data.tops > 0], c='r')
+        # plt.plot(data.index, data['Close'])
+        # plt.plot(data.index, slope*data.index+c,)
+        # plt.show()

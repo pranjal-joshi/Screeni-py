@@ -31,8 +31,8 @@ np.seterr(divide='ignore', invalid='ignore')
 
 # Global Variabls
 candlePatterns = CandlePatterns()
-screenResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP','RSI','Pattern'])
-saveResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP','RSI','Pattern'])
+screenResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP','RSI','Trend','Pattern'])
+saveResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP','RSI','Trend','Pattern'])
 screeningDictionary = {
     'Stock': "",
     'Consolidating': "",
@@ -41,6 +41,7 @@ screeningDictionary = {
     'Volume': "",
     'LTP': 0,
     'RSI': 0,
+    'Trend': "",
     'Pattern': ""
 }
 saveDictionary = {
@@ -52,6 +53,7 @@ saveDictionary = {
     'Volume': "",
     'LTP': 0,
     'RSI': 0,
+    'Trend': "",
     'Pattern': ""
 }
 
@@ -95,8 +97,8 @@ def main(testing=False):
     Fetcher.screenCounter = 1
     minRSI = 0
     maxRSI = 100
-    screenResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP','RSI','Pattern'])
-    saveResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP','RSI','Pattern'])
+    screenResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP','RSI','Trend','Pattern'])
+    saveResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP','RSI','Trend','Pattern'])
     executeOption = initExecution()
     if executeOption == 4:
         try:
@@ -156,6 +158,7 @@ def main(testing=False):
                     isLtpValid = Screener.tools.validateLTP(fullData, screeningDictionary, saveDictionary, minLTP=ConfigManager.minLTP, maxLTP=ConfigManager.maxLTP)
                     isLowestVolume = Screener.tools.validateLowestVolume(processedData, daysForLowestVolume)
                     isValidRsi = Screener.tools.validateRSI(processedData, screeningDictionary, saveDictionary, minRSI, maxRSI)
+                    currentTrend = Screener.tools.findTrend(processedData, screeningDictionary, saveDictionary, daysToLookback=ConfigManager.daysToLookback)
                     isCandlePattern = candlePatterns.findPattern(processedData, screeningDictionary, saveDictionary)
                     if executeOption == 0:
                         screenResults = screenResults.append(screeningDictionary,ignore_index=True)
