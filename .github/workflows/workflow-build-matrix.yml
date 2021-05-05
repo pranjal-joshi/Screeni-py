@@ -60,15 +60,14 @@ jobs:
           - os: macos-latest
             TARGET: MacOS
             CMD_BUILD: |
-              pyinstaller --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream
-              mv /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy_macos.bin
-              chmod +x /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy_macos.bin
+              pyinstaller --onefile --windowed --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream
+              mv /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy_macos.app
             DEP_BUILD: |
               brew install ta-lib
               python -m pip install --upgrade pip
               pip install -r requirements.txt
-            OUT_PATH: /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy_macos.bin
-            FILE_NAME: screenipy_macos.bin
+            OUT_PATH: /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy_macos.app
+            FILE_NAME: screenipy_macos.app
           
     steps:
       - uses: actions/checkout@v2
