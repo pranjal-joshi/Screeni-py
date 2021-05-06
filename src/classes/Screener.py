@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 import talib
 import classes.ConfigManager as ConfigManager
+from scipy.signal import argrelextrema
 from classes.ColorText import colorText
 
 # This Class contains methods for stock analysis and screening validation
@@ -30,7 +31,6 @@ class tools:
         data = data.fillna(0)
         fullData = data
         trimmedData = data.head(daysToLookback)
-        data = data.replace(np.nan, 0)
         return (fullData, trimmedData)
 
     # Validate LTP within limits
@@ -97,36 +97,36 @@ class tools:
             if ((hs - hc) <= (hs*2/100)):
                 saveDict['Breaking-Out'] = str(hc)
                 if rc >= hc:
-                    dict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "Yes (BO: " + str(hc) + " R: " + str(hs) + ")" + colorText.END
+                    dict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "BO: " + str(hc) + " R: " + str(hs) + colorText.END
                     return True
                 else:
-                    dict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "NO (BO: " + str(hc) + " R: " + str(hs) + ")" + colorText.END
+                    dict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "BO: " + str(hc) + " R: " + str(hs) + colorText.END
                     return False
             else:    
                 noOfHigherShadows = len(data[data.High > hc])
                 if(daysToLookback/noOfHigherShadows <= 3):
                     saveDict['Breaking-Out'] = str(hs)
                     if rc >= hs:
-                        dict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "Yes (BO: " + str(hs) + ")" + colorText.END
+                        dict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "BO: " + str(hs) + colorText.END
                         return True
                     else:
-                        dict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "NO (BO: " + str(hs) + ")" + colorText.END
+                        dict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "BO: " + str(hs) + colorText.END
                         return False
                 else:
                     saveDict['Breaking-Out'] = str(hc) + ", " + str(hs)
                     if rc >= hc:
-                        dict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "Yes (BO: " + str(hc) + " R: " + str(hs) + ")" + colorText.END
+                        dict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "BO: " + str(hc) + " R: " + str(hs) + colorText.END
                         return True
                     else:
-                        dict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "NO (BO: " + str(hc) + " R: " + str(hs) + ")" + colorText.END
+                        dict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "BO: " + str(hc) + " R: " + str(hs) + colorText.END
                         return False
         else:
             saveDict['Breaking-Out'] = str(hc)
             if rc >= hc:
-                dict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "Yes (BO: " + str(hc) + ")" + colorText.END
+                dict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "BO: " + str(hc) + colorText.END
                 return True
             else:
-                dict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "NO (BO: " + str(hc) + ")" + colorText.END
+                dict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "BO: " + str(hc) + colorText.END
                 return False
 
     # Validate 'Inside Bar' structure for recent days
@@ -161,3 +161,43 @@ class tools:
             return True
         dict['RSI'] = colorText.BOLD + colorText.FAIL + str(rsi) + colorText.END
         return False
+
+    # Find out trend for days to lookback
+    def findTrend(data, dict, saveDict, daysToLookback=ConfigManager.daysToLookback):
+        data = data.head(daysToLookback)
+        data = data[::-1]
+        data = data.set_index(np.arange(len(data)))
+        data['tops'] = data['Close'].iloc[list(argrelextrema(np.array(data['Close']), np.greater_equal, order=1)[0])]
+        data = data.fillna(0)
+        try:
+            slope,c = np.polyfit(data.index[data.tops > 0], data['tops'][data.tops > 0], 1)
+            angle = np.rad2deg(np.arctan(slope))
+            if (angle <= 30 and angle >= -30):
+                dict['Trend'] = colorText.BOLD + colorText.WARN + "Sideways" + colorText.END
+                saveDict['Trend'] = 'Sideways'
+            elif (angle >= 30 and angle < 61):
+                dict['Trend'] = colorText.BOLD + colorText.GREEN + "Weak Up" + colorText.END
+                saveDict['Trend'] = 'Weak Up'
+            elif angle >= 60:
+                dict['Trend'] = colorText.BOLD + colorText.GREEN + "Strong Up" + colorText.END
+                saveDict['Trend'] = 'Strong Up'
+            elif (angle >= -30 and angle < -61):
+                dict['Trend'] = colorText.BOLD + colorText.FAIL + "Weak Down" + colorText.END
+                saveDict['Trend'] = 'Weak Down'
+            elif angle <= -60:
+                dict['Trend'] = colorText.BOLD + colorText.FAIL + "Strong Down" + colorText.END
+                saveDict['Trend'] = 'Strong Down'
+        except np.linalg.LinAlgError:
+            dict['Trend'] = colorText.BOLD + "Unknown" + colorText.END
+            saveDict['Trend'] = 'Unknown'
+        return saveDict['Trend']
+        
+        # Debugging - Experiment with data
+        # import matplotlib.pyplot as plt
+        # print(saveDict['Trend'])
+        # print(slope)
+        # print(math.degrees(math.atan(slope)))
+        # plt.scatter(data.index[data.tops > 0], data['tops'][data.tops > 0], c='r')
+        # plt.plot(data.index, data['Close'])
+        # plt.plot(data.index, slope*data.index+c,)
+        # plt.show()
