@@ -189,6 +189,7 @@ def main(testing=False):
         print(tabulate(screenResults, headers='keys', tablefmt='psql'))
         Utility.tools.setLastScreenedResults(screenResults)
         Utility.tools.promptSaveResults(saveResults)
+        print(colorText.BOLD + colorText.WARN + "[+] Note: Trend calculation is based on number of days recent to screen as per your configuration." + colorText.END)
         print(colorText.BOLD + colorText.GREEN + "[+] Screening Completed! Happy Trading! :)" + colorText.END)
         input('')
         main()

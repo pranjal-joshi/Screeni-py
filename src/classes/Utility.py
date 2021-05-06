@@ -65,6 +65,7 @@ class tools:
             df = pd.read_pickle(lastScreened)
             print(colorText.BOLD + colorText.GREEN + '\n[+] Showing recently screened results..\n' + colorText.END)
             print(tabulate(df, headers='keys', tablefmt='psql'))
+            print(colorText.BOLD + colorText.WARN + "[+] Note: Trend calculation is based on number of recent days to screen as per your configuration." + colorText.END)
             input(colorText.BOLD + colorText.GREEN + '[+] Press any key to continue..' + colorText.END)
         except:
             print(colorText.BOLD + colorText.FAIL + '[+] Failed to load recently screened result table from disk! Skipping..' + colorText.END)
