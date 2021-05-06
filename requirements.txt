@@ -16,6 +16,7 @@ pyinstaller
 pytest-mock
 pytoml
 retrying
+scipy
 ta-lib
 tabulate
 yfinance
@@ -33,21 +34,21 @@ iniconfig # Installed as dependency for pytest
 lxml # Installed as dependency for yfinance
 msgpack # Installed as dependency for cachecontrol
 multitasking # Installed as dependency for yfinance
-numpy # Installed as dependency for yfinance, pandas
+numpy # Installed as dependency for yfinance, scipy, matplotlib, pandas
 packaging # Installed as dependency for pytest
 pandas # Installed as dependency for yfinance
 pefile # Installed as dependency for pyinstaller
 pluggy # Installed as dependency for pytest
 py # Installed as dependency for pytest
 pyinstaller-hooks-contrib # Installed as dependency for pyinstaller
-pyparsing # Installed as dependency for packaging
+pyparsing # Installed as dependency for packaging, matplotlib
 pytest # Installed as dependency for pytest-mock
-python-dateutil # Installed as dependency for dateutils, pandas
+python-dateutil # Installed as dependency for dateutils, matplotlib, pandas
 pytz # Installed as dependency for dateutils, pandas
+pywin32-ctypes # Installed as dependency for pyinstaller
 requests # Installed as dependency for yfinance, cachecontrol
 setuptools # Installed as dependency for pyinstaller
-six # Installed as dependency for retrying, html5lib, packaging, python-dateutil, nsetools
+six # Installed as dependency for cycler, nsetools, packaging, retrying, python-dateutil, html5lib
 toml # Installed as dependency for pep517, pytest
 urllib3 # Installed as dependency for requests
 webencodings # Installed as dependency for html5lib
-pywin32-ctypes # Installed as dependency for pyinstaller
