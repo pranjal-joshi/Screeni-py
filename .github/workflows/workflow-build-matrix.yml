@@ -3,7 +3,7 @@
 # Created             :   30/04/2021
 # Description         :   Workflow for building screenipy on pushing a tag
 
-name: Screenipy Build & Release
+name: Screenipy Build - New Release
 
 on:
   push:

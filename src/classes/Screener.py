@@ -29,6 +29,7 @@ class tools:
         data.insert(9,'RSI',rsi)
         data = data[::-1]               # Reverse the dataframe
         data = data.fillna(0)
+        data = data.replace([np.inf, -np.inf], 0)
         fullData = data
         trimmedData = data.head(daysToLookback)
         return (fullData, trimmedData)
