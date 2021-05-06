@@ -13,13 +13,17 @@ import pandas as pd
 import configparser
 import requests
 import json
+import platform
 
 sys.path.append(os.path.abspath('../src'))
 from screenipy import *
 import classes.ConfigManager as ConfigManager
 
+last_release = 0
+
 
 def test_if_release_version_increamented():
+    global last_release
     r = requests.get("https://api.github.com/repos/pranjal-joshi/Screeni-py/releases/latest")
     last_release = float(r.json()['tag_name'])
     assert float(VERSION) > last_release
@@ -80,10 +84,18 @@ def test_option_5(mocker):
     except StopIteration:
         pass
 
-def test_option_6(mocker, capsys):
+def test_option_6(mocker):
+    try:
+        mocker.patch('builtins.input',side_effect=['6','1','y'])
+        main(testing=True)
+        assert len(screenResults) > 0
+    except StopIteration:
+        pass
+
+def test_option_7(mocker, capsys):
     try:
         mocker.patch('builtins.input',side_effect=[
-            '5',
+            '7',
             str(ConfigManager.period),
             str(ConfigManager.daysToLookback),
             str(ConfigManager.duration),
@@ -101,23 +113,23 @@ def test_option_6(mocker, capsys):
     except StopIteration:
         pass
 
-def test_option_7():
+def test_option_8():
     ConfigManager.tools.getConfig(ConfigManager.parser)
     assert ConfigManager.duration != None
     assert ConfigManager.period != None
     assert ConfigManager.consolidationPercentage != None
 
-def test_option_8(mocker):
+def test_option_9(mocker):
     try:
-        mocker.patch('builtins.input',side_effect=['8'])
+        mocker.patch('builtins.input',side_effect=['9'])
         main(testing=True)
         assert len(screenResults) > 0
     except StopIteration:
         pass
 
-def test_option_10(mocker, capsys):
+def test_option_11(mocker, capsys):
     try:
-        mocker.patch('builtins.input',side_effect=['10'])
+        mocker.patch('builtins.input',side_effect=['11'])
         with pytest.raises(SystemExit):
             main(testing=True)
         out, err = capsys.readouterr()
@@ -131,3 +143,21 @@ def test_ota_updater():
         assert ("exe" in OTAUpdater.checkForUpdate.url or "bin" in OTAUpdater.checkForUpdate.url)
     except StopIteration:
         pass
+
+def test_release_readme_urls():
+    global last_release
+    f = open('../src/release.md','r')
+    contents = f.read()
+    f.close()
+    failUrl = [f"https://github.com/pranjal-joshi/Screeni-py/releases/download/{last_release}/screenipy.bin", f"https://github.com/pranjal-joshi/Screeni-py/releases/download/{last_release}/screenipy.exe"]
+    passUrl = [f"https://github.com/pranjal-joshi/Screeni-py/releases/download/{VERSION}/screenipy.bin", f"https://github.com/pranjal-joshi/Screeni-py/releases/download/{VERSION}/screenipy.exe"]
+    for url in failUrl:
+        assert not url in contents
+    for url in passUrl:
+        assert url in contents
+
+def test_delete_xlsx():
+    if platform.platform() == 'Windows':
+        os.system("del *.xlsx")
+    else:
+        os.system("rm *.xlsx")

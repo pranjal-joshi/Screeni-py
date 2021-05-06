@@ -20,6 +20,7 @@ import classes.Utility as Utility
 from classes.ColorText import colorText
 from classes.OtaUpdater import OTAUpdater
 from classes.CandlePatterns import CandlePatterns
+from classes.SuppressOutput import SuppressOutput
 from classes.Changelog import *
 
 # Try Fixing bug with this symbol
@@ -67,22 +68,23 @@ except KeyError:
 def initExecution():
     print(colorText.BOLD + colorText.WARN + '[+] Press a number to start stock screening: ' + colorText.END)
     print(colorText.BOLD + '''    0 > Screen stocks by stock name (NSE Stock Code)
-    1 > Screen stocks for Breakout or Consolidation
-    2 > Screen for the stocks with recent Breakout & Volume
-    3 > Screen for the Consolidating stocks
-    4 > Screen for the stocks with Lowest Volume in last 'N'-days (Early Breakout Detection)
-    5 > Screen for the stocks with RSI
-    6 > Edit user configuration
-    7 > Show user configuration
-    8 > Show Last Screened Results
-    9 > About Developer
-    10 > Exit''' + colorText.END
+     1 > Screen stocks for Breakout or Consolidation
+     2 > Screen for the stocks with recent Breakout & Volume
+     3 > Screen for the Consolidating stocks
+     4 > Screen for the stocks with Lowest Volume in last 'N'-days (Early Breakout Detection)
+     5 > Screen for the stocks with RSI
+     6 > Screen for the stocks showing Reversal Signals
+     7 > Edit user configuration
+     8 > Show user configuration
+     9 > Show Last Screened Results
+    10 > About Developer
+    11 > Exit''' + colorText.END
     )
     result = input(colorText.BOLD + colorText.FAIL + '[+] Select option: ')
     print(colorText.END, end='')
     try:
         result = int(result)
-        if(result < 0 or result > 10):
+        if(result < 0 or result > 11):
             raise ValueError
         return result
     except:
@@ -116,21 +118,25 @@ def main(testing=False):
             input('')
             main()
     if executeOption == 6:
+        reversalOption = Utility.tools.promptReversalScreening()
+        if reversalOption == None or reversalOption == 0:
+            main()
+    if executeOption == 7:
         ConfigManager.tools.setConfig(ConfigManager.parser)
         main()
-    if executeOption == 7:
+    if executeOption == 8:
         ConfigManager.tools.showConfigFile()
         main()
-    if executeOption == 8:
+    if executeOption == 9:
         Utility.tools.getLastScreenedResults()
         main()
-    if executeOption == 9:
+    if executeOption == 10:
         Utility.tools.showDevInfo()
         main()
-    if executeOption == 10:
+    if executeOption == 11:
         print(colorText.BOLD + colorText.FAIL + "[+] Script terminated by the user." + colorText.END)
         sys.exit(0)
-    if executeOption >= 0 and executeOption < 6:
+    if executeOption >= 0 and executeOption < 7:
         ConfigManager.tools.getConfig(ConfigManager.parser)
         try:
             Fetcher.tools.fetchStockCodes(executeOption)
@@ -158,7 +164,12 @@ def main(testing=False):
                     isLtpValid = Screener.tools.validateLTP(fullData, screeningDictionary, saveDictionary, minLTP=ConfigManager.minLTP, maxLTP=ConfigManager.maxLTP)
                     isLowestVolume = Screener.tools.validateLowestVolume(processedData, daysForLowestVolume)
                     isValidRsi = Screener.tools.validateRSI(processedData, screeningDictionary, saveDictionary, minRSI, maxRSI)
-                    currentTrend = Screener.tools.findTrend(processedData, screeningDictionary, saveDictionary, daysToLookback=ConfigManager.daysToLookback)
+                    try:
+                        with SuppressOutput(suppress_stdout = True, suppress_stderr = True):
+                            currentTrend = Screener.tools.findTrend(processedData, screeningDictionary, saveDictionary, daysToLookback=ConfigManager.daysToLookback)
+                    except np.RankWarning:
+                        dict['Trend'] = colorText.BOLD + "Unknown" + colorText.END
+                        saveDict['Trend'] = 'Unknown'
                     isCandlePattern = candlePatterns.findPattern(processedData, screeningDictionary, saveDictionary)
                     if executeOption == 0:
                         screenResults = screenResults.append(screeningDictionary,ignore_index=True)
@@ -175,17 +186,40 @@ def main(testing=False):
                     if executeOption == 5 and isLtpValid and isValidRsi:
                         screenResults = screenResults.append(screeningDictionary,ignore_index=True)
                         saveResults = saveResults.append(saveDictionary, ignore_index=True)
+                    if executeOption == 6 and isLtpValid:
+                        if reversalOption == 1:
+                            if saveDictionary['Pattern'] in CandlePatterns.reversalPatternsBullish:
+                                screenResults = screenResults.append(screeningDictionary,ignore_index=True)
+                                saveResults = saveResults.append(saveDictionary, ignore_index=True)
+                        elif reversalOption == 2:
+                            if saveDictionary['Pattern'] in CandlePatterns.reversalPatternsBearish:
+                                screenResults = screenResults.append(screeningDictionary,ignore_index=True)
+                                saveResults = saveResults.append(saveDictionary, ignore_index=True)
                 if testing and len(screenResults):
                     break
             except KeyboardInterrupt:
                 print(colorText.BOLD + colorText.FAIL + "\n[+] Script terminated by the user." + colorText.END)
                 break
             except Exception as e:
-                print(colorText.FAIL + ("[+] Exception Occured while Screening %s! Skipping this stock.." % stock) + colorText.END)
+                # print(colorText.FAIL + ("\n[+] Exception Occured while Screening %s! Skipping this stock.." % stock) + colorText.END)
                 if testing:
                     raise e
         screenResults.sort_values(by=['Stock'], ascending=True, inplace=True)
         saveResults.sort_values(by=['Stock'], ascending=True, inplace=True)
+        screenResults.rename(
+            columns={
+                'Trend':f'Trend ({ConfigManager.daysToLookback}Days)',
+                'Breaking-Out':'Breakout-Levels'
+                },
+            inplace=True
+        )
+        saveResults.rename(
+            columns={
+                'Trend':f'Trend ({ConfigManager.daysToLookback}Days)',
+                'Breaking-Out':'Breakout-Levels'
+                },
+            inplace=True
+        )
         print(tabulate(screenResults, headers='keys', tablefmt='psql'))
         Utility.tools.setLastScreenedResults(screenResults)
         Utility.tools.promptSaveResults(saveResults)
