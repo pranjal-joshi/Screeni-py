@@ -1,10 +1,10 @@
 # Make sure to download the latest release! ![GitHub release (latest by date)](https://img.shields.io/github/v/release/pranjal-joshi/Screeni-py)
 
 ## What's New?
-1. **Stage-2** stock screening improved to find best uptrending stocks.
-2. Trend detection added for the timeframe of analysis.
-3. **RSI** based screening added. Checkout `Option > 5`.
-4. `Option > 0` added - Screen stocks by entering it's name (stock code).
+1. `Option > 6` Search for stocks showing **Reversal Signals**
+2. **Stage-2** stock screening improved to find best uptrending stocks.
+3. Trend detection added for the timeframe of analysis.
+4. **RSI** based screening added. Checkout `Option > 5`.
 5. Bugs and Runtime warnings have been fixed.
 
 ## Downloads

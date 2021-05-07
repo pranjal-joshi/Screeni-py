@@ -27,9 +27,6 @@ jobs:
               pyinstaller --onefile --icon=src\icon.ico src\screenipy.py  --hidden-import cmath --hidden-import talib.stream
             DEP_BUILD: |
               python -m pip install --upgrade pip
-              echo Downloading Numpy-MKL (212MB), Please wait...
-              powershell.exe -Command (new-object System.Net.WebClient).DownloadFile('https://download.lfd.uci.edu/pythonlibs/w4tscw6k/numpy-1.20.2+mkl-cp39-cp39-win_amd64.whl','numpy-1.20.2+mkl-cp39-cp39-win_amd64.whl')
-              pip install numpy-1.20.2+mkl-cp39-cp39-win_amd64.whl
               echo Installing TA-lib...
               cd .github/dependencies/
               echo %cd%
