@@ -91,3 +91,18 @@ class tools:
                 raise ValueError
         except ValueError:
             return (0,0)
+
+    # Prompt for Reversal screening
+    def promptReversalScreening():
+        try:
+            resp = int(input(colorText.BOLD + colorText.WARN + """\n[+] Select Option:
+    1 > Screen for Buy Signal (Bullish Reversal)
+    2 > Screen for Sell Signal (Bearish Reversal)
+    0 > Cancel
+[+] Select option: """ + colorText.END))
+            if resp >= 0 and resp <= 2:
+                return resp
+            else:
+                raise ValueError
+        except ValueError:
+            return None

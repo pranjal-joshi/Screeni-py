@@ -36,6 +36,8 @@ class tools:
 
     # Validate LTP within limits
     def validateLTP(data, dict, saveDict, minLTP=ConfigManager.minLTP, maxLTP=ConfigManager.maxLTP):
+        data = data.fillna(0)
+        data = data.replace([np.inf, -np.inf], 0)
         recent = data.head(1)
         ltp = round(recent['Close'][0],2)
         saveDict['LTP'] = str(ltp)
@@ -54,6 +56,8 @@ class tools:
 
     # Validate if share prices are consolidating
     def validateConsolidation(data, dict, saveDict, percentage=10):
+        data = data.fillna(0)
+        data = data.replace([np.inf, -np.inf], 0)
         hc = data.describe()['Close']['max']
         lc = data.describe()['Close']['min']
         if ((hc - lc) <= (hc*percentage/100) and (hc - lc != 0)):
@@ -65,6 +69,8 @@ class tools:
 
     # Validate Moving averages
     def validateMovingAverages(data, dict, saveDict):
+        data = data.fillna(0)
+        data = data.replace([np.inf, -np.inf], 0)
         recent = data.head(1)
         if(recent['SMA'][0] > recent['LMA'][0] and recent['Close'][0] > recent['SMA'][0]):
             dict['MA-Signal'] = colorText.BOLD + colorText.GREEN + 'Bullish' + colorText.END
@@ -78,6 +84,8 @@ class tools:
 
     # Validate if volume of last day is higher than avg
     def validateVolume(data, dict, saveDict, volumeRatio=2.5):
+        data = data.fillna(0)
+        data = data.replace([np.inf, -np.inf], 0)
         recent = data.head(1)
         ratio = round(recent['Volume'][0]/recent['VolMA'][0],2)
         saveDict['Volume'] = str(ratio)+"x"
@@ -90,6 +98,8 @@ class tools:
 
     # Find accurate breakout value
     def findBreakout(data, dict, saveDict, daysToLookback):
+        data = data.fillna(0)
+        data = data.replace([np.inf, -np.inf], 0)
         recent = data.head(1)
         data = data[1:]
         hs = round(data.describe()['High']['max'],2)
@@ -133,6 +143,8 @@ class tools:
 
     # Validate 'Inside Bar' structure for recent days
     def validateInsideBar(data, dict, saveDict, daysToLookback=4):
+        data = data.fillna(0)
+        data = data.replace([np.inf, -np.inf], 0)
         data = data.head(daysToLookback)
         lowsData = data.sort_values(by=['Low'], ascending=False)
         highsData = data.sort_values(by=['High'], ascending=True)
@@ -146,6 +158,8 @@ class tools:
 
     # Validate if recent volume is lowest of last 'N' Days
     def validateLowestVolume(data, daysForLowestVolume):
+        data = data.fillna(0)
+        data = data.replace([np.inf, -np.inf], 0)
         if daysForLowestVolume == None:
             daysForLowestVolume = 30
         data = data.head(daysForLowestVolume)
@@ -156,6 +170,8 @@ class tools:
 
     # validate if RSI is within given range
     def validateRSI(data, dict, saveDict, minRSI, maxRSI):
+        data = data.fillna(0)
+        data = data.replace([np.inf, -np.inf], 0)
         rsi = int(data.head(1)['RSI'][0])
         saveDict['RSI'] = rsi
         if(rsi >= minRSI and rsi <= maxRSI) and (rsi <= 70 and rsi >= 30):
@@ -210,3 +226,49 @@ class tools:
         # plt.plot(data.index, data['Close'])
         # plt.plot(data.index, slope*data.index+c,)
         # plt.show()
+
+    '''
+    # Find out trend for days to lookback
+    def validateVCP(data, dict, saveDict, daysToLookback=ConfigManager.daysToLookback, stockName=None):
+        data = data.head(daysToLookback)
+        data = data[::-1]
+        data = data.set_index(np.arange(len(data)))
+        data = data.fillna(0)
+        data = data.replace([np.inf, -np.inf], 0)
+        data['tops'] = data['Close'].iloc[list(argrelextrema(np.array(data['Close']), np.greater_equal, order=3)[0])]
+        data['bots'] = data['Close'].iloc[list(argrelextrema(np.array(data['Close']), np.less_equal, order=3)[0])]
+        try:
+            try:
+                top_slope,top_c = np.polyfit(data.index[data.tops > 0], data['tops'][data.tops > 0], 1)
+                bot_slope,bot_c = np.polyfit(data.index[data.bots > 0], data['bots'][data.bots > 0], 1)
+                topAngle = math.degrees(math.atan(top_slope))
+                vcpAngle = math.degrees(math.atan(bot_slope) - math.atan(top_slope))
+
+                # print(math.degrees(math.atan(top_slope)))
+                # print(math.degrees(math.atan(bot_slope)))
+                # print(vcpAngle)
+                # print(topAngle)
+                # print(data.max()['bots'])
+                # print(data.max()['tops'])
+                if (vcpAngle > 20 and vcpAngle < 70) and (topAngle > -10 and topAngle < 10) and (data['bots'].max() <= data['tops'].max()) and (len(data['bots'][data.bots > 0]) > 1):
+                    print("---> GOOD VCP %s at %sRs" % (stockName, top_c))
+                    import os
+                    os.system("echo %s >> vcp_plots\VCP.txt" % stockName)
+
+                    import matplotlib.pyplot as plt                
+                    plt.scatter(data.index[data.tops > 0], data['tops'][data.tops > 0], c='g')
+                    plt.scatter(data.index[data.bots > 0], data['bots'][data.bots > 0], c='r')
+                    plt.plot(data.index, data['Close'])
+                    plt.plot(data.index, top_slope*data.index+top_c,'g--')
+                    plt.plot(data.index, bot_slope*data.index+bot_c,'r--')
+                    if stockName != None:
+                        plt.title(stockName)
+                    # plt.show()
+                    plt.savefig('vcp_plots\%s.png' % stockName)
+                    plt.clf()
+            except np.RankWarning:
+                pass
+        except np.linalg.LinAlgError:
+            return False
+    '''
+    

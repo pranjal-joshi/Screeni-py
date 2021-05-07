@@ -10,6 +10,10 @@ import talib
 from classes.ColorText import colorText
 
 class CandlePatterns:
+
+    reversalPatternsBullish = ['Morning Star', 'Morning Doji Star', '3 Inside Up', 'Hammer', '3 White Soldiers', 'Bullish Engulfing', 'Dragonfly Doji']
+    reversalPatternsBearish = ['Evening Star', 'Evening Doji Star', '3 Inside Down', 'Inverted Hammer', 'Hanging Man', '3 Black Crows', 'Bearish Engulfing', 'Shooting Star', 'Gravestone Doji']
+
     def __init__(self):
         pass
 
@@ -66,6 +70,16 @@ class CandlePatterns:
         if(check.tail(1).item() != 0):
             dict['Pattern'] = colorText.BOLD + colorText.FAIL + '3 Black Crows' + colorText.END
             saveDict['Pattern'] = '3 Black Crows'
+            return True
+
+        check = talib.CDL3INSIDE(data['Open'], data['High'], data['Low'], data['Close'])
+        if(check.tail(1).item() != 0):
+            if(check.tail(1).item() > 0):
+                dict['Pattern'] = colorText.BOLD + colorText.GREEN + '3 Outside Up' + colorText.END
+                saveDict['Pattern'] = '3 Inside Up'
+            else:
+                dict['Pattern'] = colorText.BOLD + colorText.FAIL + '3 Outside Down' + colorText.END
+                saveDict['Pattern'] = '3 Inside Down'
             return True
 
         check = talib.CDL3OUTSIDE(data['Open'], data['High'], data['Low'], data['Close'])
@@ -126,8 +140,8 @@ class CandlePatterns:
 
         check = talib.CDLHANGINGMAN(data['Open'], data['High'], data['Low'], data['Close'])
         if(check.tail(1).item() != 0):
-            dict['Pattern'] = colorText.BOLD + colorText.FAIL + 'Inverted Hammer' + colorText.END
-            saveDict['Pattern'] = 'Inverted Hammer'
+            dict['Pattern'] = colorText.BOLD + colorText.FAIL + 'Hanging Man' + colorText.END
+            saveDict['Pattern'] = 'Hanging Man'
             return True
         
         check = talib.CDLHAMMER(data['Open'], data['High'], data['Low'], data['Close'])
