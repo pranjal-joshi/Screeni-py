@@ -14,6 +14,7 @@ import pandas as pd
 import classes.ConfigManager as ConfigManager
 from nsetools import Nse
 from classes.ColorText import colorText
+from classes.SuppressOutput import SuppressOutput
 
 listStockCodes = []
 screenCounter = 1
@@ -48,13 +49,14 @@ class tools:
     # Fetch stock price data from Yahoo finance
     def fetchStockData(stockCode, period, duration, proxyServer, screenResults):
         global screenCounter
-        data = yf.download(
-            tickers = stockCode+".NS",
-            period = period,
-            duration = duration,
-            proxy = proxyServer,
-            progress=False
-        )
+        with SuppressOutput(suppress_stdout = True, suppress_stderr = True):
+            data = yf.download(
+                tickers = stockCode+".NS",
+                period = period,
+                duration = duration,
+                proxy = proxyServer,
+                progress=False
+            )
         sys.stdout.write("\r\033[K")
         try:
             print(colorText.BOLD + colorText.GREEN + ("[%d%%] Screened %d, Found %d. Fetching data & Analyzing %s..." % (int(screenCounter/len(listStockCodes)*100), screenCounter, len(screenResults), stockCode)) + colorText.END, end='')

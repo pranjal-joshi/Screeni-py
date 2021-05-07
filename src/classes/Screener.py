@@ -28,8 +28,8 @@ class tools:
         data.insert(8,'VolMA',vol['Volume'])
         data.insert(9,'RSI',rsi)
         data = data[::-1]               # Reverse the dataframe
-        data = data.fillna(0)
-        data = data.replace([np.inf, -np.inf], 0)
+        # data = data.fillna(0)
+        # data = data.replace([np.inf, -np.inf], 0)
         fullData = data
         trimmedData = data.head(daysToLookback)
         return (fullData, trimmedData)
@@ -41,8 +41,9 @@ class tools:
         saveDict['LTP'] = str(ltp)
         verifyStageTwo = True
         if(ConfigManager.stageTwo):
-            yearlyLow = data.head(300).min()['Low']
-            if ltp < (2 * yearlyLow):
+            yearlyLow = data.head(300).min()['Close']
+            yearlyHigh = data.head(300).max()['Close']
+            if ltp < (2 * yearlyLow) or ltp < (0.75 * yearlyHigh):
                 verifyStageTwo = False
         if(ltp >= minLTP and ltp <= maxLTP and verifyStageTwo):
             dict['LTP'] = colorText.GREEN + ("%.2f" % ltp) + colorText.END
@@ -168,12 +169,19 @@ class tools:
         data = data.head(daysToLookback)
         data = data[::-1]
         data = data.set_index(np.arange(len(data)))
-        data['tops'] = data['Close'].iloc[list(argrelextrema(np.array(data['Close']), np.greater_equal, order=1)[0])]
         data = data.fillna(0)
+        data = data.replace([np.inf, -np.inf], 0)
+        data['tops'] = data['Close'].iloc[list(argrelextrema(np.array(data['Close']), np.greater_equal, order=1)[0])]
         try:
-            slope,c = np.polyfit(data.index[data.tops > 0], data['tops'][data.tops > 0], 1)
+            try:
+                slope,c = np.polyfit(data.index[data.tops > 0], data['tops'][data.tops > 0], 1)
+            except np.RankWarning:
+                slope,c = 0,0
             angle = np.rad2deg(np.arctan(slope))
-            if (angle <= 30 and angle >= -30):
+            if (angle == 0):
+                dict['Trend'] = colorText.BOLD + "Unknown" + colorText.END
+                saveDict['Trend'] = 'Unknown'
+            elif (angle <= 30 and angle >= -30):
                 dict['Trend'] = colorText.BOLD + colorText.WARN + "Sideways" + colorText.END
                 saveDict['Trend'] = 'Sideways'
             elif (angle >= 30 and angle < 61):

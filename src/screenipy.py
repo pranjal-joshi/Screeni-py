@@ -20,6 +20,7 @@ import classes.Utility as Utility
 from classes.ColorText import colorText
 from classes.OtaUpdater import OTAUpdater
 from classes.CandlePatterns import CandlePatterns
+from classes.SuppressOutput import SuppressOutput
 from classes.Changelog import *
 
 # Try Fixing bug with this symbol
@@ -158,7 +159,12 @@ def main(testing=False):
                     isLtpValid = Screener.tools.validateLTP(fullData, screeningDictionary, saveDictionary, minLTP=ConfigManager.minLTP, maxLTP=ConfigManager.maxLTP)
                     isLowestVolume = Screener.tools.validateLowestVolume(processedData, daysForLowestVolume)
                     isValidRsi = Screener.tools.validateRSI(processedData, screeningDictionary, saveDictionary, minRSI, maxRSI)
-                    currentTrend = Screener.tools.findTrend(processedData, screeningDictionary, saveDictionary, daysToLookback=ConfigManager.daysToLookback)
+                    try:
+                        with SuppressOutput(suppress_stdout = True, suppress_stderr = True):
+                            currentTrend = Screener.tools.findTrend(processedData, screeningDictionary, saveDictionary, daysToLookback=ConfigManager.daysToLookback)
+                    except np.RankWarning:
+                        dict['Trend'] = colorText.BOLD + "Unknown" + colorText.END
+                        saveDict['Trend'] = 'Unknown'
                     isCandlePattern = candlePatterns.findPattern(processedData, screeningDictionary, saveDictionary)
                     if executeOption == 0:
                         screenResults = screenResults.append(screeningDictionary,ignore_index=True)
@@ -181,7 +187,7 @@ def main(testing=False):
                 print(colorText.BOLD + colorText.FAIL + "\n[+] Script terminated by the user." + colorText.END)
                 break
             except Exception as e:
-                print(colorText.FAIL + ("[+] Exception Occured while Screening %s! Skipping this stock.." % stock) + colorText.END)
+                # print(colorText.FAIL + ("\n[+] Exception Occured while Screening %s! Skipping this stock.." % stock) + colorText.END)
                 if testing:
                     raise e
         screenResults.sort_values(by=['Stock'], ascending=True, inplace=True)

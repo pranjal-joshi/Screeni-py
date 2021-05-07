@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.10"
+VERSION = "1.11"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -60,6 +60,10 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [1.10]
 1. Trend detection for the timeframe of analysis added.
+
+[1.11]
+1. Stage-2 Screening logic improved for identifying best stocks only.
+2. Bugs and Runtime warnings fixed.
 
 --- END ---
 ''' + colorText.END
