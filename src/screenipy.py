@@ -67,7 +67,7 @@ except KeyError:
 # Manage Execution flow
 def initExecution():
     print(colorText.BOLD + colorText.WARN + '[+] Press a number to start stock screening: ' + colorText.END)
-    print(colorText.BOLD + '''    0 > Screen stocks by stock name (NSE Stock Code)
+    print(colorText.BOLD + '''     0 > Screen stocks by stock name (NSE Stock Code)
      1 > Screen stocks for Breakout or Consolidation
      2 > Screen for the stocks with recent Breakout & Volume
      3 > Screen for the Consolidating stocks
@@ -200,6 +200,8 @@ def main(testing=False):
             except KeyboardInterrupt:
                 print(colorText.BOLD + colorText.FAIL + "\n[+] Script terminated by the user." + colorText.END)
                 break
+            except Fetcher.StockDataEmptyException:
+                pass
             except Exception as e:
                 # print(colorText.FAIL + ("\n[+] Exception Occured while Screening %s! Skipping this stock.." % stock) + colorText.END)
                 if testing:

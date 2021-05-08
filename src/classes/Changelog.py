@@ -62,7 +62,7 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 1. Trend detection for the timeframe of analysis added.
 
 [1.11]
-1. Option-6 - Screen for stocks showing Reversal Signal added
+1. Option-6 -> Screen for stocks showing Reversal Signal added
 2. Stage-2 Screening logic improved for identifying best stocks only.
 3. Trend detection has been improved.
 4. Bugs and Runtime warnings fixed.

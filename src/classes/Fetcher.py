@@ -20,6 +20,10 @@ listStockCodes = []
 screenCounter = 1
 nse = Nse()
 
+# Exception class if yfinance stock delisted
+class StockDataEmptyException(Exception):
+    pass
+
 # This Class Handles Fetching of Stock Data over the internet
 class tools:
 
@@ -39,9 +43,14 @@ class tools:
                 print(colorText.GREEN + ("=> Done! Fetched %d stock codes." % len(listStockCodes)) + colorText.END)
                 if ConfigManager.shuffleEnabled:
                     random.shuffle(listStockCodes)
-                    print(colorText.WARN + "[+] Stock shuffling is active." + colorText.END)
+                    print(colorText.BLUE + "[+] Stock shuffling is active." + colorText.END)
                 else:
-                    print(colorText.WARN + "[+] Stock shuffling is inactive." + colorText.END)
+                    print(colorText.FAIL + "[+] Stock shuffling is inactive." + colorText.END)
+                if ConfigManager.stageTwo:
+                    print(colorText.BLUE + "[+] Screening only for the stocks in Stage-2! Edit User Config to change this." + colorText.END)
+                else:
+                    print(colorText.FAIL + "[+] Screening only for the stocks in all Stages! Edit User Config to change this." + colorText.END)
+                
             else:
                 input(colorText.FAIL + "=> Error getting stock codes from NSE! Press any key to exit!" + colorText.END)
                 sys.exit("Exiting script..")
@@ -64,8 +73,8 @@ class tools:
             pass
         if len(data) == 0:
             print(colorText.BOLD + colorText.FAIL + "=> Failed to fetch!" + colorText.END, end='\r', flush=True)
+            raise StockDataEmptyException
             return None
         print(colorText.BOLD + colorText.GREEN + "=> Done!" + colorText.END, end='\r', flush=True)
         screenCounter += 1
         return data
-
