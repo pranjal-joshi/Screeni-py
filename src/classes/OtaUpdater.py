@@ -42,8 +42,8 @@ sleep 3
 echo "[+] Screenipy Software Updater!"
 echo "[+] Downloading Software Update..."
 echo "[+] This may take some time as per your Internet Speed, Please Wait..."
-echo "[+] Newly downloaded file saved in $(pwd)"
 wget -q """ + url + """ -O screenipy.bin
+echo "[+] Newly downloaded file saved in $(pwd)"
 echo "[+] Update Completed! Run 'screenipy.bin' again as usual to continue.."
 rm updater.sh
         """

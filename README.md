@@ -1,7 +1,7 @@
 # Screeni-py
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/pranjal-joshi/Screeni-py) ![GitHub all releases](https://img.shields.io/github/downloads/pranjal-joshi/Screeni-py/total?color=Green&label=Downloads) ![GitHub](https://img.shields.io/github/license/pranjal-joshi/Screeni-py)
 
-[![Screenipy Test - New Features](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-test.yml/badge.svg?branch=new-features)](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-test.yml) [![Screenipy Build & Release](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-build-matrix.yml/badge.svg)](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-build-matrix.yml) ![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/pranjal-joshi/Screeni-py) 
+[![Screenipy Test - New Features](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-test.yml/badge.svg?branch=new-features)](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-test.yml) [![Screenipy Build - New Release](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-build-matrix.yml/badge.svg)](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-build-matrix.yml) ![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/pranjal-joshi/Screeni-py) 
 
 
 ## [Quick Download](https://github.com/pranjal-joshi/Screeni-py/releases/latest)
@@ -46,12 +46,11 @@ onlystagetwostocks = y
 ```
 Try to tweak this parameters as per your trading styles. For example, If you're comfortable with weekly charts, make `duration=5d` and so on.
 
+## Contributing:
+* Please feel free to Suggest improvements bugs by creating an issue.
+* Please follow the [Guidelines for Contributing](https://github.com/pranjal-joshi/Screeni-py/blob/new-features/CONTRIBUTING.md) while making a Pull Request.
+
 ## Disclaimer:
 * DO NOT use the result provided by the software 'solely' to make your trading decisions.
 * Always backtest and analyze the stocks manually before you trade.
 * The Author and the software will not be held liable for your losses.
-
-## Contribution:
-Please feel free to Suggest improvements and post known bugs in issue.
-
-PRs will be welcome if you are contributing with the source code.

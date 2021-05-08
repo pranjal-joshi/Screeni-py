@@ -3,7 +3,7 @@
 # Created             :   30/04/2021
 # Description         :   Workflow for building screenipy on pushing a tag
 
-name: Screenipy Build & Release
+name: Screenipy Build - New Release
 
 on:
   push:
@@ -27,6 +27,7 @@ jobs:
               pyinstaller --onefile --icon=src\icon.ico src\screenipy.py  --hidden-import cmath --hidden-import talib.stream
             DEP_BUILD: |
               python -m pip install --upgrade pip
+              echo Installing TA-lib...
               cd .github/dependencies/
               echo %cd%
               pip install TA_Lib-0.4.19-cp39-cp39-win_amd64.whl
@@ -81,6 +82,17 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.9.4
+
+      - name: Load Cache for Linux Dependencies
+        uses: actions/cache@v2
+        if: startsWith(runner.os, 'Linux')
+        with:
+          path: |
+            /usr/include/ta-lib
+            /usr/bin/ta-lib-config
+          key: ${{ runner.os }}-talib
+          restore-keys: |
+            ${{ runner.os }}-talib
 
       - name: Install dependencies for ${{ matrix.TARGET }}
         run: ${{ matrix.DEP_BUILD }}
