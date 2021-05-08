@@ -158,18 +158,13 @@ def main(testing=False):
                     screeningDictionary['Stock'] = colorText.BOLD + colorText.BLUE + stock + colorText.END
                     saveDictionary['Stock'] = stock
                     consolidationValue = Screener.tools.validateConsolidation(processedData, screeningDictionary, saveDictionary, percentage=ConfigManager.consolidationPercentage)
-                    Screener.tools.validateMovingAverages(processedData, screeningDictionary, saveDictionary)
+                    isMaReversal = Screener.tools.validateMovingAverages(processedData, screeningDictionary, saveDictionary, range=1.25)
                     isVolumeHigh = Screener.tools.validateVolume(processedData, screeningDictionary, saveDictionary, volumeRatio=ConfigManager.volumeRatio)
                     isBreaking = Screener.tools.findBreakout(processedData, screeningDictionary, saveDictionary, daysToLookback=ConfigManager.daysToLookback)
                     isLtpValid = Screener.tools.validateLTP(fullData, screeningDictionary, saveDictionary, minLTP=ConfigManager.minLTP, maxLTP=ConfigManager.maxLTP)
                     isLowestVolume = Screener.tools.validateLowestVolume(processedData, daysForLowestVolume)
                     isValidRsi = Screener.tools.validateRSI(processedData, screeningDictionary, saveDictionary, minRSI, maxRSI)
-                    try:
-                        with SuppressOutput(suppress_stdout = True, suppress_stderr = True):
-                            currentTrend = Screener.tools.findTrend(processedData, screeningDictionary, saveDictionary, daysToLookback=ConfigManager.daysToLookback)
-                    except np.RankWarning:
-                        dict['Trend'] = colorText.BOLD + "Unknown" + colorText.END
-                        saveDict['Trend'] = 'Unknown'
+                    currentTrend = Screener.tools.findTrend(processedData, screeningDictionary, saveDictionary, daysToLookback=ConfigManager.daysToLookback, stockName=stock)
                     isCandlePattern = candlePatterns.findPattern(processedData, screeningDictionary, saveDictionary)
                     if executeOption == 0:
                         screenResults = screenResults.append(screeningDictionary,ignore_index=True)
@@ -188,11 +183,11 @@ def main(testing=False):
                         saveResults = saveResults.append(saveDictionary, ignore_index=True)
                     if executeOption == 6 and isLtpValid:
                         if reversalOption == 1:
-                            if saveDictionary['Pattern'] in CandlePatterns.reversalPatternsBullish:
+                            if saveDictionary['Pattern'] in CandlePatterns.reversalPatternsBullish or isMaReversal > 0:
                                 screenResults = screenResults.append(screeningDictionary,ignore_index=True)
                                 saveResults = saveResults.append(saveDictionary, ignore_index=True)
                         elif reversalOption == 2:
-                            if saveDictionary['Pattern'] in CandlePatterns.reversalPatternsBearish:
+                            if saveDictionary['Pattern'] in CandlePatterns.reversalPatternsBearish or isMaReversal < 0:
                                 screenResults = screenResults.append(screeningDictionary,ignore_index=True)
                                 saveResults = saveResults.append(saveDictionary, ignore_index=True)
                 if testing and len(screenResults):

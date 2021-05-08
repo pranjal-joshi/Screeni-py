@@ -156,6 +156,11 @@ def test_release_readme_urls():
     for url in passUrl:
         assert url in contents
 
+def test_if_changelog_version_changed():
+    global last_release
+    v = changelog.split(']')[-2].split('[')[-1]
+    assert float(v) > float(last_release)
+
 def test_delete_xlsx():
     if platform.platform() == 'Windows':
         os.system("del *.xlsx")

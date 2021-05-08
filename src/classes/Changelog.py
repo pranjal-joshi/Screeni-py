@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.11"
+VERSION = "1.12"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -55,7 +55,7 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 2. Program back-end architecture updated.
 
 [1.09]
-1. RSI based screening added.
+1. RSI based screening added as Option > 5.
 2. Minor Performance Improvements.
 
 [1.10]
@@ -66,6 +66,12 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 2. Stage-2 Screening logic improved for identifying best stocks only.
 3. Trend detection has been improved.
 4. Bugs and Runtime warnings fixed.
+
+[1.12]
+1. MA now gives more info like Candle Crossing and At Support/Resistance.
+2. More Patterns added for Reversal Detection.
+4. Trend detection enhanced for the timeframe of analysis.
+5. Runtime Warnings have been fixed.
 
 --- END ---
 ''' + colorText.END

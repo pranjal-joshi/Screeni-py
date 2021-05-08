@@ -15,17 +15,35 @@ from scipy.signal import argrelextrema
 from classes.ColorText import colorText
 from classes.SuppressOutput import SuppressOutput
 
+# Exception for newly listed stocks with candle nos < daysToLookback
+class StockDataNotAdequate(Exception):
+    pass
+
 # This Class contains methods for stock analysis and screening validation
 class tools:
 
+    # Private method to find candle type
+    # True = Bullish, False = Bearish
+    def getCandleType(dailyData):
+        if dailyData['Close'][0] >= dailyData['Open'][0]:
+            return True
+        else:
+            return False
+
     # Preprocess the acquired data
     def preprocessData(data, daysToLookback=ConfigManager.daysToLookback):
-        sma = data.rolling(window=50).mean()
-        lma = data.rolling(window=200).mean()
+        if ConfigManager.useEMA:
+            sma = talib.EMA(data['Close'],timeperiod=50)
+            lma = talib.EMA(data['Close'],timeperiod=200)
+            data.insert(6,'SMA',sma)
+            data.insert(7,'LMA',lma)
+        else:
+            sma = data.rolling(window=50).mean()
+            lma = data.rolling(window=200).mean()
+            data.insert(6,'SMA',sma['Close'])
+            data.insert(7,'LMA',lma['Close'])
         vol = data.rolling(window=20).mean()
         rsi = talib.RSI(data['Close'], timeperiod=14)
-        data.insert(6,'SMA',sma['Close'])
-        data.insert(7,'LMA',lma['Close'])
         data.insert(8,'VolMA',vol['Volume'])
         data.insert(9,'RSI',rsi)
         data = data[::-1]               # Reverse the dataframe
@@ -68,8 +86,8 @@ class tools:
         saveDict['Consolidating'] = str(round((abs((hc-lc)/hc)*100),2))+"%"
         return round((abs((hc-lc)/hc)*100),2)
 
-    # Validate Moving averages
-    def validateMovingAverages(data, dict, saveDict):
+    # Validate Moving averages and look for buy/sell signals
+    def validateMovingAverages(data, dict, saveDict, range=2.5):
         data = data.fillna(0)
         data = data.replace([np.inf, -np.inf], 0)
         recent = data.head(1)
@@ -82,6 +100,56 @@ class tools:
         else:
             dict['MA-Signal'] = colorText.BOLD + colorText.WARN + 'Neutral' + colorText.END
             saveDict['MA-Signal'] = 'Neutral'
+
+        smaDev = data['SMA'][0] * range / 100
+        lmaDev = data['LMA'][0] * range / 100
+        open, high, low, close, sma, lma = data['Open'][0], data['High'][0], data['Low'][0], data['Close'][0], data['SMA'][0], data['LMA'][0]
+        maReversal = 0
+        # Taking Support 50
+        if close > sma and low <= (sma + smaDev):
+            dict['MA-Signal'] = colorText.BOLD + colorText.GREEN + '50MA-Support' + colorText.END
+            saveDict['MA-Signal'] = '50MA-Support'
+            maReversal = 1
+        # Validating Resistance 50
+        elif close < sma and high >= (sma - smaDev):
+            dict['MA-Signal'] = colorText.BOLD + colorText.FAIL + '50MA-Resist' + colorText.END
+            saveDict['MA-Signal'] = '50MA-Resist'
+            maReversal = -1
+        # Taking Support 200
+        elif close > lma and low <= (lma + lmaDev):
+            dict['MA-Signal'] = colorText.BOLD + colorText.GREEN + '200MA-Support' + colorText.END
+            saveDict['MA-Signal'] = '200MA-Support'
+            maReversal = 1
+        # Validating Resistance 200
+        elif close < lma and high >= (lma - lmaDev):
+            dict['MA-Signal'] = colorText.BOLD + colorText.FAIL + '200MA-Resist' + colorText.END
+            saveDict['MA-Signal'] = '200MA-Resist'
+            maReversal = -1
+        # For a Bullish Candle
+        if tools.getCandleType(data):
+            # Crossing up 50
+            if open < sma and close > sma:
+                dict['MA-Signal'] = colorText.BOLD + colorText.GREEN + 'BullCross-50MA' + colorText.END
+                saveDict['MA-Signal'] = 'BullCross-50MA'
+                maReversal = 1            
+            # Crossing up 200
+            elif open < lma and close > lma:
+                dict['MA-Signal'] = colorText.BOLD + colorText.GREEN + 'BullCross-200MA' + colorText.END
+                saveDict['MA-Signal'] = 'BullCross-200MA'
+                maReversal = 1
+        # For a Bearish Candle
+        elif not tools.getCandleType(data):
+            # Crossing down 50
+            if open > sma and close < sma:
+                dict['MA-Signal'] = colorText.BOLD + colorText.FAIL + 'BearCross-50MA' + colorText.END
+                saveDict['MA-Signal'] = 'BearCross-50MA'
+                maReversal = -1         
+            # Crossing up 200
+            elif open > lma and close < lma:
+                dict['MA-Signal'] = colorText.BOLD + colorText.FAIL + 'BearCross-200MA' + colorText.END
+                saveDict['MA-Signal'] = 'BearCross-200MA'
+                maReversal = -1
+        return maReversal
 
     # Validate if volume of last day is higher than avg
     def validateVolume(data, dict, saveDict, volumeRatio=2.5):
@@ -182,18 +250,22 @@ class tools:
         return False
 
     # Find out trend for days to lookback
-    def findTrend(data, dict, saveDict, daysToLookback=ConfigManager.daysToLookback):
+    def findTrend(data, dict, saveDict, daysToLookback=ConfigManager.daysToLookback,stockName=""):
         data = data.head(daysToLookback)
         data = data[::-1]
         data = data.set_index(np.arange(len(data)))
         data = data.fillna(0)
         data = data.replace([np.inf, -np.inf], 0)
-        data['tops'] = data['Close'].iloc[list(argrelextrema(np.array(data['Close']), np.greater_equal, order=1)[0])]
+        with SuppressOutput(suppress_stdout=True,suppress_stderr=True):
+            data['tops'] = data['Close'].iloc[list(argrelextrema(np.array(data['Close']), np.greater_equal, order=1)[0])]
+        data = data.fillna(0)
+        data = data.replace([np.inf, -np.inf], 0)
         try:
             try:
-                with SuppressOutput(suppress_stdout=True,suppress_stderr=True):
-                    slope,c = np.polyfit(data.index[data.tops > 0], data['tops'][data.tops > 0], 1)
-            except np.RankWarning:
+                if len(data) < daysToLookback:
+                    raise StockDataNotAdequate
+                slope,c = np.polyfit(data.index[data.tops > 0], data['tops'][data.tops > 0], 1)
+            except Exception as e:
                 slope,c = 0,0
             angle = np.rad2deg(np.arctan(slope))
             if (angle == 0):
