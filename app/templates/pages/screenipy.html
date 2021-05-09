@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <!-- Link css here -->
+        
+        <link rel="icon" href="static/assets/images/economics-1.png">
+        <title>Screenipy</title>
+    </head>
+    <body>
+        <h2>Navbar with logo and a few options</h2>
+        ---------------------------------------------------
+
+        <h2>Screening Section</h2>
+        <h3>Main section for option choice and start screening</h3>
+        <form method="POST" action="screenipy.html/startScreening">
+            <div class="search">
+                <input type="text" placeholder="Enter Stock Code (If multiples then Separate by ,)">
+                <button type="submit" class="searchButton">
+                    Search
+                </button>
+            </div>
+            <br>
+            <label for="options">Screen Stocks For:</label>
+            <select name="options" id="options">
+                <option>1. Both Breakout and Consolidation</option>
+                <option>2. Only Breakout with Volume</option>
+                <option>3. Only Consolidating</option>
+                <option>4. Lowest Volume in last 'N'-days</option>
+                <option>5. RSI Limit</option>
+                <option>6. Reversal Signals</option>
+            </select>
+            <br><br>
+            <label for="lowestVolCandles">Show prompt to user if Option 4. Lowest Volume selected</label>
+            <input type="number" id="lowestVolCandles" name="lowestVolCandles" min="1" placeholder="how many candles?">
+            <br><br>
+            <label for="rsiInput">Show prompt to user if Option 5. RSI selected</label>
+            <input type="number" id="rsiInput" name="rsiMin" min="0" max="100" placeholder="Min RSI">
+            <input type="number" id="rsiInput" name="rsiMax" min="0" max="100" placeholder="Min RSI">
+            <br><br>
+            <label for="reversalInput">Show radio prompt to user if Option 6. Reversal selected</label>
+            <input type="radio" name="reversal" id="buy" value="buy">
+            <label for="buy">Buying Signal</label>
+            <input type="radio" name="reversal" id="sell" value="sell">
+            <label for="sell">Selling Signal</label><br><br>
+            <button type="submit" class="screenButton">
+                <b>Start Screening</b>
+            </button>
+        </form>
+
+        <br><br>
+
+        <h2>Configuration Section</h2>
+        <h3>Note: This section should be usually hidden unless user wants to edit. Save this data in browser storage so user dont have to reconfigure everytime. JS validation of input is required.</h3>
+        <form>
+            1. Enter number of days for which stock data to be downloaded (Days)(Optimal = 365):
+            <input type="number" id="configPeriod" min="1" placeholder="Some Hint"><br>
+            2. Number of recent days (TimeFrame) to screen for Breakout/Consolidation (Days)(Optimal = 20):
+            <input type="number" id="configDaysToLookback" min="1" placeholder="Days to Lookback"><br>
+            3. Enter Duration of each candle (Days)(Optimal = 1)
+            <input type="number" id="configDuration" min="1" placeholder="Duration"><br>
+            4. Min & Max Price of Stock to Buy (in RS):
+            <input type="number" id="configLtpMin" min="1" placeholder="Min">
+            <input type="number" id="configLtpMax" min="1" placeholder="Max"><br>
+            5. How many times the volume should be more than average for the breakout? (Number)(Optimal = 2.5):
+            <input type="number" step="0.1" min="0" id="configVolume" placeholder="Volume X"><br>
+            6.  How many % the price should be in range to consider it as consolidation? (Number)(Optimal = 10)?
+            <input type="number" step="0.1" min="0" id="configConsolidate" placeholder="Consolidation %"><br>
+            7. Screen only for Stage-2 stocks?
+            <input type="radio" name="configStage2" id="Stage2Yes" value="Yes" checked>
+            <label for="Stage2Yes">Yes</label>
+            <input type="radio" name="configStage2" id="Stage2No" value="No">
+            <label for="Stage2No">No</label>
+            <br>
+            8. Use EMA instead of SMA? (EMA is good for Short-term & SMA for Mid/Long-term trades)
+            <input type="radio" name="configEma" id="emaYes" value="Yes" checked>
+            <label for="emaYes">Yes</label>
+            <input type="radio" name="configEma" id="emaNo" value="No">
+            <label for="emaNo">No</label>
+        </form>
+
+        <br><br>
+
+        <h2>Result Section</h2>
+        <h3>Result table will be displayed here. HTML table data will be sent without any CSS from backend. Should be highly repsonsive for mobile phones</h3>
+        <p>Table should be able to filter results by asc/desc values by clicking on column names</p>
+
+
+        <footer>
+            <h2> Some nice footer here telling more about us!</h2>
+        </footer>
+    </body>
+</html>

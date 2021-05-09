@@ -1,0 +1,32 @@
+{% macro getNavbar(title) %}    
+<section class="menu menu1 cid-swUfHXb5Pe" once="menu" id="menu1-0">
+    
+
+    <nav class="navbar navbar-dropdown navbar-fixed-top navbar-expand-lg">
+        <div class="container">
+            <div class="navbar-brand">
+                <span class="navbar-logo">
+                    
+                        <img src="static/assets/images/economics-1.png" alt="Screenipy" style="height: 3rem;">
+                    
+                </span>
+                <span class="navbar-caption-wrap"><a class="navbar-caption text-success display-2" href="#">{{ title }}<br></a></span>
+            </div>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav nav-dropdown" data-app-modern-menu="true"><li class="nav-item"><a class="nav-link link text-black display-4" href="#" aria-expanded="false">About Us</a>
+                    </li><li class="nav-item"><a class="nav-link link text-black text-primary display-4" href="https://github.com/pranjal-joshi/Screeni-py" aria-expanded="false" target="_blank">GitHub</a></li></ul>
+                
+                <div class="navbar-buttons mbr-section-btn"><a class="btn btn-success display-4" href="https://mobiri.se">Start Screening</a></div>
+            </div>
+        </div>
+    </nav>
+</section>
+{% endmacro %}

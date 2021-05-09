@@ -1,0 +1,101 @@
+{% import "macros.jinja" as macros %}
+{% import "components/navbar.html" as navbar %}
+{% import "components/footer.html" as footer %}
+
+<!doctype html>
+<html lang="en">
+    <head>        
+        {{ macros.loadMobiriseCSS() }}
+    </head>
+    <body>
+        {{ navbar.getNavbar("Screenipy") }}
+
+        <section class="features18 cid-swV1w3CRa7" id="features19-6">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="card col-12 col-lg">
+                        <div class="card-wrapper">
+                            <h6 class="card-title mbr-fonts-style mb-4 display-1"><strong>Make Trading Simple!</strong></h6>
+                            <p class="mbr-text mbr-fonts-style display-7">
+                                Screenipy helps you to <strong>find out the best stocks</strong>&nbsp;from NSE in which you can invest right now! We will show you all the data required to make your trading decisions without analyzing thousands of stock on your own!<br>Let's Start Screening and Make some money now!</p>
+                            <div class="mbr-section-btn"><a class="btn btn-success display-4" href="https://mobiri.se">Start Screening</a></div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-5">
+                        <div class="image-wrapper">
+                            <a href="index.html#features19-6"><img src="static/assets/images/analysis.png" alt="Screenipy"></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="features13 cid-swV7GibJ8Z" id="features14-7">   
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <h3 class="mbr-section-title align-center mb-4 mbr-fonts-style display-2"><strong>We got everything you need!</strong></h3>
+                    </div>
+                    <div class="card col-12 col-md-4 col-lg-2 p-3">
+                        <div class="card-wrapper">
+                            <div class="card-box align-center">
+                                <span class="mbr-iconfont mbri-growing-chart" style="color: rgb(34, 153, 170); fill: rgb(34, 153, 170);"></span>
+                                <h4 class="card-title align-center mbr-black mbr-fonts-style display-7"><strong>Technical Details &amp; Signals</strong></h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card p-3 col-12 col-md-4 col-lg-2">
+                        <div class="card-wrapper">
+                            <div class="card-box align-center">
+                                <span class="mbr-iconfont mbri-setting" style="color: rgb(34, 153, 170); fill: rgb(34, 153, 170);"></span>
+                                <h4 class="card-title align-center mbr-black mbr-fonts-style display-7"><strong>Modify as per your Trading Style</strong></h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card p-3 col-12 col-md-4 col-lg-2">
+                        <div class="card-wrapper">
+                            <div class="card-box align-center">
+                                <span class="mbr-iconfont mbri-clock" style="color: rgb(34, 153, 170); fill: rgb(34, 153, 170);"></span>
+                                <h4 class="card-title align-center mbr-black mbr-fonts-style display-7"><strong>Find Breakouts in Real-Time</strong></h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card p-3 col-12 col-md-4 col-lg-2">
+                        <div class="card-wrapper">
+                            <div class="card-box align-center">
+                                <span class="mbr-iconfont mbri-cloud" style="color: rgb(34, 153, 170); fill: rgb(34, 153, 170);"></span>
+                                <h4 class="card-title align-center mbr-black mbr-fonts-style display-7">
+                                    <strong>Superfast Screening Cloud Technology</strong></h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card p-3 col-12 col-md-4 col-lg-2">
+                        <div class="card-wrapper">
+                            <div class="card-box align-center">
+                                <span class="mbr-iconfont mbri-save" style="color: rgb(34, 153, 170); fill: rgb(34, 153, 170);"></span>
+                                <h4 class="card-title align-center mbr-black mbr-fonts-style display-7">
+                                    <strong>Save Bulk Screening Results</strong></h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card p-3 col-12 col-md-4 col-lg-2">
+                        <div class="card-wrapper">
+                            <div class="card-box align-center">
+                                <span class="mbr-iconfont mbri-responsive" style="color: rgb(34, 153, 170); fill: rgb(34, 153, 170);"></span>
+                                <h4 class="card-title align-center mbr-black mbr-fonts-style display-7">
+                                    <strong>Anywhere, Everywhere!</strong></h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {{ footer.getFooter() }}
+
+        {{ macros.loadMobiriseJS()}}
+
+        <input name="cookieData" type="hidden" data-cookie-customDialogSelector='null' data-cookie-colorText='#232323' data-cookie-colorBg='rgba(234, 239, 241, 0.99)' data-cookie-textButton='Okay' data-cookie-colorButton='' data-cookie-colorLink='#424a4d' data-cookie-underlineLink='true' data-cookie-text="We are using cookies to give you the best experience.">
+        <input name="animation" type="hidden">
+    </body>
+</html>

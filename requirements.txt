@@ -3,6 +3,7 @@ cachecontrol
 contextlib2
 distlib
 distro
+flask
 html5lib
 ipaddr
 lockfile
@@ -25,30 +26,35 @@ atomicwrites # Installed as dependency for pytest
 attrs # Installed as dependency for pytest
 certifi # Installed as dependency for requests
 chardet # Installed as dependency for requests
+click # Installed as dependency for flask
 colorama # Installed as dependency for pytest
 dateutils # Installed as dependency for nsetools
 et-xmlfile # Installed as dependency for openpyxl
 future # Installed as dependency for pefile
 idna # Installed as dependency for requests
 iniconfig # Installed as dependency for pytest
+itsdangerous # Installed as dependency for flask
+jinja2 # Installed as dependency for flask
 lxml # Installed as dependency for yfinance
+markupsafe # Installed as dependency for jinja2
 msgpack # Installed as dependency for cachecontrol
 multitasking # Installed as dependency for yfinance
-numpy # Installed as dependency for yfinance, scipy, matplotlib, pandas
+numpy # Installed as dependency for pandas, scipy, yfinance
 packaging # Installed as dependency for pytest
 pandas # Installed as dependency for yfinance
 pefile # Installed as dependency for pyinstaller
 pluggy # Installed as dependency for pytest
 py # Installed as dependency for pytest
 pyinstaller-hooks-contrib # Installed as dependency for pyinstaller
-pyparsing # Installed as dependency for packaging, matplotlib
+pyparsing # Installed as dependency for packaging
 pytest # Installed as dependency for pytest-mock
-python-dateutil # Installed as dependency for dateutils, matplotlib, pandas
+python-dateutil # Installed as dependency for dateutils, pandas
 pytz # Installed as dependency for dateutils, pandas
 pywin32-ctypes # Installed as dependency for pyinstaller
-requests # Installed as dependency for yfinance, cachecontrol
+requests # Installed as dependency for cachecontrol, yfinance
 setuptools # Installed as dependency for pyinstaller
-six # Installed as dependency for cycler, nsetools, packaging, retrying, python-dateutil, html5lib
-toml # Installed as dependency for pep517, pytest
+six # Installed as dependency for python-dateutil, nsetools, retrying, html5lib
+toml # Installed as dependency for pytest, pep517
 urllib3 # Installed as dependency for requests
 webencodings # Installed as dependency for html5lib
+werkzeug # Installed as dependency for flask
