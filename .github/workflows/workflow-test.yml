@@ -9,6 +9,8 @@ name: Screenipy Test - New Features
 on:
   push:
     branches: [ new-features ]
+  pull_request:
+    branches: [ new-features ]
 
 jobs:
 
