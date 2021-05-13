@@ -211,20 +211,33 @@ class tools:
                 return False
 
     # Validate 'Inside Bar' structure for recent days
-    def validateInsideBar(data, dict, saveDict, daysToLookback=4):
-        data = data.fillna(0)
-        data = data.replace([np.inf, -np.inf], 0)
-        data = data.head(daysToLookback)
-        lowsData = data.sort_values(by=['Low'], ascending=False)
-        highsData = data.sort_values(by=['High'], ascending=True)
-        if(highsData.equals(lowsData)):
-            dict['Pattern'] = colorText.BOLD + colorText.GREEN + ("Inside Bar (%d days)" % daysToLookback) + colorText.END
-            saveDict['Pattern'] = "Inside Bar (%d days)" % daysToLookback
-            return True
-        dict['Pattern'] = ''
-        saveDict['Pattern'] = ''
-        return False
-
+    def validateInsideBar(data, dict, saveDict, bullBear=1, daysToLookback=5):
+        orgData = data
+        for i in range(daysToLookback, round(daysToLookback*0.5)-1, -1):
+            if i == 2:
+                return 0        # Exit if only last 2 candles are left
+            if bullBear == 1:
+                if "Up" in saveDict['Trend'] and ("Bull" in saveDict['MA-Signal'] or "Support" in saveDict['MA-Signal']):
+                    data = orgData.head(i)
+                    refCandle = data.tail(1)
+                    if (len(data.High[data.High > refCandle.High.item()]) == 0) and (len(data.Low[data.Low < refCandle.Low.item()]) == 0) and (len(data.Open[data.Open > refCandle.High.item()]) == 0) and (len(data.Close[data.Close < refCandle.Low.item()]) == 0):
+                        dict['Pattern'] = colorText.BOLD + colorText.WARN + ("Inside Bar (%d)" % i) + colorText.END
+                        saveDict['Pattern'] = "Inside Bar (%d)" % i
+                        return i
+                else:
+                    return 0
+            else:
+                if "Down" in saveDict['Trend'] and ("Bear" in saveDict['MA-Signal'] or "Resist" in saveDict['MA-Signal']):
+                    data = orgData.head(i)
+                    refCandle = data.tail(1)
+                    if (len(data.High[data.High > refCandle.High.item()]) == 0) and (len(data.Low[data.Low < refCandle.Low.item()]) == 0) and (len(data.Open[data.Open > refCandle.High.item()]) == 0) and (len(data.Close[data.Close < refCandle.Low.item()]) == 0):
+                        dict['Pattern'] = colorText.BOLD + colorText.WARN + ("Inside Bar (%d)" % i) + colorText.END
+                        saveDict['Pattern'] = "Inside Bar (%d)" % i
+                        return i
+                else:
+                    return 0
+        return 0
+    
     # Validate if recent volume is lowest of last 'N' Days
     def validateLowestVolume(data, daysForLowestVolume):
         data = data.fillna(0)

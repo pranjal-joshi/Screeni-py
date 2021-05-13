@@ -92,10 +92,18 @@ def test_option_6(mocker):
     except StopIteration:
         pass
 
-def test_option_7(mocker, capsys):
+def test_option_7(mocker):
+    try:
+        mocker.patch('builtins.input',side_effect=['7','1','7','y'])
+        main(testing=True)
+        assert len(screenResults) > 0
+    except StopIteration:
+        pass
+
+def test_option_8(mocker, capsys):
     try:
         mocker.patch('builtins.input',side_effect=[
-            '7',
+            '8',
             str(ConfigManager.period),
             str(ConfigManager.daysToLookback),
             str(ConfigManager.duration),
@@ -113,23 +121,23 @@ def test_option_7(mocker, capsys):
     except StopIteration:
         pass
 
-def test_option_8():
+def test_option_9():
     ConfigManager.tools.getConfig(ConfigManager.parser)
     assert ConfigManager.duration != None
     assert ConfigManager.period != None
     assert ConfigManager.consolidationPercentage != None
 
-def test_option_9(mocker):
+def test_option_10(mocker):
     try:
-        mocker.patch('builtins.input',side_effect=['9'])
+        mocker.patch('builtins.input',side_effect=['10'])
         main(testing=True)
         assert len(screenResults) > 0
     except StopIteration:
         pass
 
-def test_option_11(mocker, capsys):
+def test_option_12(mocker, capsys):
     try:
-        mocker.patch('builtins.input',side_effect=['11'])
+        mocker.patch('builtins.input',side_effect=['12'])
         with pytest.raises(SystemExit):
             main(testing=True)
         out, err = capsys.readouterr()
