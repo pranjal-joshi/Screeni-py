@@ -74,17 +74,18 @@ def initExecution():
      4 > Screen for the stocks with Lowest Volume in last 'N'-days (Early Breakout Detection)
      5 > Screen for the stocks with RSI
      6 > Screen for the stocks showing Reversal Signals
-     7 > Edit user configuration
-     8 > Show user configuration
-     9 > Show Last Screened Results
-    10 > About Developer
-    11 > Exit''' + colorText.END
+     7 > Screen for the stocks making Chart Patterns
+     8 > Edit user configuration
+     9 > Show user configuration
+    10 > Show Last Screened Results
+    11 > About Developer
+    12 > Exit''' + colorText.END
     )
     result = input(colorText.BOLD + colorText.FAIL + '[+] Select option: ')
     print(colorText.END, end='')
     try:
         result = int(result)
-        if(result < 0 or result > 11):
+        if(result < 0 or result > 12):
             raise ValueError
         return result
     except:
@@ -99,6 +100,8 @@ def main(testing=False):
     Fetcher.screenCounter = 1
     minRSI = 0
     maxRSI = 100
+    insideBarToLookback = 7
+    respBullBear = 1
     screenResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP','RSI','Trend','Pattern'])
     saveResults = pd.DataFrame(columns=['Stock','Consolidating','Breaking-Out','MA-Signal','Volume','LTP','RSI','Trend','Pattern'])
     executeOption = initExecution()
@@ -122,21 +125,25 @@ def main(testing=False):
         if reversalOption == None or reversalOption == 0:
             main()
     if executeOption == 7:
+        respBullBear, insideBarToLookback = Utility.tools.promptChartPatterns()
+        if insideBarToLookback == None:
+            main()
+    if executeOption == 8:
         ConfigManager.tools.setConfig(ConfigManager.parser)
         main()
-    if executeOption == 8:
+    if executeOption == 9:
         ConfigManager.tools.showConfigFile()
         main()
-    if executeOption == 9:
+    if executeOption == 10:
         Utility.tools.getLastScreenedResults()
         main()
-    if executeOption == 10:
+    if executeOption == 11:
         Utility.tools.showDevInfo()
         main()
-    if executeOption == 11:
+    if executeOption == 12:
         print(colorText.BOLD + colorText.FAIL + "[+] Script terminated by the user." + colorText.END)
         sys.exit(0)
-    if executeOption >= 0 and executeOption < 7:
+    if executeOption >= 0 and executeOption < 8:
         ConfigManager.tools.getConfig(ConfigManager.parser)
         try:
             Fetcher.tools.fetchStockCodes(executeOption)
@@ -166,6 +173,7 @@ def main(testing=False):
                     isValidRsi = Screener.tools.validateRSI(processedData, screeningDictionary, saveDictionary, minRSI, maxRSI)
                     currentTrend = Screener.tools.findTrend(processedData, screeningDictionary, saveDictionary, daysToLookback=ConfigManager.daysToLookback, stockName=stock)
                     isCandlePattern = candlePatterns.findPattern(processedData, screeningDictionary, saveDictionary)
+                    isInsideBar = Screener.tools.validateInsideBar(processedData, screeningDictionary, saveDictionary, bullBear=respBullBear, daysToLookback=insideBarToLookback)
                     if executeOption == 0:
                         screenResults = screenResults.append(screeningDictionary,ignore_index=True)
                         saveResults = saveResults.append(saveDictionary, ignore_index=True)
@@ -190,6 +198,9 @@ def main(testing=False):
                             if saveDictionary['Pattern'] in CandlePatterns.reversalPatternsBearish or isMaReversal < 0:
                                 screenResults = screenResults.append(screeningDictionary,ignore_index=True)
                                 saveResults = saveResults.append(saveDictionary, ignore_index=True)
+                    if executeOption == 7 and isLtpValid and isInsideBar:
+                        screenResults = screenResults.append(screeningDictionary,ignore_index=True)
+                        saveResults = saveResults.append(saveDictionary, ignore_index=True)
                 if testing and len(screenResults):
                     break
             except KeyboardInterrupt:

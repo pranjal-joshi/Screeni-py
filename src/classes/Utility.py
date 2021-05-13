@@ -106,3 +106,22 @@ class tools:
                 raise ValueError
         except ValueError:
             return None
+
+    # Prompt for Reversal screening
+    def promptChartPatterns():
+        try:
+            resp = int(input(colorText.BOLD + colorText.WARN + """\n[+] Select Option:
+    1 > Screen for Bullish Inside Bar (Flag) Pattern
+    2 > Screen for Bearish Inside Bar (Flag) Pattern
+    0 > Cancel
+[+] Select option: """ + colorText.END))
+            if resp == 1 or resp == 2:
+                candles = int(input(colorText.BOLD + colorText.WARN + "\n[+] How many candles (TimeFrame) to look back Inside Bar formation? : " + colorText.END))
+                return (resp, candles)
+            if resp >= 0 and resp <= 2:
+                return resp
+            else:
+                raise ValueError
+        except ValueError:
+            input(colorText.BOLD + colorText.FAIL + "\n[+] Invalid Option Selected. Press Any Key to Continue..." + colorText.END)
+            return (None, None)

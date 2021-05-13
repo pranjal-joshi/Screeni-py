@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.12"
+VERSION = "1.13"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -72,6 +72,11 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 2. More Patterns added for Reversal Detection.
 4. Trend detection enhanced for the timeframe of analysis.
 5. Runtime Warnings have been fixed.
+
+[1.13]
+1. Chart Pattern Detection added. Option > 7
+2. Screen for Inside Bar Chart pattern.
+3. Documentation updated and Performance fixes.
 
 --- END ---
 ''' + colorText.END
