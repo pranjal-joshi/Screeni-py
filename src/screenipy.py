@@ -171,7 +171,11 @@ def main(testing=False):
                     isLtpValid = Screener.tools.validateLTP(fullData, screeningDictionary, saveDictionary, minLTP=ConfigManager.minLTP, maxLTP=ConfigManager.maxLTP)
                     isLowestVolume = Screener.tools.validateLowestVolume(processedData, daysForLowestVolume)
                     isValidRsi = Screener.tools.validateRSI(processedData, screeningDictionary, saveDictionary, minRSI, maxRSI)
-                    currentTrend = Screener.tools.findTrend(processedData, screeningDictionary, saveDictionary, daysToLookback=ConfigManager.daysToLookback, stockName=stock)
+                    try:
+                        currentTrend = Screener.tools.findTrend(processedData, screeningDictionary, saveDictionary, daysToLookback=ConfigManager.daysToLookback, stockName=stock)
+                    except np.RankWarning:
+                        screeningDictionary['Trend'] = colorText.BOLD + 'Unknown' + colorText.END
+                        saveDictionary['Trend'] = 'Unknown'
                     isCandlePattern = candlePatterns.findPattern(processedData, screeningDictionary, saveDictionary)
                     isInsideBar = Screener.tools.validateInsideBar(processedData, screeningDictionary, saveDictionary, bullBear=respBullBear, daysToLookback=insideBarToLookback)
                     if executeOption == 0:

@@ -7,8 +7,8 @@
 4. **RSI** based screening added. Checkout `Option > 5`. :bulb:
 
 ## Downloads
-* For **Windows** users, download **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.13/screenipy.exe)**
-* For **Linux** users, download **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.13/screenipy.bin)**
+* For :desktop_computer: **Windows** users, download **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.13/screenipy.exe)**
+* For :penguin: **Linux** users, download **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.13/screenipy.bin)**
 
 ## How to use?
 
