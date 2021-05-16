@@ -16,8 +16,6 @@ from nsetools import Nse
 from classes.ColorText import colorText
 from classes.SuppressOutput import SuppressOutput
 
-listStockCodes = []
-screenCounter = 1
 nse = Nse()
 
 # Exception class if yfinance stock delisted
@@ -33,7 +31,7 @@ class tools:
 
     # Fetch all stock codes from NSE
     def fetchStockCodes(executeOption):
-        global listStockCodes
+        listStockCodes = []
         if executeOption == 0:
             stockCode = None
             while stockCode == None or stockCode == "":
@@ -67,9 +65,10 @@ class tools:
                     colorText.FAIL + "=> Error getting stock codes from NSE! Press any key to exit!" + colorText.END)
                 sys.exit("Exiting script..")
 
+        return listStockCodes
+
     # Fetch stock price data from Yahoo finance
-    def fetchStockData(stockCode, period, duration, proxyServer, screenResults):
-        global screenCounter
+    def fetchStockData(stockCode, period, duration, proxyServer, screenResultsCounter, screenCounter, totalSymbols):
         with SuppressOutput(suppress_stdout=True, suppress_stderr=True):
             data = yf.download(
                 tickers=stockCode+".NS",
@@ -80,9 +79,8 @@ class tools:
             )
         sys.stdout.write("\r\033[K")
         try:
-            # print(colorText.BOLD + colorText.GREEN + ("[%d%%] Screened %d, Found %d. Fetching data & Analyzing %s..." % (int(screenCounter/len(listStockCodes)*100), screenCounter, len(screenResults), stockCode)) + colorText.END, end='')
-            print(colorText.BOLD + colorText.GREEN +
-                  ("Fetching data & Analyzing %s..." % (stockCode)) + colorText.END, end='')
+            print(colorText.BOLD + colorText.GREEN + ("[%d%%] Screened %d, Found %d. Fetching data & Analyzing %s..." % (
+                int((screenCounter.value/totalSymbols)*100), screenCounter.value, screenResultsCounter.value, stockCode)) + colorText.END, end='')
         except ZeroDivisionError:
             pass
         if len(data) == 0:
@@ -92,5 +90,4 @@ class tools:
             return None
         print(colorText.BOLD + colorText.GREEN + "=> Done!" +
               colorText.END, end='\r', flush=True)
-        screenCounter += 1
         return data
