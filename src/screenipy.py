@@ -34,7 +34,6 @@ np.seterr(divide='ignore', invalid='ignore')
 candlePatterns = CandlePatterns()
 screenCounter = None
 screenResultsCounter = None
-pool = None
 
 # Get system wide proxy for networking
 try:
@@ -77,120 +76,118 @@ def initExecution():
         return initExecution()
 
 
-def screenStocks(executeOption, reversalOption, daysForLowestVolume, minRSI, maxRSI, respBullBear, insideBarToLookback, totalSymbols, stock):
-    global screenCounter, screenResultsCounter
-    screenResults = pd.DataFrame(columns=[
-        'Stock', 'Consolidating', 'Breaking-Out', 'MA-Signal', 'Volume', 'LTP', 'RSI', 'Trend', 'Pattern'])
-    screeningDictionary = {'Stock': "", 'Consolidating': "",  'Breaking-Out': "",
-                           'MA-Signal': "", 'Volume': "", 'LTP': 0, 'RSI': 0, 'Trend': "", 'Pattern': ""}
-    saveDictionary = {'Stock': "", 'Pattern': "", 'Consolidating': "", 'Breaking-Out': "",
-                      'MA-Signal': "", 'Volume': "", 'LTP': 0, 'RSI': 0, 'Trend': "", 'Pattern': ""}
+class StockConsumer(multiprocessing.Process):
 
-    try:
-        data = Fetcher.tools.fetchStockData(stock,
-                                            ConfigManager.period,
-                                            ConfigManager.duration,
-                                            proxyServer,
-                                            screenResultsCounter, screenCounter, totalSymbols)
+    def __init__(self, task_queue, result_queue, sc, src):
+        global screenCounter, screenResultsCounter
+        multiprocessing.Process.__init__(self)
+        self.task_queue = task_queue
+        self.result_queue = result_queue
+        self.screenCounter = sc
+        self.screenResultsCounter = src
 
-        fullData, processedData = Screener.tools.preprocessData(
-            data, daysToLookback=ConfigManager.daysToLookback)
+    def run(self):
+        while True:
+            next_task = self.task_queue.get()
+            if next_task is None:
+                self.task_queue.task_done()
+                break
+            answer = self.screenStocks(*(next_task))
+            self.task_queue.task_done()
+            self.result_queue.put(answer)
 
-        with screenCounter.get_lock():
-            screenCounter.value += 1
+    def screenStocks(self, executeOption, reversalOption, daysForLowestVolume, minRSI, maxRSI, respBullBear, insideBarToLookback, totalSymbols, stock):
+        global screenCounter, screenResultsCounter
+        screenResults = pd.DataFrame(columns=[
+            'Stock', 'Consolidating', 'Breaking-Out', 'MA-Signal', 'Volume', 'LTP', 'RSI', 'Trend', 'Pattern'])
+        screeningDictionary = {'Stock': "", 'Consolidating': "",  'Breaking-Out': "",
+                               'MA-Signal': "", 'Volume': "", 'LTP': 0, 'RSI': 0, 'Trend': "", 'Pattern': ""}
+        saveDictionary = {'Stock': "", 'Pattern': "", 'Consolidating': "", 'Breaking-Out': "",
+                          'MA-Signal': "", 'Volume': "", 'LTP': 0, 'RSI': 0, 'Trend': "", 'Pattern': ""}
 
-        if not processedData.empty:
-            screeningDictionary['Stock'] = colorText.BOLD + \
-                colorText.BLUE + stock + colorText.END
-            saveDictionary['Stock'] = stock
-            consolidationValue = Screener.tools.validateConsolidation(
-                processedData, screeningDictionary, saveDictionary, percentage=ConfigManager.consolidationPercentage)
-            isMaReversal = Screener.tools.validateMovingAverages(
-                processedData, screeningDictionary, saveDictionary, range=1.25)
-            isVolumeHigh = Screener.tools.validateVolume(
-                processedData, screeningDictionary, saveDictionary, volumeRatio=ConfigManager.volumeRatio)
-            isBreaking = Screener.tools.findBreakout(
-                processedData, screeningDictionary, saveDictionary, daysToLookback=ConfigManager.daysToLookback)
-            isLtpValid = Screener.tools.validateLTP(
-                fullData, screeningDictionary, saveDictionary, minLTP=ConfigManager.minLTP, maxLTP=ConfigManager.maxLTP)
-            isLowestVolume = Screener.tools.validateLowestVolume(
-                processedData, daysForLowestVolume)
-            isValidRsi = Screener.tools.validateRSI(
-                processedData, screeningDictionary, saveDictionary, minRSI, maxRSI)
-            currentTrend = Screener.tools.findTrend(
-                processedData, screeningDictionary, saveDictionary, daysToLookback=ConfigManager.daysToLookback, stockName=stock)
-            isCandlePattern = candlePatterns.findPattern(
-                processedData, screeningDictionary, saveDictionary)
-            isInsideBar = Screener.tools.validateInsideBar(
-                processedData, screeningDictionary, saveDictionary, bullBear=respBullBear, daysToLookback=insideBarToLookback)
+        try:
+            data = Fetcher.tools.fetchStockData(stock,
+                                                ConfigManager.period,
+                                                ConfigManager.duration,
+                                                proxyServer,
+                                                self.screenResultsCounter, self.screenCounter, totalSymbols)
+            fullData, processedData = Screener.tools.preprocessData(
+                data, daysToLookback=ConfigManager.daysToLookback)
 
-            with screenResultsCounter.get_lock():
-                if executeOption == 0:
-                    screenResultsCounter.value += 1
-                    return screeningDictionary, saveDictionary
-                if (executeOption == 1 or executeOption == 2) and isBreaking and isVolumeHigh and isLtpValid:
-                    screenResultsCounter.value += 1
-                    return screeningDictionary, saveDictionary
-                if (executeOption == 1 or executeOption == 3) and (consolidationValue <= ConfigManager.consolidationPercentage and consolidationValue != 0) and isLtpValid:
-                    screenResultsCounter.value += 1
-                    return screeningDictionary, saveDictionary
-                if executeOption == 4 and isLtpValid and isLowestVolume:
-                    screenResultsCounter.value += 1
-                    return screeningDictionary, saveDictionary
-                if executeOption == 5 and isLtpValid and isValidRsi:
-                    screenResultsCounter.value += 1
-                    return screeningDictionary, saveDictionary
-                if executeOption == 6 and isLtpValid:
-                    if reversalOption == 1:
-                        if saveDictionary['Pattern'] in CandlePatterns.reversalPatternsBullish or isMaReversal > 0:
-                            screenResultsCounter.value += 1
-                            return screeningDictionary, saveDictionary
-                    elif reversalOption == 2:
-                        if saveDictionary['Pattern'] in CandlePatterns.reversalPatternsBearish or isMaReversal < 0:
-                            screenResultsCounter.value += 1
-                            return screeningDictionary, saveDictionary
-                if executeOption == 7 and isLtpValid and isInsideBar:
-                    screenResultsCounter.value += 1
-                    return screeningDictionary, saveDictionary
-    except KeyboardInterrupt:
-        print(colorText.BOLD + colorText.FAIL +
-              "\n[+] Script terminated by the user." + colorText.END)
-        pool.terminate()
-    except Fetcher.StockDataEmptyException:
-        pass
-    except Exception as e:
-        print(colorText.FAIL +
-              ("\n[+] Exception Occured while Screening %s! Skipping this stock.." % stock) + colorText.END)
-    return
+            with self.screenCounter.get_lock():
+                self.screenCounter.value += 1
 
+            if not processedData.empty:
+                screeningDictionary['Stock'] = colorText.BOLD + \
+                    colorText.BLUE + stock + colorText.END
+                saveDictionary['Stock'] = stock
+                consolidationValue = Screener.tools.validateConsolidation(
+                    processedData, screeningDictionary, saveDictionary, percentage=ConfigManager.consolidationPercentage)
+                isMaReversal = Screener.tools.validateMovingAverages(
+                    processedData, screeningDictionary, saveDictionary, range=1.25)
+                isVolumeHigh = Screener.tools.validateVolume(
+                    processedData, screeningDictionary, saveDictionary, volumeRatio=ConfigManager.volumeRatio)
+                isBreaking = Screener.tools.findBreakout(
+                    processedData, screeningDictionary, saveDictionary, daysToLookback=ConfigManager.daysToLookback)
+                isLtpValid = Screener.tools.validateLTP(
+                    fullData, screeningDictionary, saveDictionary, minLTP=ConfigManager.minLTP, maxLTP=ConfigManager.maxLTP)
+                isLowestVolume = Screener.tools.validateLowestVolume(
+                    processedData, daysForLowestVolume)
+                isValidRsi = Screener.tools.validateRSI(
+                    processedData, screeningDictionary, saveDictionary, minRSI, maxRSI)
+                currentTrend = Screener.tools.findTrend(
+                    processedData, screeningDictionary, saveDictionary, daysToLookback=ConfigManager.daysToLookback, stockName=stock)
+                isCandlePattern = candlePatterns.findPattern(
+                    processedData, screeningDictionary, saveDictionary)
+                isInsideBar = Screener.tools.validateInsideBar(
+                    processedData, screeningDictionary, saveDictionary, bullBear=respBullBear, daysToLookback=insideBarToLookback)
 
-def initPool(sc, src):
-    global screenCounter, screenResultsCounter
-    screenCounter = sc
-    screenResultsCounter = src
-
-
-def getPool():
-    global pool
-    if pool == None:
-        pool = multiprocessing.Pool(
-            processes=multiprocessing.cpu_count(), initializer=initPool, initargs=(screenCounter, screenResultsCounter))
-    return pool
+                with self.screenResultsCounter.get_lock():
+                    if executeOption == 0:
+                        self.screenResultsCounter.value += 1
+                        return screeningDictionary, saveDictionary
+                    if (executeOption == 1 or executeOption == 2) and isBreaking and isVolumeHigh and isLtpValid:
+                        self.screenResultsCounter.value += 1
+                        return screeningDictionary, saveDictionary
+                    if (executeOption == 1 or executeOption == 3) and (consolidationValue <= ConfigManager.consolidationPercentage and consolidationValue != 0) and isLtpValid:
+                        self.screenResultsCounter.value += 1
+                        return screeningDictionary, saveDictionary
+                    if executeOption == 4 and isLtpValid and isLowestVolume:
+                        self.screenResultsCounter.value += 1
+                        return screeningDictionary, saveDictionary
+                    if executeOption == 5 and isLtpValid and isValidRsi:
+                        self.screenResultsCounter.value += 1
+                        return screeningDictionary, saveDictionary
+                    if executeOption == 6 and isLtpValid:
+                        if reversalOption == 1:
+                            if saveDictionary['Pattern'] in CandlePatterns.reversalPatternsBullish or isMaReversal > 0:
+                                self.screenResultsCounter.value += 1
+                                return screeningDictionary, saveDictionary
+                        elif reversalOption == 2:
+                            if saveDictionary['Pattern'] in CandlePatterns.reversalPatternsBearish or isMaReversal < 0:
+                                self.screenResultsCounter.value += 1
+                                return screeningDictionary, saveDictionary
+                    if executeOption == 7 and isLtpValid and isInsideBar:
+                        self.screenResultsCounter.value += 1
+                        return screeningDictionary, saveDictionary
+        except KeyboardInterrupt:
+            print(colorText.BOLD + colorText.FAIL +
+                  "\n[+] Script terminated by the user." + colorText.END)
+        except Fetcher.StockDataEmptyException:
+            pass
+        except Exception as e:
+            print(colorText.FAIL +
+                  ("\n[+] Exception Occured while Screening %s! Skipping this stock.." % stock) + colorText.END)
+        return
 
 
 # Main function
 
 def main(testing=False):
-    global screenCounter, screenResultsCounter, pool
+    global screenCounter, screenResultsCounter
 
-    if pool == None:
-        screenCounter = multiprocessing.Value('i', 1)
-        screenResultsCounter = multiprocessing.Value('i', 0)
-    else:
-        screenCounter.value = 1
-        screenResultsCounter.value = 0
-
-    pool = getPool()
+    screenCounter = multiprocessing.Value('i', 1)
+    screenResultsCounter = multiprocessing.Value('i', 0)
 
     screenResults = pd.DataFrame(columns=[
         'Stock', 'Consolidating', 'Breaking-Out', 'MA-Signal', 'Volume', 'LTP', 'RSI', 'Trend', 'Pattern'])
@@ -244,7 +241,6 @@ def main(testing=False):
         Utility.tools.showDevInfo()
         main()
     if executeOption == 12:
-        pool.terminate()
         print(colorText.BOLD + colorText.FAIL +
               "[+] Script terminated by the user." + colorText.END)
         sys.exit(0)
@@ -263,15 +259,43 @@ def main(testing=False):
         items = [(executeOption, reversalOption, daysForLowestVolume, minRSI, maxRSI, respBullBear, insideBarToLookback, len(listStockCodes), stock)
                  for stock in listStockCodes]
 
-        if testing == True:
-            results = pool.starmap(screenStocks, items[:100])
-        else:
-            results = pool.starmap(screenStocks, items)
+        tasks_queue = multiprocessing.JoinableQueue()
+        results_queue = multiprocessing.Queue()
 
-        results = list(filter(None, results))
-        for x, y in results:
-            screenResults = screenResults.append(x, ignore_index=True)
-            saveResults = saveResults.append(y, ignore_index=True)
+        consumers = [StockConsumer(tasks_queue, results_queue, screenCounter, screenResultsCounter)
+                     for _ in range(multiprocessing.cpu_count())]
+
+        for worker in consumers:
+            worker.start()
+
+        if testing == True:
+            for item in items:
+                tasks_queue.put(item)
+                result = results_queue.get()
+                if result != None:
+                    screenResults = screenResults.append(
+                        result[0], ignore_index=True)
+                    saveResults = saveResults.append(
+                        result[1], ignore_index=True)
+                    break
+        else:
+            for item in items:
+                tasks_queue.put(item)
+
+        # exit signal for each process
+        for _ in range(multiprocessing.cpu_count()):
+            tasks_queue.put(None)
+
+        if testing == False:
+            numStocks = len(listStockCodes)
+            while numStocks:
+                result = results_queue.get()
+                if result != None:
+                    screenResults = screenResults.append(
+                        result[0], ignore_index=True)
+                    saveResults = saveResults.append(
+                        result[1], ignore_index=True)
+                numStocks -= 1
 
         screenResults.sort_values(by=['Stock'], ascending=True, inplace=True)
         saveResults.sort_values(by=['Stock'], ascending=True, inplace=True)
