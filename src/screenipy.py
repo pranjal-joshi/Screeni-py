@@ -96,7 +96,7 @@ class StockConsumer(multiprocessing.Process):
             self.task_queue.task_done()
             self.result_queue.put(answer)
 
-    def screenStocks(self, executeOption, reversalOption, daysForLowestVolume, minRSI, maxRSI, respBullBear, insideBarToLookback, totalSymbols, stock):
+    def screenStocks(self, executeOption, reversalOption, daysForLowestVolume, minRSI, maxRSI, respBullBear, insideBarToLookback, totalSymbols, stock, minLTP, maxLTP):
         global screenCounter, screenResultsCounter
         screenResults = pd.DataFrame(columns=[
             'Stock', 'Consolidating', 'Breaking-Out', 'MA-Signal', 'Volume', 'LTP', 'RSI', 'Trend', 'Pattern'])
@@ -130,7 +130,7 @@ class StockConsumer(multiprocessing.Process):
                 isBreaking = Screener.tools.findBreakout(
                     processedData, screeningDictionary, saveDictionary, daysToLookback=ConfigManager.daysToLookback)
                 isLtpValid = Screener.tools.validateLTP(
-                    fullData, screeningDictionary, saveDictionary, minLTP=ConfigManager.minLTP, maxLTP=ConfigManager.maxLTP)
+                    fullData, screeningDictionary, saveDictionary, minLTP=minLTP, maxLTP=maxLTP)
                 isLowestVolume = Screener.tools.validateLowestVolume(
                     processedData, daysForLowestVolume)
                 isValidRsi = Screener.tools.validateRSI(
@@ -256,7 +256,7 @@ def main(testing=False):
         print(colorText.BOLD + colorText.WARN +
               "[+] Starting Stock Screening.. Press Ctrl+C to stop!\n")
 
-        items = [(executeOption, reversalOption, daysForLowestVolume, minRSI, maxRSI, respBullBear, insideBarToLookback, len(listStockCodes), stock)
+        items = [(executeOption, reversalOption, daysForLowestVolume, minRSI, maxRSI, respBullBear, insideBarToLookback, len(listStockCodes), stock, ConfigManager.minLTP, ConfigManager.maxLTP)
                  for stock in listStockCodes]
 
         tasks_queue = multiprocessing.JoinableQueue()
