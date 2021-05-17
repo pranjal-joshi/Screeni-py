@@ -127,14 +127,6 @@ def test_option_9():
     assert ConfigManager.period != None
     assert ConfigManager.consolidationPercentage != None
 
-def test_option_10(mocker):
-    try:
-        mocker.patch('builtins.input',side_effect=['10'])
-        main(testing=True)
-        assert len(screenResults) > 0
-    except StopIteration:
-        pass
-
 def test_option_12(mocker, capsys):
     try:
         mocker.patch('builtins.input',side_effect=['12'])

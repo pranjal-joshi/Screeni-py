@@ -4,6 +4,7 @@
 # Pyinstaller compile Linux  : pyinstaller --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream
 
 import os
+from queue import Empty
 import sys
 import urllib
 import requests
@@ -61,13 +62,15 @@ def initExecution():
     11 > About Developer
     12 > Exit''' + colorText.END
           )
-    result = input(colorText.BOLD + colorText.FAIL + '[+] Select option: ')
-    print(colorText.END, end='')
     try:
+        result = input(colorText.BOLD + colorText.FAIL + '[+] Select option: ')
+        print(colorText.END, end='')
         result = int(result)
         if(result < 0 or result > 12):
             raise ValueError
         return result
+    except KeyboardInterrupt:
+        raise KeyboardInterrupt
     except:
         print(colorText.BOLD + colorText.FAIL +
               '\n[+] Please enter a valid numeric option & Try Again!' + colorText.END)
@@ -171,8 +174,13 @@ class StockConsumer(multiprocessing.Process):
                         self.screenResultsCounter.value += 1
                         return screeningDictionary, saveDictionary
         except KeyboardInterrupt:
-            print(colorText.BOLD + colorText.FAIL +
-                  "\n[+] Script terminated by the user." + colorText.END)
+            # Clear Queues and append None
+            try:
+                while True:
+                    self.task_queue.get()
+            except Empty:
+                for _ in range(multiprocessing.cpu_count()):
+                    self.task_queue.put(None)
         except Fetcher.StockDataEmptyException:
             pass
         except Exception as e:
@@ -200,8 +208,11 @@ def main(testing=False):
     respBullBear = 1
     daysForLowestVolume = 30
     reversalOption = None
-
-    executeOption = initExecution()
+    try:
+        executeOption = initExecution()
+    except KeyboardInterrupt:
+        input(colorText.BOLD + colorText.FAIL + "[+] Press any key to Exit!" + colorText.END)
+        sys.exit(0) 
     if executeOption == 4:
         try:
             daysForLowestVolume = int(input(colorText.BOLD + colorText.WARN +
@@ -241,9 +252,8 @@ def main(testing=False):
         Utility.tools.showDevInfo()
         main()
     if executeOption == 12:
-        print(colorText.BOLD + colorText.FAIL +
-              "[+] Script terminated by the user." + colorText.END)
-        sys.exit(0)
+        input(colorText.BOLD + colorText.FAIL + "[+] Press any key to Exit!" + colorText.END)
+        sys.exit(0) 
     if executeOption >= 0 and executeOption < 8:
         ConfigManager.tools.getConfig(ConfigManager.parser)
         try:
@@ -281,21 +291,27 @@ def main(testing=False):
         else:
             for item in items:
                 tasks_queue.put(item)
-
-        # exit signal for each process
-        for _ in range(multiprocessing.cpu_count()):
-            tasks_queue.put(None)
-
-        if testing == False:
-            numStocks = len(listStockCodes)
-            while numStocks:
-                result = results_queue.get()
-                if result != None:
-                    screenResults = screenResults.append(
-                        result[0], ignore_index=True)
-                    saveResults = saveResults.append(
-                        result[1], ignore_index=True)
-                numStocks -= 1
+            # Append exit signal for each process indicated by None
+            for _ in range(multiprocessing.cpu_count()):
+                tasks_queue.put(None)
+            try:
+                numStocks = len(listStockCodes)
+                while numStocks:
+                    result = results_queue.get()
+                    if result != None:
+                        screenResults = screenResults.append(
+                            result[0], ignore_index=True)
+                        saveResults = saveResults.append(
+                            result[1], ignore_index=True)
+                    numStocks -= 1
+            except KeyboardInterrupt:
+                for worker in consumers:
+                    worker.terminate()    
+                print(colorText.BOLD + colorText.FAIL + "\n[+] Script terminated by the user." + colorText.END)
+        
+        # Exit all processes. Without this, it threw error in next screening session
+        for worker in consumers:
+            worker.terminate()
 
         screenResults.sort_values(by=['Stock'], ascending=True, inplace=True)
         saveResults.sort_values(by=['Stock'], ascending=True, inplace=True)
@@ -327,4 +343,8 @@ def main(testing=False):
 if __name__ == "__main__":
     Utility.tools.clearScreen()
     OTAUpdater.checkForUpdate(proxyServer, VERSION)
-    main()
+    try:
+        main()
+    except Exception as e:
+        input(colorText.BOLD + colorText.FAIL + "[+] Press any key to Exit!" + colorText.END)
+        sys.exit(0) 

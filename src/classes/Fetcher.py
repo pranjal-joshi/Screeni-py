@@ -75,7 +75,8 @@ class tools:
                 period=period,
                 duration=duration,
                 proxy=proxyServer,
-                progress=False
+                progress=False,
+                threads=True
             )
         sys.stdout.write("\r\033[K")
         try:

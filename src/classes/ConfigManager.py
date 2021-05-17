@@ -61,6 +61,7 @@ class tools:
                 input('')
                 sys.exit(1)
         else:
+            parser = configparser.ConfigParser(strict=False)
             parser.add_section('config')
             print('')
             print(colorText.BOLD + colorText.GREEN +
