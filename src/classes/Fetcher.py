@@ -11,7 +11,6 @@ import requests
 import random
 import yfinance as yf
 import pandas as pd
-import classes.ConfigManager as ConfigManager
 from nsetools import Nse
 from classes.ColorText import colorText
 from classes.SuppressOutput import SuppressOutput
@@ -19,8 +18,6 @@ from classes.SuppressOutput import SuppressOutput
 nse = Nse()
 
 # Exception class if yfinance stock delisted
-
-
 class StockDataEmptyException(Exception):
     pass
 
@@ -29,8 +26,12 @@ class StockDataEmptyException(Exception):
 
 class tools:
 
+    def __init__(self, configManager):
+        self.configManager = configManager
+        pass
+
     # Fetch all stock codes from NSE
-    def fetchStockCodes(executeOption):
+    def fetchStockCodes(self, executeOption):
         listStockCodes = []
         if executeOption == 0:
             stockCode = None
@@ -46,14 +47,14 @@ class tools:
             if len(listStockCodes) > 10:
                 print(colorText.GREEN + ("=> Done! Fetched %d stock codes." %
                                          len(listStockCodes)) + colorText.END)
-                if ConfigManager.shuffleEnabled:
+                if self.configManager.shuffleEnabled:
                     random.shuffle(listStockCodes)
                     print(colorText.BLUE +
                           "[+] Stock shuffling is active." + colorText.END)
                 else:
                     print(colorText.FAIL +
                           "[+] Stock shuffling is inactive." + colorText.END)
-                if ConfigManager.stageTwo:
+                if self.configManager.stageTwo:
                     print(
                         colorText.BLUE + "[+] Screening only for the stocks in Stage-2! Edit User Config to change this." + colorText.END)
                 else:
@@ -68,7 +69,7 @@ class tools:
         return listStockCodes
 
     # Fetch stock price data from Yahoo finance
-    def fetchStockData(stockCode, period, duration, proxyServer, screenResultsCounter, screenCounter, totalSymbols):
+    def fetchStockData(self, stockCode, period, duration, proxyServer, screenResultsCounter, screenCounter, totalSymbols):
         with SuppressOutput(suppress_stdout=True, suppress_stderr=True):
             data = yf.download(
                 tickers=stockCode+".NS",
