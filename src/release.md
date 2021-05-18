@@ -7,8 +7,8 @@
 4. Performance Upgrades! :gear:
 
 ## Downloads
-* For :desktop_computer: **Windows** users, download **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.14/screenipy.exe)**
-* For :penguin: **Linux** users, download **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.14/screenipy.bin)**
+* For :desktop_computer: **Windows** users, download **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.15/screenipy.exe)**
+* For :penguin: **Linux** users, download **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.15/screenipy.bin)**
 
 ## How to use?
 

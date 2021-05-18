@@ -3,18 +3,14 @@
 # Pyinstaller compile Windows: pyinstaller --onefile --icon=src\icon.ico src\screenipy.py  --hidden-import cmath --hidden-import talib.stream
 # Pyinstaller compile Linux  : pyinstaller --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream
 
-import os
-from queue import Empty
+import multiprocessing
+multiprocessing.freeze_support()
 import sys
 import urllib
-import requests
-import multiprocessing
 import numpy as np
 import pandas as pd
 from tabulate import tabulate
 from time import sleep
-import platform
-import datetime
 import classes.Fetcher as Fetcher
 import classes.ConfigManager as ConfigManager
 import classes.Screener as Screener
@@ -22,7 +18,7 @@ import classes.Utility as Utility
 from classes.ColorText import colorText
 from classes.OtaUpdater import OTAUpdater
 from classes.CandlePatterns import CandlePatterns
-from classes.SuppressOutput import SuppressOutput
+from classes.ParallelProcessing import StockConsumer
 from classes.Changelog import *
 
 # Try Fixing bug with this symbol
@@ -32,9 +28,14 @@ TEST_STKCODE = "SBIN"
 np.seterr(divide='ignore', invalid='ignore')
 
 # Global Variabls
-candlePatterns = CandlePatterns()
 screenCounter = None
 screenResultsCounter = None
+keyboardInterruptEvent = None
+
+configManager = ConfigManager.tools()
+fetcher = Fetcher.tools(configManager)
+screener = Screener.tools(configManager)
+candlePatterns = CandlePatterns()
 
 # Get system wide proxy for networking
 try:
@@ -78,129 +79,13 @@ def initExecution():
         Utility.tools.clearScreen()
         return initExecution()
 
-
-class StockConsumer(multiprocessing.Process):
-
-    def __init__(self, task_queue, result_queue, sc, src):
-        global screenCounter, screenResultsCounter
-        multiprocessing.Process.__init__(self)
-        self.task_queue = task_queue
-        self.result_queue = result_queue
-        self.screenCounter = sc
-        self.screenResultsCounter = src
-
-    def run(self):
-        while True:
-            next_task = self.task_queue.get()
-            if next_task is None:
-                self.task_queue.task_done()
-                break
-            answer = self.screenStocks(*(next_task))
-            self.task_queue.task_done()
-            self.result_queue.put(answer)
-
-    def screenStocks(self, executeOption, reversalOption, daysForLowestVolume, minRSI, maxRSI, respBullBear, insideBarToLookback, totalSymbols, stock, minLTP, maxLTP):
-        global screenCounter, screenResultsCounter
-        screenResults = pd.DataFrame(columns=[
-            'Stock', 'Consolidating', 'Breaking-Out', 'MA-Signal', 'Volume', 'LTP', 'RSI', 'Trend', 'Pattern'])
-        screeningDictionary = {'Stock': "", 'Consolidating': "",  'Breaking-Out': "",
-                               'MA-Signal': "", 'Volume': "", 'LTP': 0, 'RSI': 0, 'Trend': "", 'Pattern': ""}
-        saveDictionary = {'Stock': "", 'Pattern': "", 'Consolidating': "", 'Breaking-Out': "",
-                          'MA-Signal': "", 'Volume': "", 'LTP': 0, 'RSI': 0, 'Trend': "", 'Pattern': ""}
-
-        try:
-            data = Fetcher.tools.fetchStockData(stock,
-                                                ConfigManager.period,
-                                                ConfigManager.duration,
-                                                proxyServer,
-                                                self.screenResultsCounter, self.screenCounter, totalSymbols)
-            fullData, processedData = Screener.tools.preprocessData(
-                data, daysToLookback=ConfigManager.daysToLookback)
-
-            with self.screenCounter.get_lock():
-                self.screenCounter.value += 1
-
-            if not processedData.empty:
-                screeningDictionary['Stock'] = colorText.BOLD + \
-                    colorText.BLUE + stock + colorText.END
-                saveDictionary['Stock'] = stock
-                consolidationValue = Screener.tools.validateConsolidation(
-                    processedData, screeningDictionary, saveDictionary, percentage=ConfigManager.consolidationPercentage)
-                isMaReversal = Screener.tools.validateMovingAverages(
-                    processedData, screeningDictionary, saveDictionary, range=1.25)
-                isVolumeHigh = Screener.tools.validateVolume(
-                    processedData, screeningDictionary, saveDictionary, volumeRatio=ConfigManager.volumeRatio)
-                isBreaking = Screener.tools.findBreakout(
-                    processedData, screeningDictionary, saveDictionary, daysToLookback=ConfigManager.daysToLookback)
-                isLtpValid = Screener.tools.validateLTP(
-                    fullData, screeningDictionary, saveDictionary, minLTP=minLTP, maxLTP=maxLTP)
-                isLowestVolume = Screener.tools.validateLowestVolume(
-                    processedData, daysForLowestVolume)
-                isValidRsi = Screener.tools.validateRSI(
-                    processedData, screeningDictionary, saveDictionary, minRSI, maxRSI)
-                currentTrend = Screener.tools.findTrend(
-                    processedData, screeningDictionary, saveDictionary, daysToLookback=ConfigManager.daysToLookback, stockName=stock)
-                isCandlePattern = candlePatterns.findPattern(
-                    processedData, screeningDictionary, saveDictionary)
-                isInsideBar = Screener.tools.validateInsideBar(
-                    processedData, screeningDictionary, saveDictionary, bullBear=respBullBear, daysToLookback=insideBarToLookback)
-
-                with self.screenResultsCounter.get_lock():
-                    if executeOption == 0:
-                        self.screenResultsCounter.value += 1
-                        return screeningDictionary, saveDictionary
-                    if (executeOption == 1 or executeOption == 2) and isBreaking and isVolumeHigh and isLtpValid:
-                        self.screenResultsCounter.value += 1
-                        return screeningDictionary, saveDictionary
-                    if (executeOption == 1 or executeOption == 3) and (consolidationValue <= ConfigManager.consolidationPercentage and consolidationValue != 0) and isLtpValid:
-                        self.screenResultsCounter.value += 1
-                        return screeningDictionary, saveDictionary
-                    if executeOption == 4 and isLtpValid and isLowestVolume:
-                        self.screenResultsCounter.value += 1
-                        return screeningDictionary, saveDictionary
-                    if executeOption == 5 and isLtpValid and isValidRsi:
-                        self.screenResultsCounter.value += 1
-                        return screeningDictionary, saveDictionary
-                    if executeOption == 6 and isLtpValid:
-                        if reversalOption == 1:
-                            if saveDictionary['Pattern'] in CandlePatterns.reversalPatternsBullish or isMaReversal > 0:
-                                self.screenResultsCounter.value += 1
-                                return screeningDictionary, saveDictionary
-                        elif reversalOption == 2:
-                            if saveDictionary['Pattern'] in CandlePatterns.reversalPatternsBearish or isMaReversal < 0:
-                                self.screenResultsCounter.value += 1
-                                return screeningDictionary, saveDictionary
-                    if executeOption == 7 and isLtpValid and isInsideBar:
-                        self.screenResultsCounter.value += 1
-                        return screeningDictionary, saveDictionary
-        except KeyboardInterrupt:
-            # Clear Queues and append None
-            try:
-                while True:
-                    self.task_queue.get()
-            except Empty:
-                for _ in range(multiprocessing.cpu_count()):
-                    self.task_queue.put(None)
-        except Fetcher.StockDataEmptyException:
-            pass
-        except Exception as e:
-            print(colorText.FAIL +
-                  ("\n[+] Exception Occured while Screening %s! Skipping this stock.." % stock) + colorText.END)
-        return
-
-
 # Main function
 
 def main(testing=False):
-    global screenCounter, screenResultsCounter
-
+    global screenCounter, screenResultsCounter, keyboardInterruptEvent
     screenCounter = multiprocessing.Value('i', 1)
     screenResultsCounter = multiprocessing.Value('i', 0)
-
-    screenResults = pd.DataFrame(columns=[
-        'Stock', 'Consolidating', 'Breaking-Out', 'MA-Signal', 'Volume', 'LTP', 'RSI', 'Trend', 'Pattern'])
-    saveResults = pd.DataFrame(columns=['Stock', 'Consolidating', 'Breaking-Out',
-                                        'MA-Signal', 'Volume', 'LTP', 'RSI', 'Trend', 'Pattern'])
+    keyboardInterruptEvent = multiprocessing.Manager().Event()
 
     minRSI = 0
     maxRSI = 100
@@ -208,15 +93,23 @@ def main(testing=False):
     respBullBear = 1
     daysForLowestVolume = 30
     reversalOption = None
+
+    screenResults = pd.DataFrame(columns=[
+                                 'Stock', 'Consolidating', 'Breaking-Out', 'LTP', 'Volume', 'MA-Signal', 'RSI', 'Trend', 'Pattern'])
+    saveResults = pd.DataFrame(columns=[
+                               'Stock', 'Consolidating', 'Breaking-Out', 'LTP', 'Volume', 'MA-Signal', 'RSI', 'Trend', 'Pattern'])
+
     try:
         executeOption = initExecution()
     except KeyboardInterrupt:
-        input(colorText.BOLD + colorText.FAIL + "[+] Press any key to Exit!" + colorText.END)
-        sys.exit(0) 
+        input(colorText.BOLD + colorText.FAIL +
+              "[+] Press any key to Exit!" + colorText.END)
+        sys.exit(0)
+
     if executeOption == 4:
         try:
             daysForLowestVolume = int(input(colorText.BOLD + colorText.WARN +
-                                            '\n[+] The Volume should be lowest since last how many candles? '))
+                                      '\n[+] The Volume should be lowest since last how many candles? '))
         except ValueError:
             print(colorText.END)
             print(colorText.BOLD + colorText.FAIL +
@@ -240,10 +133,10 @@ def main(testing=False):
         if insideBarToLookback == None:
             main()
     if executeOption == 8:
-        ConfigManager.tools.setConfig(ConfigManager.parser)
+        configManager.setConfig(ConfigManager.parser)
         main()
     if executeOption == 9:
-        ConfigManager.tools.showConfigFile()
+        configManager.showConfigFile()
         main()
     if executeOption == 10:
         Utility.tools.getLastScreenedResults()
@@ -252,12 +145,13 @@ def main(testing=False):
         Utility.tools.showDevInfo()
         main()
     if executeOption == 12:
-        input(colorText.BOLD + colorText.FAIL + "[+] Press any key to Exit!" + colorText.END)
-        sys.exit(0) 
+        input(colorText.BOLD + colorText.FAIL +
+              "[+] Press any key to Exit!" + colorText.END)
+        sys.exit(0)
     if executeOption >= 0 and executeOption < 8:
-        ConfigManager.tools.getConfig(ConfigManager.parser)
+        configManager.getConfig(ConfigManager.parser)
         try:
-            listStockCodes = Fetcher.tools.fetchStockCodes(executeOption)
+            listStockCodes = fetcher.fetchStockCodes(executeOption)
         except urllib.error.URLError:
             print(colorText.BOLD + colorText.FAIL +
                   "\n\n[+] Oops! It looks like you don't have an Internet connectivity at the moment! Press any key to exit!" + colorText.END)
@@ -266,13 +160,14 @@ def main(testing=False):
         print(colorText.BOLD + colorText.WARN +
               "[+] Starting Stock Screening.. Press Ctrl+C to stop!\n")
 
-        items = [(executeOption, reversalOption, daysForLowestVolume, minRSI, maxRSI, respBullBear, insideBarToLookback, len(listStockCodes), stock, ConfigManager.minLTP, ConfigManager.maxLTP)
+        items = [(executeOption, reversalOption, daysForLowestVolume, minRSI, maxRSI, respBullBear, insideBarToLookback, len(listStockCodes),
+                configManager, fetcher, screener, candlePatterns, stock)
                  for stock in listStockCodes]
 
         tasks_queue = multiprocessing.JoinableQueue()
         results_queue = multiprocessing.Queue()
 
-        consumers = [StockConsumer(tasks_queue, results_queue, screenCounter, screenResultsCounter)
+        consumers = [StockConsumer(tasks_queue, results_queue, screenCounter, screenResultsCounter, proxyServer, keyboardInterruptEvent)
                      for _ in range(multiprocessing.cpu_count())]
 
         for worker in consumers:
@@ -305,26 +200,36 @@ def main(testing=False):
                             result[1], ignore_index=True)
                     numStocks -= 1
             except KeyboardInterrupt:
+                keyboardInterruptEvent.set()
                 for worker in consumers:
-                    worker.terminate()    
-                print(colorText.BOLD + colorText.FAIL + "\n[+] Script terminated by the user." + colorText.END)
-        
+                    worker.terminate()
+                print(colorText.BOLD + colorText.FAIL +
+                      "\n[+] Script terminated by the user." + colorText.END)
+
         # Exit all processes. Without this, it threw error in next screening session
         for worker in consumers:
             worker.terminate()
+        
+        # Flush the queue so depending processes will end
+        from queue import Empty
+        while True:
+            try:
+                _ = tasks_queue.get(False)
+            except Exception as e:
+                break
 
         screenResults.sort_values(by=['Stock'], ascending=True, inplace=True)
         saveResults.sort_values(by=['Stock'], ascending=True, inplace=True)
         screenResults.rename(
             columns={
-                'Trend': f'Trend ({ConfigManager.daysToLookback}Days)',
+                'Trend': f'Trend ({configManager.daysToLookback}Days)',
                 'Breaking-Out': 'Breakout-Levels'
             },
             inplace=True
         )
         saveResults.rename(
             columns={
-                'Trend': f'Trend ({ConfigManager.daysToLookback}Days)',
+                'Trend': f'Trend ({configManager.daysToLookback}Days)',
                 'Breaking-Out': 'Breakout-Levels'
             },
             inplace=True
@@ -337,14 +242,16 @@ def main(testing=False):
         print(colorText.BOLD + colorText.GREEN +
               "[+] Screening Completed! Happy Trading! :)" + colorText.END)
         input('')
-        main()
 
 
 if __name__ == "__main__":
     Utility.tools.clearScreen()
-    OTAUpdater.checkForUpdate(proxyServer, VERSION)
+    isDevVersion = OTAUpdater.checkForUpdate(proxyServer, VERSION)
     try:
-        main()
+        while True:
+            main()
     except Exception as e:
+        if isDevVersion == OTAUpdater.developmentVersion:
+            raise(e)
         input(colorText.BOLD + colorText.FAIL + "[+] Press any key to Exit!" + colorText.END)
-        sys.exit(0) 
+        sys.exit(0)
