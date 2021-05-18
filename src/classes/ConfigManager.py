@@ -9,37 +9,35 @@ import sys
 import configparser
 from classes.ColorText import colorText
 
-consolidationPercentage = 10
-volumeRatio = 2
-minLTP = 20.0
-maxLTP = 50000
-period = '365d'
-duration = '1d'
-daysToLookback = 30
-shuffleEnabled = False
-stageTwo = False
-useEMA = True
-
 parser = configparser.ConfigParser(strict=False)
 
 # This Class manages read/write of user configuration
-
-
 class tools:
 
+    def __init__(self):
+        self.consolidationPercentage = 10
+        self.volumeRatio = 2
+        self.minLTP = 20.0
+        self.maxLTP = 50000
+        self.period = '365d'
+        self.duration = '1d'
+        self.daysToLookback = 30
+        self.shuffleEnabled = False
+        self.stageTwo = False
+        self.useEMA = True
+
     # Handle user input and save config
-    def setConfig(parser, default=False):
+    def setConfig(self, parser, default=False):
         if default:
-            global duration, period, minLTP, maxLTP, volumeRatio, consolidationPercentage, daysToLookback
             parser.add_section('config')
-            parser.set('config', 'period', period)
-            parser.set('config', 'daysToLookback', str(daysToLookback))
-            parser.set('config', 'duration', duration)
-            parser.set('config', 'minPrice', str(minLTP))
-            parser.set('config', 'maxPrice', str(maxLTP))
-            parser.set('config', 'volumeRatio', str(volumeRatio))
+            parser.set('config', 'period', self.period)
+            parser.set('config', 'daysToLookback', str(self.daysToLookback))
+            parser.set('config', 'duration', self.duration)
+            parser.set('config', 'minPrice', str(self.minLTP))
+            parser.set('config', 'maxPrice', str(self.maxLTP))
+            parser.set('config', 'volumeRatio', str(self.volumeRatio))
             parser.set('config', 'consolidationPercentage',
-                       str(consolidationPercentage))
+                       str(self.consolidationPercentage))
             parser.set('config', 'shuffle', 'y')
             parser.set('config', 'onlyStageTwoStocks', 'y')
             parser.set('config', 'useEMA', 'y')
@@ -66,37 +64,37 @@ class tools:
             print('')
             print(colorText.BOLD + colorText.GREEN +
                   '[+] Screeni-py User Configuration:' + colorText.END)
-            period = input(
+            self.period = input(
                 '[+] Enter number of days for which stock data to be downloaded (Days)(Optimal = 365): ')
-            daysToLookback = input(
+            self.daysToLookback = input(
                 '[+] Number of recent days (TimeFrame) to screen for Breakout/Consolidation (Days)(Optimal = 20): ')
-            duration = input(
+            self.duration = input(
                 '[+] Enter Duration of each candle (Days)(Optimal = 1): ')
-            minLTP = input(
+            self.minLTP = input(
                 '[+] Minimum Price of Stock to Buy (in RS)(Optimal = 20): ')
-            maxLTP = input(
+            self.maxLTP = input(
                 '[+] Maximum Price of Stock to Buy (in RS)(Optimal = 50000): ')
-            volumeRatio = input(
+            self.volumeRatio = input(
                 '[+] How many times the volume should be more than average for the breakout? (Number)(Optimal = 2.5): ')
-            consolidationPercentage = input(
+            self.consolidationPercentage = input(
                 '[+] How many % the price should be in range to consider it as consolidation? (Number)(Optimal = 10): ')
-            shuffle = str(input(
+            self.shuffle = str(input(
                 '[+] Shuffle stocks rather than screening alphabetically? (Y/N): ')).lower()
-            stageTwoPrompt = str(input(
+            self.stageTwoPrompt = str(input(
                 '[+] Screen only for Stage-2 stocks?\n(What are the stages? => https://www.investopedia.com/articles/trading/08/stock-cycle-trend-price.asp)\n(Y/N): ')).lower()
-            useEmaPrompt = str(input(
+            self.useEmaPrompt = str(input(
                 '[+] Use EMA instead of SMA? (EMA is good for Short-term & SMA for Mid/Long-term trades)[Y/N]: ')).lower()
-            parser.set('config', 'period', period + "d")
-            parser.set('config', 'daysToLookback', daysToLookback)
-            parser.set('config', 'duration', duration + "d")
-            parser.set('config', 'minPrice', minLTP)
-            parser.set('config', 'maxPrice', maxLTP)
-            parser.set('config', 'volumeRatio', volumeRatio)
+            parser.set('config', 'period', self.period + "d")
+            parser.set('config', 'daysToLookback', self.daysToLookback)
+            parser.set('config', 'duration', self.duration + "d")
+            parser.set('config', 'minPrice', self.minLTP)
+            parser.set('config', 'maxPrice', self.maxLTP)
+            parser.set('config', 'volumeRatio', self.volumeRatio)
             parser.set('config', 'consolidationPercentage',
-                       consolidationPercentage)
-            parser.set('config', 'shuffle', shuffle)
-            parser.set('config', 'onlyStageTwoStocks', stageTwoPrompt)
-            parser.set('config', 'useEMA', useEmaPrompt)
+                       self.consolidationPercentage)
+            parser.set('config', 'shuffle', self.shuffle)
+            parser.set('config', 'onlyStageTwoStocks', self.stageTwoPrompt)
+            parser.set('config', 'useEMA', self.useEmaPrompt)
             try:
                 fp = open('screenipy.ini', 'w')
                 parser.write(fp)
@@ -114,36 +112,32 @@ class tools:
                 sys.exit(1)
 
     # Load user config from file
-    def getConfig(parser):
-        global duration, period, minLTP, maxLTP, volumeRatio, consolidationPercentage, daysToLookback, shuffleEnabled, stageTwo
+    def getConfig(self, parser):
         if len(parser.read('screenipy.ini')):
             try:
-                duration = parser.get('config', 'duration')
-                period = parser.get('config', 'period')
-                minLTP = float(parser.get('config', 'minprice'))
-                maxLTP = float(parser.get('config', 'maxprice'))
-                volumeRatio = float(parser.get('config', 'volumeRatio'))
-                consolidationPercentage = float(
-                    parser.get('config', 'consolidationPercentage'))
-                daysToLookback = int(parser.get('config', 'daysToLookback'))
+                self.duration = parser.get('config', 'duration')
+                self.period = parser.get('config', 'period')
+                self.minLTP = float(parser.get('config', 'minprice'))
+                self.maxLTP = float(parser.get('config', 'maxprice'))
+                self.volumeRatio = float(parser.get('config', 'volumeRatio'))
+                self.consolidationPercentage = float(parser.get('config', 'consolidationPercentage'))
+                self.daysToLookback = int(parser.get('config', 'daysToLookback'))
                 if not 'n' in str(parser.get('config', 'shuffle')).lower():
-                    shuffleEnabled = True
+                    self.shuffleEnabled = True
                 if not 'n' in str(parser.get('config', 'onlyStageTwoStocks')).lower():
-                    stageTwo = True
+                    self.stageTwo = True
                 if not 'y' in str(parser.get('config', 'useEMA')).lower():
-                    useEMA = False
-                print(colorText.BOLD + colorText.GREEN +
-                      '[+] User configuration loaded.' + colorText.END)
+                    self.useEMA = False
             except configparser.NoOptionError:
                 input(colorText.BOLD + colorText.FAIL +
                       '[+] Screenipy requires user configuration again. Press enter to continue..' + colorText.END)
                 parser.remove_section('config')
-                tools.setConfig(parser, default=False)
+                self.setConfig(parser, default=False)
         else:
-            tools.setConfig(parser, default=True)
+            self.setConfig(parser, default=True)
 
     # Print config file
-    def showConfigFile():
+    def showConfigFile(self):
         try:
             f = open('screenipy.ini', 'r')
             print(colorText.BOLD + colorText.GREEN +
@@ -156,4 +150,4 @@ class tools:
                   "[+] User Configuration not found!" + colorText.END)
             print(colorText.BOLD + colorText.WARN +
                   "[+] Configure the limits to continue." + colorText.END)
-            tools.setConfig(parser)
+            self.setConfig(parser)

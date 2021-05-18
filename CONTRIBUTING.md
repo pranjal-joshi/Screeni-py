@@ -29,7 +29,14 @@ git merge screenipy_upstream/<BRANCH_FROM_THIS_REPO_YOU_WANT_TO_MERGE_IN_YOUR_BR
 2. Update the `requirements.txt` file by running `pip-chill --all --no-version -v > requirements.txt`.
 3. Ensure to **uncomment** all the dependency modules from the `requirements.txt`
 
-## 4. Pull Request Process
+## 4. Testing Code Locally
+
+1. Update the test-cases as per the new features from `test/screenipy_test.py` if required.
+2. Run a test locally with `pytest -v` and ensure that all tests are passed.
+3. In case of a failure, Rectify code or Consider opening an issue for further discussion.
+
+## 5. Pull Request Process
 
 1. Ensure that dependecy list have been generated in the `requirements.txt` using above section.
-2. If you are contributing new feature or a bug-fix, Always create a Pull Request to `new-features` branch as it have workflows to test the source before merging with the `main`.
+2. Ensure that all test-cases are passed locally.
+1. If you are contributing new feature or a bug-fix, Always create a Pull Request to `new-features` branch as it have workflows to test the source before merging with the `main`.
