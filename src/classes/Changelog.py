@@ -79,7 +79,8 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 3. Documentation updated and Performance fixes.
 
 [1.14]
-1. Screening stocks in parallel using all cores available in machine.
+1. Screening stocks with parallel processing using all cores available in machine. (Thanks to @swarpatel23)
+2. Minor Bug-fixes and Improvements.
 
 --- END ---
 ''' + colorText.END
