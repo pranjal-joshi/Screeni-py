@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.13"
+VERSION = "1.15"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -77,6 +77,10 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 1. Chart Pattern Detection added. Option > 7
 2. Screen for Inside Bar Chart pattern.
 3. Documentation updated and Performance fixes.
+
+[1.14][1.15]
+1. Screening stocks with parallel processing using all cores available in machine. (Thanks to @swarpatel23)
+2. Minor Bug-fixes and Improvements.
 
 --- END ---
 ''' + colorText.END

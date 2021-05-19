@@ -14,6 +14,8 @@ import subprocess
 
 class OTAUpdater:
 
+    developmentVersion = 'd'
+
     # Download and replace exe through other process for windows
     def updateForWindows(url):
         batFile = """@echo off
@@ -84,8 +86,10 @@ rm updater.sh
                         sys.exit(1)
             elif(float(resp.json()['tag_name']) < now):
                 print(colorText.BOLD + colorText.FAIL + ('[+] This version (v%s) is in Development mode and unreleased!' % VERSION) + colorText.END)
+                return OTAUpdater.developmentVersion
         except Exception as e:
             print(colorText.BOLD + colorText.FAIL + "[+] Failure while checking update!" + colorText.END)
             print(e)
             if OTAUpdater.checkForUpdate.url != None:
                 print(colorText.BOLD + colorText.BLUE + ("[+] Download update manually from %s\n" % OTAUpdater.checkForUpdate.url) + colorText.END)
+        return

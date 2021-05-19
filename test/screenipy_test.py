@@ -20,21 +20,21 @@ from screenipy import *
 import classes.ConfigManager as ConfigManager
 
 last_release = 0
+configManager = ConfigManager.tools()
 
+# Generate default configuration if not exist
+def test_generate_default_config(mocker, capsys):
+    mocker.patch('builtins.input',side_effect=['0','\n'])
+    with pytest.raises(SystemExit):
+        configManager.setConfig(ConfigManager.parser,default=True)
+    out, err = capsys.readouterr()
+    assert err == ''
 
 def test_if_release_version_increamented():
     global last_release
     r = requests.get("https://api.github.com/repos/pranjal-joshi/Screeni-py/releases/latest")
     last_release = float(r.json()['tag_name'])
     assert float(VERSION) > last_release
-
-# Generate default configuration if not exist
-def test_generate_default_config(mocker, capsys):
-    mocker.patch('builtins.input',side_effect=['\n'])
-    with pytest.raises(SystemExit):
-        ConfigManager.tools.setConfig(ConfigManager.parser,default=True)
-    out, err = capsys.readouterr()
-    assert err == ''
 
 def test_option_0(mocker):
     try:
@@ -104,13 +104,13 @@ def test_option_8(mocker, capsys):
     try:
         mocker.patch('builtins.input',side_effect=[
             '8',
-            str(ConfigManager.period),
-            str(ConfigManager.daysToLookback),
-            str(ConfigManager.duration),
-            str(ConfigManager.minLTP),
-            str(ConfigManager.maxLTP),
-            str(ConfigManager.volumeRatio),
-            str(ConfigManager.consolidationPercentage),
+            str(configManager.period),
+            str(configManager.daysToLookback),
+            str(configManager.duration),
+            str(configManager.minLTP),
+            str(configManager.maxLTP),
+            str(configManager.volumeRatio),
+            str(configManager.consolidationPercentage),
             'y',
             'y',
         ])
@@ -122,18 +122,10 @@ def test_option_8(mocker, capsys):
         pass
 
 def test_option_9():
-    ConfigManager.tools.getConfig(ConfigManager.parser)
-    assert ConfigManager.duration != None
-    assert ConfigManager.period != None
-    assert ConfigManager.consolidationPercentage != None
-
-def test_option_10(mocker):
-    try:
-        mocker.patch('builtins.input',side_effect=['10'])
-        main(testing=True)
-        assert len(screenResults) > 0
-    except StopIteration:
-        pass
+    configManager.getConfig(ConfigManager.parser)
+    assert configManager.duration != None
+    assert configManager.period != None
+    assert configManager.consolidationPercentage != None
 
 def test_option_12(mocker, capsys):
     try:
@@ -168,9 +160,3 @@ def test_if_changelog_version_changed():
     global last_release
     v = changelog.split(']')[-2].split('[')[-1]
     assert float(v) > float(last_release)
-
-def test_delete_xlsx():
-    if platform.platform() == 'Windows':
-        os.system("del *.xlsx")
-    else:
-        os.system("rm *.xlsx")

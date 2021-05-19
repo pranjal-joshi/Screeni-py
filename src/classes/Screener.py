@@ -10,7 +10,6 @@ import math
 import numpy as np
 import pandas as pd
 import talib
-import classes.ConfigManager as ConfigManager
 from scipy.signal import argrelextrema
 from classes.ColorText import colorText
 from classes.SuppressOutput import SuppressOutput
@@ -22,17 +21,22 @@ class StockDataNotAdequate(Exception):
 # This Class contains methods for stock analysis and screening validation
 class tools:
 
+    def __init__(self, configManager) -> None:
+        self.configManager = configManager
+
     # Private method to find candle type
     # True = Bullish, False = Bearish
-    def getCandleType(dailyData):
+    def getCandleType(self, dailyData):
         if dailyData['Close'][0] >= dailyData['Open'][0]:
             return True
         else:
             return False
 
     # Preprocess the acquired data
-    def preprocessData(data, daysToLookback=ConfigManager.daysToLookback):
-        if ConfigManager.useEMA:
+    def preprocessData(self, data, daysToLookback=None):
+        if daysToLookback is None:
+            daysToLookback = self.configManager.daysToLookback
+        if self.configManager.useEMA:
             sma = talib.EMA(data['Close'],timeperiod=50)
             lma = talib.EMA(data['Close'],timeperiod=200)
             data.insert(6,'SMA',sma)
@@ -54,14 +58,18 @@ class tools:
         return (fullData, trimmedData)
 
     # Validate LTP within limits
-    def validateLTP(data, dict, saveDict, minLTP=ConfigManager.minLTP, maxLTP=ConfigManager.maxLTP):
+    def validateLTP(self, data, dict, saveDict, minLTP=None, maxLTP=None):
+        if minLTP is None:
+            minLTP = self.configManager.minLTP
+        if maxLTP is None:
+            maxLTP = self.configManager.maxLTP
         data = data.fillna(0)
         data = data.replace([np.inf, -np.inf], 0)
         recent = data.head(1)
         ltp = round(recent['Close'][0],2)
         saveDict['LTP'] = str(ltp)
         verifyStageTwo = True
-        if(ConfigManager.stageTwo):
+        if(self.configManager.stageTwo):
             yearlyLow = data.head(300).min()['Close']
             yearlyHigh = data.head(300).max()['Close']
             if ltp < (2 * yearlyLow) or ltp < (0.75 * yearlyHigh):
@@ -74,7 +82,7 @@ class tools:
             return False
 
     # Validate if share prices are consolidating
-    def validateConsolidation(data, dict, saveDict, percentage=10):
+    def validateConsolidation(self, data, dict, saveDict, percentage=10):
         data = data.fillna(0)
         data = data.replace([np.inf, -np.inf], 0)
         hc = data.describe()['Close']['max']
@@ -87,7 +95,7 @@ class tools:
         return round((abs((hc-lc)/hc)*100),2)
 
     # Validate Moving averages and look for buy/sell signals
-    def validateMovingAverages(data, dict, saveDict, range=2.5):
+    def validateMovingAverages(self, data, dict, saveDict, range=2.5):
         data = data.fillna(0)
         data = data.replace([np.inf, -np.inf], 0)
         recent = data.head(1)
@@ -126,7 +134,7 @@ class tools:
             saveDict['MA-Signal'] = '200MA-Resist'
             maReversal = -1
         # For a Bullish Candle
-        if tools.getCandleType(data):
+        if self.getCandleType(data):
             # Crossing up 50
             if open < sma and close > sma:
                 dict['MA-Signal'] = colorText.BOLD + colorText.GREEN + 'BullCross-50MA' + colorText.END
@@ -138,7 +146,7 @@ class tools:
                 saveDict['MA-Signal'] = 'BullCross-200MA'
                 maReversal = 1
         # For a Bearish Candle
-        elif not tools.getCandleType(data):
+        elif not self.getCandleType(data):
             # Crossing down 50
             if open > sma and close < sma:
                 dict['MA-Signal'] = colorText.BOLD + colorText.FAIL + 'BearCross-50MA' + colorText.END
@@ -152,10 +160,12 @@ class tools:
         return maReversal
 
     # Validate if volume of last day is higher than avg
-    def validateVolume(data, dict, saveDict, volumeRatio=2.5):
+    def validateVolume(self, data, dict, saveDict, volumeRatio=2.5):
         data = data.fillna(0)
         data = data.replace([np.inf, -np.inf], 0)
         recent = data.head(1)
+        if recent['VolMA'][0] == 0: # Handles Divide by 0 warning
+            return False
         ratio = round(recent['Volume'][0]/recent['VolMA'][0],2)
         saveDict['Volume'] = str(ratio)+"x"
         if(ratio >= volumeRatio and ratio != np.nan and (not math.isinf(ratio)) and (ratio != 20)):
@@ -166,7 +176,7 @@ class tools:
             return False
 
     # Find accurate breakout value
-    def findBreakout(data, dict, saveDict, daysToLookback):
+    def findBreakout(self, data, dict, saveDict, daysToLookback):
         data = data.fillna(0)
         data = data.replace([np.inf, -np.inf], 0)
         recent = data.head(1)
@@ -211,7 +221,7 @@ class tools:
                 return False
 
     # Validate 'Inside Bar' structure for recent days
-    def validateInsideBar(data, dict, saveDict, bullBear=1, daysToLookback=5):
+    def validateInsideBar(self, data, dict, saveDict, bullBear=1, daysToLookback=5):
         orgData = data
         for i in range(daysToLookback, round(daysToLookback*0.5)-1, -1):
             if i == 2:
@@ -239,7 +249,7 @@ class tools:
         return 0
     
     # Validate if recent volume is lowest of last 'N' Days
-    def validateLowestVolume(data, daysForLowestVolume):
+    def validateLowestVolume(self, data, daysForLowestVolume):
         data = data.fillna(0)
         data = data.replace([np.inf, -np.inf], 0)
         if daysForLowestVolume == None:
@@ -251,7 +261,7 @@ class tools:
         return False
 
     # validate if RSI is within given range
-    def validateRSI(data, dict, saveDict, minRSI, maxRSI):
+    def validateRSI(self, data, dict, saveDict, minRSI, maxRSI):
         data = data.fillna(0)
         data = data.replace([np.inf, -np.inf], 0)
         rsi = int(data.head(1)['RSI'][0])
@@ -263,7 +273,9 @@ class tools:
         return False
 
     # Find out trend for days to lookback
-    def findTrend(data, dict, saveDict, daysToLookback=ConfigManager.daysToLookback,stockName=""):
+    def findTrend(self, data, dict, saveDict, daysToLookback=None,stockName=""):
+        if daysToLookback is None:
+            daysToLookback = self.configManager.daysToLookback
         data = data.head(daysToLookback)
         data = data[::-1]
         data = data.set_index(np.arange(len(data)))
