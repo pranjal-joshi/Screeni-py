@@ -4,11 +4,11 @@
 1. **Massive Improvement in screening speed!** :zap: Now we take just around 3-4 minutes to screen thousands of stocks in real time! (Thanks to [**swarpatel23**](https://github.com/swarpatel23) for implementing Parallel Processing)
 2. Now screen stocks according to **Chart Patterns `Option > 7`** :sparkles:
 3. **MA** now gives more info like **Candle Crossing and At Support/Resistance**. :chart_with_upwards_trend:
-4. Performance Upgrades! :gear:
+4. Performance Upgrades & Crash Fixes! :gear:
 
 ## Downloads
-* For :desktop_computer: **Windows** users, download **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.15/screenipy.exe)**
-* For :penguin: **Linux** users, download **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.15/screenipy.bin)**
+* For :desktop_computer: **Windows** users, download **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.16/screenipy.exe)**
+* For :penguin: **Linux** users, download **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.16/screenipy.bin)**
 
 ## How to use?
 

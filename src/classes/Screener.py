@@ -27,10 +27,8 @@ class tools:
     # Private method to find candle type
     # True = Bullish, False = Bearish
     def getCandleType(self, dailyData):
-        if dailyData['Close'][0] >= dailyData['Open'][0]:
-            return True
-        else:
-            return False
+        return bool(dailyData['Close'][0] >= dailyData['Open'][0])
+            
 
     # Preprocess the acquired data
     def preprocessData(self, data, daysToLookback=None):
@@ -58,7 +56,7 @@ class tools:
         return (fullData, trimmedData)
 
     # Validate LTP within limits
-    def validateLTP(self, data, dict, saveDict, minLTP=None, maxLTP=None):
+    def validateLTP(self, data, screenDict, saveDict, minLTP=None, maxLTP=None):
         if minLTP is None:
             minLTP = self.configManager.minLTP
         if maxLTP is None:
@@ -75,92 +73,91 @@ class tools:
             if ltp < (2 * yearlyLow) or ltp < (0.75 * yearlyHigh):
                 verifyStageTwo = False
         if(ltp >= minLTP and ltp <= maxLTP and verifyStageTwo):
-            dict['LTP'] = colorText.GREEN + ("%.2f" % ltp) + colorText.END
+            screenDict['LTP'] = colorText.GREEN + ("%.2f" % ltp) + colorText.END
             return True
-        else:
-            dict['LTP'] = colorText.FAIL + ("%.2f" % ltp) + colorText.END
-            return False
+        screenDict['LTP'] = colorText.FAIL + ("%.2f" % ltp) + colorText.END
+        return False
 
     # Validate if share prices are consolidating
-    def validateConsolidation(self, data, dict, saveDict, percentage=10):
+    def validateConsolidation(self, data, screenDict, saveDict, percentage=10):
         data = data.fillna(0)
         data = data.replace([np.inf, -np.inf], 0)
         hc = data.describe()['Close']['max']
         lc = data.describe()['Close']['min']
         if ((hc - lc) <= (hc*percentage/100) and (hc - lc != 0)):
-            dict['Consolidating'] = colorText.BOLD + colorText.GREEN + "Range = " + str(round((abs((hc-lc)/hc)*100),2))+"%" + colorText.END
+            screenDict['Consolidating'] = colorText.BOLD + colorText.GREEN + "Range = " + str(round((abs((hc-lc)/hc)*100),2))+"%" + colorText.END
         else:
-            dict['Consolidating'] = colorText.BOLD + colorText.FAIL + "Range = " + str(round((abs((hc-lc)/hc)*100),2)) + "%" + colorText.END
+            screenDict['Consolidating'] = colorText.BOLD + colorText.FAIL + "Range = " + str(round((abs((hc-lc)/hc)*100),2)) + "%" + colorText.END
         saveDict['Consolidating'] = str(round((abs((hc-lc)/hc)*100),2))+"%"
         return round((abs((hc-lc)/hc)*100),2)
 
     # Validate Moving averages and look for buy/sell signals
-    def validateMovingAverages(self, data, dict, saveDict, range=2.5):
+    def validateMovingAverages(self, data, screenDict, saveDict, maRange=2.5):
         data = data.fillna(0)
         data = data.replace([np.inf, -np.inf], 0)
         recent = data.head(1)
         if(recent['SMA'][0] > recent['LMA'][0] and recent['Close'][0] > recent['SMA'][0]):
-            dict['MA-Signal'] = colorText.BOLD + colorText.GREEN + 'Bullish' + colorText.END
+            screenDict['MA-Signal'] = colorText.BOLD + colorText.GREEN + 'Bullish' + colorText.END
             saveDict['MA-Signal'] = 'Bullish'
         elif(recent['SMA'][0] < recent['LMA'][0]):
-            dict['MA-Signal'] = colorText.BOLD + colorText.FAIL + 'Bearish' + colorText.END
+            screenDict['MA-Signal'] = colorText.BOLD + colorText.FAIL + 'Bearish' + colorText.END
             saveDict['MA-Signal'] = 'Bearish'
         else:
-            dict['MA-Signal'] = colorText.BOLD + colorText.WARN + 'Neutral' + colorText.END
+            screenDict['MA-Signal'] = colorText.BOLD + colorText.WARN + 'Neutral' + colorText.END
             saveDict['MA-Signal'] = 'Neutral'
 
-        smaDev = data['SMA'][0] * range / 100
-        lmaDev = data['LMA'][0] * range / 100
+        smaDev = data['SMA'][0] * maRange / 100
+        lmaDev = data['LMA'][0] * maRange / 100
         open, high, low, close, sma, lma = data['Open'][0], data['High'][0], data['Low'][0], data['Close'][0], data['SMA'][0], data['LMA'][0]
         maReversal = 0
         # Taking Support 50
         if close > sma and low <= (sma + smaDev):
-            dict['MA-Signal'] = colorText.BOLD + colorText.GREEN + '50MA-Support' + colorText.END
+            screenDict['MA-Signal'] = colorText.BOLD + colorText.GREEN + '50MA-Support' + colorText.END
             saveDict['MA-Signal'] = '50MA-Support'
             maReversal = 1
         # Validating Resistance 50
         elif close < sma and high >= (sma - smaDev):
-            dict['MA-Signal'] = colorText.BOLD + colorText.FAIL + '50MA-Resist' + colorText.END
+            screenDict['MA-Signal'] = colorText.BOLD + colorText.FAIL + '50MA-Resist' + colorText.END
             saveDict['MA-Signal'] = '50MA-Resist'
             maReversal = -1
         # Taking Support 200
         elif close > lma and low <= (lma + lmaDev):
-            dict['MA-Signal'] = colorText.BOLD + colorText.GREEN + '200MA-Support' + colorText.END
+            screenDict['MA-Signal'] = colorText.BOLD + colorText.GREEN + '200MA-Support' + colorText.END
             saveDict['MA-Signal'] = '200MA-Support'
             maReversal = 1
         # Validating Resistance 200
         elif close < lma and high >= (lma - lmaDev):
-            dict['MA-Signal'] = colorText.BOLD + colorText.FAIL + '200MA-Resist' + colorText.END
+            screenDict['MA-Signal'] = colorText.BOLD + colorText.FAIL + '200MA-Resist' + colorText.END
             saveDict['MA-Signal'] = '200MA-Resist'
             maReversal = -1
         # For a Bullish Candle
         if self.getCandleType(data):
             # Crossing up 50
             if open < sma and close > sma:
-                dict['MA-Signal'] = colorText.BOLD + colorText.GREEN + 'BullCross-50MA' + colorText.END
+                screenDict['MA-Signal'] = colorText.BOLD + colorText.GREEN + 'BullCross-50MA' + colorText.END
                 saveDict['MA-Signal'] = 'BullCross-50MA'
                 maReversal = 1            
             # Crossing up 200
             elif open < lma and close > lma:
-                dict['MA-Signal'] = colorText.BOLD + colorText.GREEN + 'BullCross-200MA' + colorText.END
+                screenDict['MA-Signal'] = colorText.BOLD + colorText.GREEN + 'BullCross-200MA' + colorText.END
                 saveDict['MA-Signal'] = 'BullCross-200MA'
                 maReversal = 1
         # For a Bearish Candle
         elif not self.getCandleType(data):
             # Crossing down 50
             if open > sma and close < sma:
-                dict['MA-Signal'] = colorText.BOLD + colorText.FAIL + 'BearCross-50MA' + colorText.END
+                screenDict['MA-Signal'] = colorText.BOLD + colorText.FAIL + 'BearCross-50MA' + colorText.END
                 saveDict['MA-Signal'] = 'BearCross-50MA'
                 maReversal = -1         
             # Crossing up 200
             elif open > lma and close < lma:
-                dict['MA-Signal'] = colorText.BOLD + colorText.FAIL + 'BearCross-200MA' + colorText.END
+                screenDict['MA-Signal'] = colorText.BOLD + colorText.FAIL + 'BearCross-200MA' + colorText.END
                 saveDict['MA-Signal'] = 'BearCross-200MA'
                 maReversal = -1
         return maReversal
 
     # Validate if volume of last day is higher than avg
-    def validateVolume(self, data, dict, saveDict, volumeRatio=2.5):
+    def validateVolume(self, data, screenDict, saveDict, volumeRatio=2.5):
         data = data.fillna(0)
         data = data.replace([np.inf, -np.inf], 0)
         recent = data.head(1)
@@ -169,14 +166,13 @@ class tools:
         ratio = round(recent['Volume'][0]/recent['VolMA'][0],2)
         saveDict['Volume'] = str(ratio)+"x"
         if(ratio >= volumeRatio and ratio != np.nan and (not math.isinf(ratio)) and (ratio != 20)):
-            dict['Volume'] = colorText.BOLD + colorText.GREEN + str(ratio) + "x" + colorText.END
+            screenDict['Volume'] = colorText.BOLD + colorText.GREEN + str(ratio) + "x" + colorText.END
             return True
-        else:
-            dict['Volume'] = colorText.BOLD + colorText.FAIL + str(ratio) + "x" + colorText.END
-            return False
+        screenDict['Volume'] = colorText.BOLD + colorText.FAIL + str(ratio) + "x" + colorText.END
+        return False
 
     # Find accurate breakout value
-    def findBreakout(self, data, dict, saveDict, daysToLookback):
+    def findBreakout(self, data, screenDict, saveDict, daysToLookback):
         data = data.fillna(0)
         data = data.replace([np.inf, -np.inf], 0)
         recent = data.head(1)
@@ -188,40 +184,34 @@ class tools:
             if ((hs - hc) <= (hs*2/100)):
                 saveDict['Breaking-Out'] = str(hc)
                 if rc >= hc:
-                    dict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "BO: " + str(hc) + " R: " + str(hs) + colorText.END
+                    screenDict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "BO: " + str(hc) + " R: " + str(hs) + colorText.END
                     return True
-                else:
-                    dict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "BO: " + str(hc) + " R: " + str(hs) + colorText.END
-                    return False
-            else:    
-                noOfHigherShadows = len(data[data.High > hc])
-                if(daysToLookback/noOfHigherShadows <= 3):
-                    saveDict['Breaking-Out'] = str(hs)
-                    if rc >= hs:
-                        dict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "BO: " + str(hs) + colorText.END
-                        return True
-                    else:
-                        dict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "BO: " + str(hs) + colorText.END
-                        return False
-                else:
-                    saveDict['Breaking-Out'] = str(hc) + ", " + str(hs)
-                    if rc >= hc:
-                        dict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "BO: " + str(hc) + " R: " + str(hs) + colorText.END
-                        return True
-                    else:
-                        dict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "BO: " + str(hc) + " R: " + str(hs) + colorText.END
-                        return False
+                screenDict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "BO: " + str(hc) + " R: " + str(hs) + colorText.END
+                return False
+            noOfHigherShadows = len(data[data.High > hc])
+            if(daysToLookback/noOfHigherShadows <= 3):
+                saveDict['Breaking-Out'] = str(hs)
+                if rc >= hs:
+                    screenDict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "BO: " + str(hs) + colorText.END
+                    return True
+                screenDict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "BO: " + str(hs) + colorText.END
+                return False
+            saveDict['Breaking-Out'] = str(hc) + ", " + str(hs)
+            if rc >= hc:
+                screenDict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "BO: " + str(hc) + " R: " + str(hs) + colorText.END
+                return True
+            screenDict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "BO: " + str(hc) + " R: " + str(hs) + colorText.END
+            return False
         else:
             saveDict['Breaking-Out'] = str(hc)
             if rc >= hc:
-                dict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "BO: " + str(hc) + colorText.END
+                screenDict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "BO: " + str(hc) + colorText.END
                 return True
-            else:
-                dict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "BO: " + str(hc) + colorText.END
-                return False
+            screenDict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "BO: " + str(hc) + colorText.END
+            return False
 
     # Validate 'Inside Bar' structure for recent days
-    def validateInsideBar(self, data, dict, saveDict, bullBear=1, daysToLookback=5):
+    def validateInsideBar(self, data, screenDict, saveDict, bullBear=1, daysToLookback=5):
         orgData = data
         for i in range(daysToLookback, round(daysToLookback*0.5)-1, -1):
             if i == 2:
@@ -231,7 +221,7 @@ class tools:
                     data = orgData.head(i)
                     refCandle = data.tail(1)
                     if (len(data.High[data.High > refCandle.High.item()]) == 0) and (len(data.Low[data.Low < refCandle.Low.item()]) == 0) and (len(data.Open[data.Open > refCandle.High.item()]) == 0) and (len(data.Close[data.Close < refCandle.Low.item()]) == 0):
-                        dict['Pattern'] = colorText.BOLD + colorText.WARN + ("Inside Bar (%d)" % i) + colorText.END
+                        screenDict['Pattern'] = colorText.BOLD + colorText.WARN + ("Inside Bar (%d)" % i) + colorText.END
                         saveDict['Pattern'] = "Inside Bar (%d)" % i
                         return i
                 else:
@@ -241,7 +231,7 @@ class tools:
                     data = orgData.head(i)
                     refCandle = data.tail(1)
                     if (len(data.High[data.High > refCandle.High.item()]) == 0) and (len(data.Low[data.Low < refCandle.Low.item()]) == 0) and (len(data.Open[data.Open > refCandle.High.item()]) == 0) and (len(data.Close[data.Close < refCandle.Low.item()]) == 0):
-                        dict['Pattern'] = colorText.BOLD + colorText.WARN + ("Inside Bar (%d)" % i) + colorText.END
+                        screenDict['Pattern'] = colorText.BOLD + colorText.WARN + ("Inside Bar (%d)" % i) + colorText.END
                         saveDict['Pattern'] = "Inside Bar (%d)" % i
                         return i
                 else:
@@ -252,7 +242,7 @@ class tools:
     def validateLowestVolume(self, data, daysForLowestVolume):
         data = data.fillna(0)
         data = data.replace([np.inf, -np.inf], 0)
-        if daysForLowestVolume == None:
+        if daysForLowestVolume is None:
             daysForLowestVolume = 30
         data = data.head(daysForLowestVolume)
         recent = data.head(1)
@@ -261,19 +251,19 @@ class tools:
         return False
 
     # validate if RSI is within given range
-    def validateRSI(self, data, dict, saveDict, minRSI, maxRSI):
+    def validateRSI(self, data, screenDict, saveDict, minRSI, maxRSI):
         data = data.fillna(0)
         data = data.replace([np.inf, -np.inf], 0)
         rsi = int(data.head(1)['RSI'][0])
         saveDict['RSI'] = rsi
         if(rsi >= minRSI and rsi <= maxRSI) and (rsi <= 70 and rsi >= 30):
-            dict['RSI'] = colorText.BOLD + colorText.GREEN + str(rsi) + colorText.END
+            screenDict['RSI'] = colorText.BOLD + colorText.GREEN + str(rsi) + colorText.END
             return True
-        dict['RSI'] = colorText.BOLD + colorText.FAIL + str(rsi) + colorText.END
+        screenDict['RSI'] = colorText.BOLD + colorText.FAIL + str(rsi) + colorText.END
         return False
 
     # Find out trend for days to lookback
-    def findTrend(self, data, dict, saveDict, daysToLookback=None,stockName=""):
+    def findTrend(self, data, screenDict, saveDict, daysToLookback=None,stockName=""):
         if daysToLookback is None:
             daysToLookback = self.configManager.daysToLookback
         data = data.head(daysToLookback)
@@ -294,25 +284,25 @@ class tools:
                 slope,c = 0,0
             angle = np.rad2deg(np.arctan(slope))
             if (angle == 0):
-                dict['Trend'] = colorText.BOLD + "Unknown" + colorText.END
+                screenDict['Trend'] = colorText.BOLD + "Unknown" + colorText.END
                 saveDict['Trend'] = 'Unknown'
             elif (angle <= 30 and angle >= -30):
-                dict['Trend'] = colorText.BOLD + colorText.WARN + "Sideways" + colorText.END
+                screenDict['Trend'] = colorText.BOLD + colorText.WARN + "Sideways" + colorText.END
                 saveDict['Trend'] = 'Sideways'
             elif (angle >= 30 and angle < 61):
-                dict['Trend'] = colorText.BOLD + colorText.GREEN + "Weak Up" + colorText.END
+                screenDict['Trend'] = colorText.BOLD + colorText.GREEN + "Weak Up" + colorText.END
                 saveDict['Trend'] = 'Weak Up'
             elif angle >= 60:
-                dict['Trend'] = colorText.BOLD + colorText.GREEN + "Strong Up" + colorText.END
+                screenDict['Trend'] = colorText.BOLD + colorText.GREEN + "Strong Up" + colorText.END
                 saveDict['Trend'] = 'Strong Up'
             elif (angle >= -30 and angle < -61):
-                dict['Trend'] = colorText.BOLD + colorText.FAIL + "Weak Down" + colorText.END
+                screenDict['Trend'] = colorText.BOLD + colorText.FAIL + "Weak Down" + colorText.END
                 saveDict['Trend'] = 'Weak Down'
             elif angle <= -60:
-                dict['Trend'] = colorText.BOLD + colorText.FAIL + "Strong Down" + colorText.END
+                screenDict['Trend'] = colorText.BOLD + colorText.FAIL + "Strong Down" + colorText.END
                 saveDict['Trend'] = 'Strong Down'
         except np.linalg.LinAlgError:
-            dict['Trend'] = colorText.BOLD + "Unknown" + colorText.END
+            screenDict['Trend'] = colorText.BOLD + "Unknown" + colorText.END
             saveDict['Trend'] = 'Unknown'
         return saveDict['Trend']
         
@@ -328,7 +318,7 @@ class tools:
 
     '''
     # Find out trend for days to lookback
-    def validateVCP(data, dict, saveDict, daysToLookback=ConfigManager.daysToLookback, stockName=None):
+    def validateVCP(data, screenDict, saveDict, daysToLookback=ConfigManager.daysToLookback, stockName=None):
         data = data.head(daysToLookback)
         data = data[::-1]
         data = data.set_index(np.arange(len(data)))

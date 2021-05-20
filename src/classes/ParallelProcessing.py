@@ -80,7 +80,7 @@ class StockConsumer(multiprocessing.Process):
                 consolidationValue = screener.validateConsolidation(
                     processedData, screeningDictionary, saveDictionary, percentage=configManager.consolidationPercentage)
                 isMaReversal = screener.validateMovingAverages(
-                    processedData, screeningDictionary, saveDictionary, range=1.25)
+                    processedData, screeningDictionary, saveDictionary, maRange=1.25)
                 isVolumeHigh = screener.validateVolume(
                     processedData, screeningDictionary, saveDictionary, volumeRatio=configManager.volumeRatio)
                 isBreaking = screener.findBreakout(

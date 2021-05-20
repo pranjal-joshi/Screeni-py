@@ -19,7 +19,7 @@ from classes.ColorText import colorText
 from classes.OtaUpdater import OTAUpdater
 from classes.CandlePatterns import CandlePatterns
 from classes.ParallelProcessing import StockConsumer
-from classes.Changelog import *
+from classes.Changelog import VERSION
 
 # Try Fixing bug with this symbol
 TEST_STKCODE = "SBIN"
@@ -72,7 +72,7 @@ def initExecution():
         return result
     except KeyboardInterrupt:
         raise KeyboardInterrupt
-    except:
+    except Exception as e:
         print(colorText.BOLD + colorText.FAIL +
               '\n[+] Please enter a valid numeric option & Try Again!' + colorText.END)
         sleep(2)
@@ -126,11 +126,11 @@ def main(testing=False):
             main()
     if executeOption == 6:
         reversalOption = Utility.tools.promptReversalScreening()
-        if reversalOption == None or reversalOption == 0:
+        if reversalOption is None or reversalOption == 0:
             main()
     if executeOption == 7:
         respBullBear, insideBarToLookback = Utility.tools.promptChartPatterns()
-        if insideBarToLookback == None:
+        if insideBarToLookback is None:
             main()
     if executeOption == 8:
         configManager.setConfig(ConfigManager.parser)
@@ -173,11 +173,11 @@ def main(testing=False):
         for worker in consumers:
             worker.start()
 
-        if testing == True:
+        if testing:
             for item in items:
                 tasks_queue.put(item)
                 result = results_queue.get()
-                if result != None:
+                if result is not None:
                     screenResults = screenResults.append(
                         result[0], ignore_index=True)
                     saveResults = saveResults.append(
@@ -193,7 +193,7 @@ def main(testing=False):
                 numStocks = len(listStockCodes)
                 while numStocks:
                     result = results_queue.get()
-                    if result != None:
+                    if result is not None:
                         screenResults = screenResults.append(
                             result[0], ignore_index=True)
                         saveResults = saveResults.append(
