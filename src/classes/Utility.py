@@ -12,7 +12,7 @@ import datetime
 import pandas as pd
 from tabulate import tabulate
 from classes.ColorText import colorText
-from classes.Changelog import *
+from classes.Changelog import VERSION, changelog
 
 art = colorText.GREEN + '''
      .d8888b.                                             d8b                   
@@ -56,7 +56,7 @@ class tools:
         try:
             df.sort_values(by=['Stock'], ascending=True, inplace=True)
             df.to_pickle(lastScreened)
-        except:
+        except IOError:
             input(colorText.BOLD + colorText.FAIL + '[+] Failed to save recently screened result table on disk! Skipping..' + colorText.END)
 
     # Load last screened result to pickle file
@@ -67,7 +67,7 @@ class tools:
             print(tabulate(df, headers='keys', tablefmt='psql'))
             print(colorText.BOLD + colorText.WARN + "[+] Note: Trend calculation is based on number of recent days to screen as per your configuration." + colorText.END)
             input(colorText.BOLD + colorText.GREEN + '[+] Press any key to continue..' + colorText.END)
-        except:
+        except FileNotFoundError:
             print(colorText.BOLD + colorText.FAIL + '[+] Failed to load recently screened result table from disk! Skipping..' + colorText.END)
 
     # Save screened results to excel
@@ -87,8 +87,7 @@ class tools:
             minRSI, maxRSI = int(input(colorText.BOLD + colorText.WARN + "\n[+] Enter Min RSI value: " + colorText.END)), int(input(colorText.BOLD + colorText.WARN + "[+] Enter Max RSI value: " + colorText.END))
             if (minRSI >= 0 and minRSI <= 100) and (maxRSI >= 0 and maxRSI <= 100) and (minRSI <= maxRSI):
                 return (minRSI, maxRSI)
-            else:
-                raise ValueError
+            raise ValueError
         except ValueError:
             return (0,0)
 
@@ -98,12 +97,12 @@ class tools:
             resp = int(input(colorText.BOLD + colorText.WARN + """\n[+] Select Option:
     1 > Screen for Buy Signal (Bullish Reversal)
     2 > Screen for Sell Signal (Bearish Reversal)
+    3 > Screen for Momentum Gainers (Rising Bullish Momentum)
     0 > Cancel
 [+] Select option: """ + colorText.END))
-            if resp >= 0 and resp <= 2:
+            if resp >= 0 and resp <= 3:
                 return resp
-            else:
-                raise ValueError
+            raise ValueError
         except ValueError:
             return None
 
@@ -120,8 +119,7 @@ class tools:
                 return (resp, candles)
             if resp >= 0 and resp <= 2:
                 return resp
-            else:
-                raise ValueError
+            raise ValueError
         except ValueError:
             input(colorText.BOLD + colorText.FAIL + "\n[+] Invalid Option Selected. Press Any Key to Continue..." + colorText.END)
             return (None, None)
