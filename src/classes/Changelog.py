@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.15"
+VERSION = "1.16"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -81,6 +81,10 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 [1.14][1.15]
 1. Screening stocks with parallel processing using all cores available in machine. (Thanks to @swarpatel23)
 2. Minor Bug-fixes and Improvements.
+
+[1.16]
+1. Codefactoring Improved.
+2. Ctrl+C crash fixed for Linux.
 
 --- END ---
 ''' + colorText.END

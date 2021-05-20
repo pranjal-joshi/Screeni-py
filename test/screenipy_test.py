@@ -17,6 +17,7 @@ import platform
 
 sys.path.append(os.path.abspath('../src'))
 from screenipy import *
+from classes.Changelog import changelog
 import classes.ConfigManager as ConfigManager
 
 last_release = 0
@@ -123,9 +124,9 @@ def test_option_8(mocker, capsys):
 
 def test_option_9():
     configManager.getConfig(ConfigManager.parser)
-    assert configManager.duration != None
-    assert configManager.period != None
-    assert configManager.consolidationPercentage != None
+    assert configManager.duration is not None
+    assert configManager.period is not None
+    assert configManager.consolidationPercentage is not None
 
 def test_option_12(mocker, capsys):
     try:
