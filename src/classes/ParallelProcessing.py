@@ -11,6 +11,8 @@ import pandas as pd
 import numpy as np
 import sys
 import os
+import pytz
+from datetime import datetime
 import classes.Fetcher as Fetcher
 from queue import Empty
 from classes.CandlePatterns import CandlePatterns
@@ -34,6 +36,9 @@ class StockConsumer(multiprocessing.Process):
         self.stockDict = stockDict
         self.proxyServer = proxyServer
         self.keyboardInterruptEvent = keyboardInterruptEvent
+        self.curr = datetime.now(pytz.timezone('Asia/Kolkata'))
+        self.openTime = self.curr.replace(hour=9, minute=15)
+        self.closeTime = self.curr.replace(hour=15, minute=30)
 
     def run(self):
         # while True:
@@ -49,6 +54,10 @@ class StockConsumer(multiprocessing.Process):
             self.task_queue.task_done()
             self.result_queue.put(answer)
 
+    def isTradingTime(self):
+        currTime = datetime.now(pytz.timezone('Asia/Kolkata'))
+        return self.openTime <= currTime <= self.closeTime
+
     def screenStocks(self, executeOption, reversalOption, daysForLowestVolume, minRSI, maxRSI, respBullBear, insideBarToLookback, totalSymbols,
                      configManager, fetcher, screener, candlePatterns, stock):
         screenResults = pd.DataFrame(columns=[
@@ -59,7 +68,7 @@ class StockConsumer(multiprocessing.Process):
                           'MA-Signal': "", 'Volume': "", 'LTP': 0, 'RSI': 0, 'Trend': "", 'Pattern': ""}
 
         try:
-            if self.stockDict.get(stock) is None or configManager.cacheEnabled == False:
+            if self.isTradingTime() or (self.stockDict.get(stock) is None) or (configManager.cacheEnabled == False):
                 data = fetcher.fetchStockData(stock,
                                               configManager.period,
                                               configManager.duration,
@@ -67,7 +76,7 @@ class StockConsumer(multiprocessing.Process):
                                               self.screenResultsCounter,
                                               self.screenCounter,
                                               totalSymbols)
-                if configManager.cacheEnabled == True:
+                if configManager.cacheEnabled == True and not self.isTradingTime():
                     self.stockDict[stock] = data.to_dict('split')
             else:
                 try:
