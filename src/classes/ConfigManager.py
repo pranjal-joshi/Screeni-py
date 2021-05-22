@@ -12,6 +12,8 @@ from classes.ColorText import colorText
 parser = configparser.ConfigParser(strict=False)
 
 # This Class manages read/write of user configuration
+
+
 class tools:
 
     def __init__(self):
@@ -23,6 +25,7 @@ class tools:
         self.duration = '1d'
         self.daysToLookback = 30
         self.shuffleEnabled = False
+        self.cacheEnabled = False
         self.stageTwo = False
         self.useEMA = True
 
@@ -39,6 +42,7 @@ class tools:
             parser.set('config', 'consolidationPercentage',
                        str(self.consolidationPercentage))
             parser.set('config', 'shuffle', 'y')
+            parser.set('config', 'cacheStockData', 'y')
             parser.set('config', 'onlyStageTwoStocks', 'y')
             parser.set('config', 'useEMA', 'y')
             try:
@@ -80,6 +84,8 @@ class tools:
                 '[+] How many % the price should be in range to consider it as consolidation? (Number)(Optimal = 10): ')
             self.shuffle = str(input(
                 '[+] Shuffle stocks rather than screening alphabetically? (Y/N): ')).lower()
+            self.cacheStockData = str(input(
+                '[+] Caching fetched stock data into shared dictionary for reuse? (Y/N): ')).lower()
             self.stageTwoPrompt = str(input(
                 '[+] Screen only for Stage-2 stocks?\n(What are the stages? => https://www.investopedia.com/articles/trading/08/stock-cycle-trend-price.asp)\n(Y/N): ')).lower()
             self.useEmaPrompt = str(input(
@@ -93,6 +99,7 @@ class tools:
             parser.set('config', 'consolidationPercentage',
                        self.consolidationPercentage)
             parser.set('config', 'shuffle', self.shuffle)
+            parser.set('config', 'cacheStockData', self.cacheStockData)
             parser.set('config', 'onlyStageTwoStocks', self.stageTwoPrompt)
             parser.set('config', 'useEMA', self.useEmaPrompt)
             try:
@@ -120,10 +127,14 @@ class tools:
                 self.minLTP = float(parser.get('config', 'minprice'))
                 self.maxLTP = float(parser.get('config', 'maxprice'))
                 self.volumeRatio = float(parser.get('config', 'volumeRatio'))
-                self.consolidationPercentage = float(parser.get('config', 'consolidationPercentage'))
-                self.daysToLookback = int(parser.get('config', 'daysToLookback'))
+                self.consolidationPercentage = float(
+                    parser.get('config', 'consolidationPercentage'))
+                self.daysToLookback = int(
+                    parser.get('config', 'daysToLookback'))
                 if not 'n' in str(parser.get('config', 'shuffle')).lower():
                     self.shuffleEnabled = True
+                if not 'n' in str(parser.get('config', 'cachestockdata')).lower():
+                    self.cacheEnabled = True
                 if not 'n' in str(parser.get('config', 'onlyStageTwoStocks')).lower():
                     self.stageTwo = True
                 if not 'y' in str(parser.get('config', 'useEMA')).lower():

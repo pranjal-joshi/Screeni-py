@@ -3,23 +3,23 @@
 # Pyinstaller compile Windows: pyinstaller --onefile --icon=src\icon.ico src\screenipy.py  --hidden-import cmath --hidden-import talib.stream
 # Pyinstaller compile Linux  : pyinstaller --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream
 
+from classes.Changelog import VERSION
+from classes.ParallelProcessing import StockConsumer
+from classes.CandlePatterns import CandlePatterns
+from classes.OtaUpdater import OTAUpdater
+from classes.ColorText import colorText
+import classes.Utility as Utility
+import classes.Screener as Screener
+import classes.ConfigManager as ConfigManager
+import classes.Fetcher as Fetcher
+from time import sleep
+from tabulate import tabulate
+import pandas as pd
+import numpy as np
+import urllib
+import sys
 import multiprocessing
 multiprocessing.freeze_support()
-import sys
-import urllib
-import numpy as np
-import pandas as pd
-from tabulate import tabulate
-from time import sleep
-import classes.Fetcher as Fetcher
-import classes.ConfigManager as ConfigManager
-import classes.Screener as Screener
-import classes.Utility as Utility
-from classes.ColorText import colorText
-from classes.OtaUpdater import OTAUpdater
-from classes.CandlePatterns import CandlePatterns
-from classes.ParallelProcessing import StockConsumer
-from classes.Changelog import VERSION
 
 # Try Fixing bug with this symbol
 TEST_STKCODE = "SBIN"
@@ -30,6 +30,7 @@ np.seterr(divide='ignore', invalid='ignore')
 # Global Variabls
 screenCounter = None
 screenResultsCounter = None
+stockDict = None
 keyboardInterruptEvent = None
 
 configManager = ConfigManager.tools()
@@ -81,11 +82,15 @@ def initExecution():
 
 # Main function
 
+
 def main(testing=False):
-    global screenCounter, screenResultsCounter, keyboardInterruptEvent
+    global screenCounter, screenResultsCounter, stockDict, keyboardInterruptEvent
     screenCounter = multiprocessing.Value('i', 1)
     screenResultsCounter = multiprocessing.Value('i', 0)
     keyboardInterruptEvent = multiprocessing.Manager().Event()
+
+    if stockDict is None:
+        stockDict = multiprocessing.Manager().dict()
 
     minRSI = 0
     maxRSI = 100
@@ -109,7 +114,7 @@ def main(testing=False):
     if executeOption == 4:
         try:
             daysForLowestVolume = int(input(colorText.BOLD + colorText.WARN +
-                                      '\n[+] The Volume should be lowest since last how many candles? '))
+                                            '\n[+] The Volume should be lowest since last how many candles? '))
         except ValueError:
             print(colorText.END)
             print(colorText.BOLD + colorText.FAIL +
@@ -161,13 +166,13 @@ def main(testing=False):
               "[+] Starting Stock Screening.. Press Ctrl+C to stop!\n")
 
         items = [(executeOption, reversalOption, daysForLowestVolume, minRSI, maxRSI, respBullBear, insideBarToLookback, len(listStockCodes),
-                configManager, fetcher, screener, candlePatterns, stock)
+                  configManager, fetcher, screener, candlePatterns, stock)
                  for stock in listStockCodes]
 
         tasks_queue = multiprocessing.JoinableQueue()
         results_queue = multiprocessing.Queue()
 
-        consumers = [StockConsumer(tasks_queue, results_queue, screenCounter, screenResultsCounter, proxyServer, keyboardInterruptEvent)
+        consumers = [StockConsumer(tasks_queue, results_queue, screenCounter, screenResultsCounter, stockDict, proxyServer, keyboardInterruptEvent)
                      for _ in range(multiprocessing.cpu_count())]
 
         for worker in consumers:
@@ -209,7 +214,7 @@ def main(testing=False):
         # Exit all processes. Without this, it threw error in next screening session
         for worker in consumers:
             worker.terminate()
-        
+
         # Flush the queue so depending processes will end
         from queue import Empty
         while True:
@@ -253,5 +258,6 @@ if __name__ == "__main__":
     except Exception as e:
         if isDevVersion == OTAUpdater.developmentVersion:
             raise(e)
-        input(colorText.BOLD + colorText.FAIL + "[+] Press any key to Exit!" + colorText.END)
+        input(colorText.BOLD + colorText.FAIL +
+              "[+] Press any key to Exit!" + colorText.END)
         sys.exit(0)
