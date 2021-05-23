@@ -85,7 +85,7 @@ class tools:
             self.shuffle = str(input(
                 '[+] Shuffle stocks rather than screening alphabetically? (Y/N): ')).lower()
             self.cacheStockData = str(input(
-                '[+] Caching fetched stock data into shared dictionary for reuse? (Y/N): ')).lower()
+                '[+] Use more resources for faster analysis? (This may drain battery a little faster) (Y/N): ')).lower()
             self.stageTwoPrompt = str(input(
                 '[+] Screen only for Stage-2 stocks?\n(What are the stages? => https://www.investopedia.com/articles/trading/08/stock-cycle-trend-price.asp)\n(Y/N): ')).lower()
             self.useEmaPrompt = str(input(
