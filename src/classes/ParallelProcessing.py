@@ -44,17 +44,20 @@ class StockConsumer(multiprocessing.Process):
 
     def run(self):
         # while True:
-        while not self.keyboardInterruptEvent.is_set():
-            try:
-                next_task = self.task_queue.get()
-            except Empty:
-                continue
-            if next_task is None:
+        try:
+            while not self.keyboardInterruptEvent.is_set():
+                try:
+                    next_task = self.task_queue.get()
+                except Empty:
+                    continue
+                if next_task is None:
+                    self.task_queue.task_done()
+                    break
+                answer = self.screenStocks(*(next_task))
                 self.task_queue.task_done()
-                break
-            answer = self.screenStocks(*(next_task))
-            self.task_queue.task_done()
-            self.result_queue.put(answer)
+                self.result_queue.put(answer)
+        except Exception as e:
+            sys.exit(0)
 
     def screenStocks(self, executeOption, reversalOption, daysForLowestVolume, minRSI, maxRSI, respBullBear, insideBarToLookback, totalSymbols,
                      configManager, fetcher, screener, candlePatterns, stock):
@@ -122,6 +125,7 @@ class StockConsumer(multiprocessing.Process):
                     processedData, screeningDictionary, saveDictionary)
                 isInsideBar = screener.validateInsideBar(
                     processedData, screeningDictionary, saveDictionary, bullBear=respBullBear, daysToLookback=insideBarToLookback)
+                isMomentum = screener.validateMomentum(processedData, screeningDictionary, saveDictionary)
 
                 with self.screenResultsCounter.get_lock():
                     if executeOption == 0:
@@ -148,6 +152,9 @@ class StockConsumer(multiprocessing.Process):
                             if saveDictionary['Pattern'] in CandlePatterns.reversalPatternsBearish or isMaReversal < 0:
                                 self.screenResultsCounter.value += 1
                                 return screeningDictionary, saveDictionary
+                        elif reversalOption == 3 and isMomentum:
+                            self.screenResultsCounter.value += 1
+                            return screeningDictionary, saveDictionary
                     if executeOption == 7 and isLtpValid and isInsideBar:
                         self.screenResultsCounter.value += 1
                         return screeningDictionary, saveDictionary
@@ -155,6 +162,8 @@ class StockConsumer(multiprocessing.Process):
             # Capturing Ctr+C Here isn't a great idea
             pass
         except Fetcher.StockDataEmptyException:
+            pass
+        except KeyError:
             pass
         except Exception as e:
             print(colorText.FAIL +
