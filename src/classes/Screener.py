@@ -305,16 +305,31 @@ class tools:
             screenDict['Trend'] = colorText.BOLD + "Unknown" + colorText.END
             saveDict['Trend'] = 'Unknown'
         return saveDict['Trend']
-        
-        # Debugging - Experiment with data
-        # import matplotlib.pyplot as plt
-        # print(saveDict['Trend'])
-        # print(slope)
-        # print(math.degrees(math.atan(slope)))
-        # plt.scatter(data.index[data.tops > 0], data['tops'][data.tops > 0], c='r')
-        # plt.plot(data.index, data['Close'])
-        # plt.plot(data.index, slope*data.index+c,)
-        # plt.show()
+
+    # Find if stock gaining bullish momentum
+    def validateMomentum(self, data, screenDict, saveDict):
+        try:
+            data = data.head(3)
+            for row in data.iterrows():
+                # All 3 candles should be Green and NOT Circuits
+                if row[1]['Close'].item() <= row[1]['Open'].item():
+                    return False
+            openDesc = data.sort_values(by=['Open'], ascending=False)
+            closeDesc = data.sort_values(by=['Close'], ascending=False)
+            volDesc = data.sort_values(by=['Volume'], ascending=False)
+            try:
+                if data.equals(openDesc) and data.equals(closeDesc) and data.equals(volDesc):
+                    if (data['Open'][0].item() >= data['Close'][1].item()) and (data['Open'][1].item() >= data['Close'][2].item()):
+                        screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + 'Momentum Gainer' + colorText.END
+                        saveDict['Pattern'] = 'Momentum Gainer'
+                        return True
+            except IndexError:
+                pass
+            return False
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return False
 
     '''
     # Find out trend for days to lookback
