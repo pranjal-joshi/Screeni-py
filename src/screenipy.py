@@ -176,6 +176,7 @@ def main(testing=False):
                      for _ in range(multiprocessing.cpu_count())]
 
         for worker in consumers:
+            worker.daemon = True
             worker.start()
 
         if testing:
@@ -205,11 +206,13 @@ def main(testing=False):
                             result[1], ignore_index=True)
                     numStocks -= 1
             except KeyboardInterrupt:
-                keyboardInterruptEvent.set()
+                try:
+                    keyboardInterruptEvent.set()
+                except KeyboardInterrupt:
+                    pass
+                print(colorText.BOLD + colorText.FAIL +"\n[+] Terminating Script, Please wait..." + colorText.END)
                 for worker in consumers:
                     worker.terminate()
-                print(colorText.BOLD + colorText.FAIL +
-                      "\n[+] Script terminated by the user." + colorText.END)
 
         # Exit all processes. Without this, it threw error in next screening session
         for worker in consumers:
@@ -245,7 +248,7 @@ def main(testing=False):
         print(colorText.BOLD + colorText.WARN +
               "[+] Note: Trend calculation is based on number of days recent to screen as per your configuration." + colorText.END)
         print(colorText.BOLD + colorText.GREEN +
-              "[+] Screening Completed! Happy Trading! :)" + colorText.END)
+              "[+] Screening Completed! Press Enter to Continue.." + colorText.END)
         input('')
 
 
