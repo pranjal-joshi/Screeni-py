@@ -74,7 +74,7 @@ class StockConsumer(multiprocessing.Process):
                                               self.screenResultsCounter,
                                               self.screenCounter,
                                               totalSymbols)
-                if configManager.cacheEnabled == True and not self.isTradingTime:
+                if configManager.cacheEnabled == True and not self.isTradingTime and (self.stockDict.get(stock) is None):
                     self.stockDict[stock] = data.to_dict('split')
             else:
                 try:

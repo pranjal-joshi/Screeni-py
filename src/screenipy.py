@@ -14,10 +14,14 @@ import classes.ConfigManager as ConfigManager
 import classes.Fetcher as Fetcher
 from time import sleep
 from tabulate import tabulate
+from datetime import datetime, date
+import pytz
 import pandas as pd
 import numpy as np
 import urllib
 import sys
+import pickle
+import os
 import multiprocessing
 multiprocessing.freeze_support()
 
@@ -32,6 +36,7 @@ screenCounter = None
 screenResultsCounter = None
 stockDict = None
 keyboardInterruptEvent = None
+loadedStockData = False
 
 configManager = ConfigManager.tools()
 fetcher = Fetcher.tools(configManager)
@@ -80,17 +85,49 @@ def initExecution():
         Utility.tools.clearScreen()
         return initExecution()
 
+
+def isTradingTime():
+    curr = datetime.now(pytz.timezone('Asia/Kolkata'))
+    openTime = curr.replace(hour=9, minute=15)
+    closeTime = curr.replace(hour=15, minute=30)
+    isTradingTime = ((openTime <= curr <= closeTime) and (
+        0 <= curr.weekday() <= 4))
+
+
+def saveStockData():
+    global stockDict
+    today_date = date.today().strftime("%d%m%y")
+    cache_file = "stock_data_" + str(today_date) + ".pkl"
+    if not os.path.exists(cache_file):
+        with open(cache_file, 'wb') as f:
+            pickle.dump(stockDict.copy(), f)
+
+
+def loadStockData(stockDict):
+    today_date = date.today().strftime("%d%m%y")
+    cache_file = "stock_data_" + str(today_date) + ".pkl"
+    if os.path.exists(cache_file):
+        with open(cache_file, 'rb') as f:
+            stockData = pickle.load(f)
+            for stock in stockData:
+                stockDict[stock] = stockData.get(stock)
+
 # Main function
 
 
 def main(testing=False):
-    global screenCounter, screenResultsCounter, stockDict, keyboardInterruptEvent
+    global screenCounter, screenResultsCounter, stockDict, loadedStockData, keyboardInterruptEvent
     screenCounter = multiprocessing.Value('i', 1)
     screenResultsCounter = multiprocessing.Value('i', 0)
     keyboardInterruptEvent = multiprocessing.Manager().Event()
 
     if stockDict is None:
         stockDict = multiprocessing.Manager().dict()
+        print(type(stockDict))
+
+    if not isTradingTime() and not loadedStockData:
+        loadStockData(stockDict)
+        loadedStockData = True
 
     minRSI = 0
     maxRSI = 100
@@ -172,8 +209,11 @@ def main(testing=False):
         tasks_queue = multiprocessing.JoinableQueue()
         results_queue = multiprocessing.Queue()
 
+        totalConsumers = multiprocessing.cpu_count()
+        if configManager.cacheEnabled is True:
+            totalConsumers -= 1
         consumers = [StockConsumer(tasks_queue, results_queue, screenCounter, screenResultsCounter, stockDict, proxyServer, keyboardInterruptEvent)
-                     for _ in range(multiprocessing.cpu_count())]
+                     for _ in range(totalConsumers)]
 
         for worker in consumers:
             worker.start()
@@ -240,6 +280,10 @@ def main(testing=False):
             inplace=True
         )
         print(tabulate(screenResults, headers='keys', tablefmt='psql'))
+
+        if executeOption != 0 and configManager.cacheEnabled and not isTradingTime():
+            saveStockData()
+
         Utility.tools.setLastScreenedResults(screenResults)
         Utility.tools.promptSaveResults(saveResults)
         print(colorText.BOLD + colorText.WARN +

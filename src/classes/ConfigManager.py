@@ -6,7 +6,9 @@
 '''
 
 import sys
+import os
 import configparser
+from datetime import date
 from classes.ColorText import colorText
 
 parser = configparser.ConfigParser(strict=False)
@@ -29,7 +31,14 @@ class tools:
         self.stageTwo = False
         self.useEMA = True
 
+    def deleteStockData(self):
+        today_date = date.today().strftime("%d%m%y")
+        cache_file = "stock_data_" + str(today_date) + ".pkl"
+        if os.path.exists(cache_file):
+            os.remove(cache_file)
+
     # Handle user input and save config
+
     def setConfig(self, parser, default=False):
         if default:
             parser.add_section('config')
@@ -102,6 +111,10 @@ class tools:
             parser.set('config', 'cacheStockData', self.cacheStockData)
             parser.set('config', 'onlyStageTwoStocks', self.stageTwoPrompt)
             parser.set('config', 'useEMA', self.useEmaPrompt)
+
+            # delete stock data due to config change
+            deleteStockData()
+
             try:
                 fp = open('screenipy.ini', 'w')
                 parser.write(fp)
