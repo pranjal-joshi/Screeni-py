@@ -56,7 +56,7 @@ class StockConsumer(multiprocessing.Process):
 
     def isTradingTime(self):
         currTime = datetime.now(pytz.timezone('Asia/Kolkata'))
-        return self.openTime <= currTime <= self.closeTime
+        return (self.openTime <= currTime <= self.closeTime) and (0 <= currTime.weekday() <= 4)
 
     def screenStocks(self, executeOption, reversalOption, daysForLowestVolume, minRSI, maxRSI, respBullBear, insideBarToLookback, totalSymbols,
                      configManager, fetcher, screener, candlePatterns, stock):
