@@ -84,8 +84,9 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [1.16]
 1. Bullish Momentum Finder added. Option > 6 > 3
-1. Codefactoring Improved.
-2. Ctrl+C crash fixed.
+2. Stock Data Caching added. (Thanks to @swarpatel23)
+3. Codefactoring Improved.
+4. Ctrl+C crash fixed.
 
 --- END ---
 ''' + colorText.END

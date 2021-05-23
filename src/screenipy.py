@@ -3,6 +3,17 @@
 # Pyinstaller compile Windows: pyinstaller --onefile --icon=src\icon.ico src\screenipy.py  --hidden-import cmath --hidden-import talib.stream
 # Pyinstaller compile Linux  : pyinstaller --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream
 
+# Keep module imports prior to classes
+import multiprocessing
+multiprocessing.freeze_support()
+from time import sleep
+from tabulate import tabulate
+from datetime import datetime
+import pandas as pd
+import numpy as np
+import urllib
+import sys
+import os
 from classes.Changelog import VERSION
 from classes.ParallelProcessing import StockConsumer
 from classes.CandlePatterns import CandlePatterns
@@ -12,18 +23,6 @@ import classes.Utility as Utility
 import classes.Screener as Screener
 import classes.ConfigManager as ConfigManager
 import classes.Fetcher as Fetcher
-from time import sleep
-from tabulate import tabulate
-from datetime import datetime, date
-import pytz
-import pandas as pd
-import numpy as np
-import urllib
-import sys
-import pickle
-import os
-import multiprocessing
-multiprocessing.freeze_support()
 
 # Try Fixing bug with this symbol
 TEST_STKCODE = "SBIN"
@@ -37,6 +36,7 @@ screenResultsCounter = None
 stockDict = None
 keyboardInterruptEvent = None
 loadedStockData = False
+loadCount = 0
 
 configManager = ConfigManager.tools()
 fetcher = Fetcher.tools(configManager)
@@ -85,49 +85,18 @@ def initExecution():
         Utility.tools.clearScreen()
         return initExecution()
 
-
-def isTradingTime():
-    curr = datetime.now(pytz.timezone('Asia/Kolkata'))
-    openTime = curr.replace(hour=9, minute=15)
-    closeTime = curr.replace(hour=15, minute=30)
-    isTradingTime = ((openTime <= curr <= closeTime) and (
-        0 <= curr.weekday() <= 4))
-
-
-def saveStockData():
-    global stockDict
-    today_date = date.today().strftime("%d%m%y")
-    cache_file = "stock_data_" + str(today_date) + ".pkl"
-    if not os.path.exists(cache_file):
-        with open(cache_file, 'wb') as f:
-            pickle.dump(stockDict.copy(), f)
-
-
-def loadStockData(stockDict):
-    today_date = date.today().strftime("%d%m%y")
-    cache_file = "stock_data_" + str(today_date) + ".pkl"
-    if os.path.exists(cache_file):
-        with open(cache_file, 'rb') as f:
-            stockData = pickle.load(f)
-            for stock in stockData:
-                stockDict[stock] = stockData.get(stock)
-
 # Main function
 
 
 def main(testing=False):
-    global screenCounter, screenResultsCounter, stockDict, loadedStockData, keyboardInterruptEvent
+    global screenCounter, screenResultsCounter, stockDict, loadedStockData, keyboardInterruptEvent, loadCount
     screenCounter = multiprocessing.Value('i', 1)
     screenResultsCounter = multiprocessing.Value('i', 0)
     keyboardInterruptEvent = multiprocessing.Manager().Event()
 
     if stockDict is None:
         stockDict = multiprocessing.Manager().dict()
-        print(type(stockDict))
-
-    if not isTradingTime() and not loadedStockData:
-        loadStockData(stockDict)
-        loadedStockData = True
+        loadCount = 0
 
     minRSI = 0
     maxRSI = 100
@@ -199,6 +168,12 @@ def main(testing=False):
                   "\n\n[+] Oops! It looks like you don't have an Internet connectivity at the moment! Press any key to exit!" + colorText.END)
             input('')
             sys.exit(0)
+        
+        if not Utility.tools.isTradingTime() and configManager.cacheEnabled and not loadedStockData and not testing:
+            Utility.tools.loadStockData(stockDict)
+            loadedStockData = True
+        loadCount = len(stockDict)
+
         print(colorText.BOLD + colorText.WARN +
               "[+] Starting Stock Screening.. Press Ctrl+C to stop!\n")
 
@@ -284,8 +259,9 @@ def main(testing=False):
         )
         print(tabulate(screenResults, headers='keys', tablefmt='psql'))
 
-        if executeOption != 0 and configManager.cacheEnabled and not isTradingTime():
-            saveStockData()
+        if executeOption != 0 and configManager.cacheEnabled and not Utility.tools.isTradingTime() and not testing:
+            print(colorText.BOLD + colorText.GREEN + "[+] Caching Stock Data for future use, Please Wait... " + colorText.END, end='')
+            Utility.tools.saveStockData(stockDict, configManager, loadCount, screenCounter.value)
 
         Utility.tools.setLastScreenedResults(screenResults)
         Utility.tools.promptSaveResults(saveResults)

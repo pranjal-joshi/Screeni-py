@@ -12,9 +12,10 @@ import numpy as np
 import sys
 import os
 import pytz
+from queue import Empty
 from datetime import datetime
 import classes.Fetcher as Fetcher
-from queue import Empty
+import classes.Utility as Utility
 from classes.CandlePatterns import CandlePatterns
 from classes.ColorText import colorText
 
@@ -36,12 +37,7 @@ class StockConsumer(multiprocessing.Process):
         self.stockDict = stockDict
         self.proxyServer = proxyServer
         self.keyboardInterruptEvent = keyboardInterruptEvent
-        self.curr = datetime.now(pytz.timezone('Asia/Kolkata'))
-        self.openTime = self.curr.replace(hour=9, minute=15)
-        self.closeTime = self.curr.replace(hour=15, minute=30)
-        self.isTradingTime = ((self.openTime <= self.curr <= self.closeTime) and (
-            0 <= self.curr.weekday() <= 4))
-
+        self.isTradingTime = Utility.tools.isTradingTime()
     def run(self):
         # while True:
         try:

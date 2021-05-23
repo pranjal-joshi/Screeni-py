@@ -7,6 +7,7 @@
 
 import sys
 import os
+import glob
 import configparser
 from datetime import date
 from classes.ColorText import colorText
@@ -31,11 +32,13 @@ class tools:
         self.stageTwo = False
         self.useEMA = True
 
-    def deleteStockData(self):
-        today_date = date.today().strftime("%d%m%y")
-        cache_file = "stock_data_" + str(today_date) + ".pkl"
-        if os.path.exists(cache_file):
-            os.remove(cache_file)
+    def deleteStockData(self,excludeFile=None):
+        for f in glob.glob('stock_data*.pkl'):
+            if excludeFile is not None:
+                if not f.endswith(excludeFile):
+                    os.remove(f)
+            else:
+                os.remove(f)
 
     # Handle user input and save config
 
@@ -94,7 +97,7 @@ class tools:
             self.shuffle = str(input(
                 '[+] Shuffle stocks rather than screening alphabetically? (Y/N): ')).lower()
             self.cacheStockData = str(input(
-                '[+] Use more resources for faster analysis? (This may drain battery a little faster) (Y/N): ')).lower()
+                '[+] Enable High-Performance and Data-Saver mode? (This uses little bit more CPU but performs High Performance Screening) (Y/N): ')).lower()
             self.stageTwoPrompt = str(input(
                 '[+] Screen only for Stage-2 stocks?\n(What are the stages? => https://www.investopedia.com/articles/trading/08/stock-cycle-trend-price.asp)\n(Y/N): ')).lower()
             self.useEmaPrompt = str(input(
@@ -113,7 +116,8 @@ class tools:
             parser.set('config', 'useEMA', self.useEmaPrompt)
 
             # delete stock data due to config change
-            deleteStockData()
+            self.deleteStockData()
+            print(colorText.BOLD + colorText.FAIL + "[+] Cached Stock Data Deleted." + colorText.END)
 
             try:
                 fp = open('screenipy.ini', 'w')

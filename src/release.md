@@ -2,9 +2,10 @@
 
 ## What's New?
 1. New **Chart Pattern** **`Bullish Momentum Gainer`** added! Try `Option > 6 > 3` :rocket:
-2. **Massive Improvement in screening speed!** :zap: Now we take just around 3-4 minutes to screen thousands of stocks in real time! (Thanks to [**swarpatel23**](https://github.com/swarpatel23) for implementing Parallel Processing)
-3. **MA** now gives more info like **Candle Crossing and At Support/Resistance**. :chart_with_upwards_trend:
-4. Fixed Crashes! :wrench:
+2. **Data Saver Mode**: Intellegently Stores Stock Data for After-Market hours screening without using extra bandwidth! :pencil: (Thanks to [**swarpatel23**](https://github.com/swarpatel23))
+3. **Massive Improvement in screening speed!** :zap: Now we take just around 3-4 minutes to screen thousands of stocks in real time! (Thanks to [**swarpatel23**](https://github.com/swarpatel23))
+4. **MA** now gives more info like **Candle Crossing and At Support/Resistance**. :chart_with_upwards_trend:
+5. Fixed Crashes! :wrench:
 
 ## Downloads
 * For :desktop_computer: **Windows** users, download **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.16/screenipy.exe)**
