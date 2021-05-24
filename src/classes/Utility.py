@@ -9,10 +9,12 @@ import os
 import sys
 import platform
 import datetime
+import pytz
+import pickle
 import pandas as pd
 from tabulate import tabulate
 from classes.ColorText import colorText
-from classes.Changelog import *
+from classes.Changelog import VERSION, changelog
 
 art = colorText.GREEN + '''
      .d8888b.                                             d8b                   
@@ -56,7 +58,7 @@ class tools:
         try:
             df.sort_values(by=['Stock'], ascending=True, inplace=True)
             df.to_pickle(lastScreened)
-        except:
+        except IOError:
             input(colorText.BOLD + colorText.FAIL + '[+] Failed to save recently screened result table on disk! Skipping..' + colorText.END)
 
     # Load last screened result to pickle file
@@ -67,9 +69,44 @@ class tools:
             print(tabulate(df, headers='keys', tablefmt='psql'))
             print(colorText.BOLD + colorText.WARN + "[+] Note: Trend calculation is based on number of recent days to screen as per your configuration." + colorText.END)
             input(colorText.BOLD + colorText.GREEN + '[+] Press any key to continue..' + colorText.END)
-        except:
+        except FileNotFoundError:
             print(colorText.BOLD + colorText.FAIL + '[+] Failed to load recently screened result table from disk! Skipping..' + colorText.END)
 
+    def isTradingTime():
+        curr = datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
+        openTime = curr.replace(hour=9, minute=15)
+        closeTime = curr.replace(hour=15, minute=30)
+        return ((openTime <= curr <= closeTime) and (0 <= curr.weekday() <= 4))
+
+
+    def saveStockData(stockDict, configManager, loadCount, screenCounter):
+        today_date = datetime.date.today().strftime("%d%m%y")
+        cache_file = "stock_data_" + str(today_date) + ".pkl"
+        configManager.deleteStockData(excludeFile=cache_file)
+        if not os.path.exists(cache_file) or screenCounter > (loadCount+1):
+            with open(cache_file, 'wb') as f:
+                try:
+                    pickle.dump(stockDict.copy(), f)
+                    print(colorText.BOLD + colorText.GREEN + "=> Done." + colorText.END)
+                except pickle.PicklingError:
+                    print(colorText.BOLD + colorText.FAIL + "=> Error while Caching Stock Data." + colorText.END)            
+        else:
+            print(colorText.BOLD + colorText.GREEN + "=> Already Cached." + colorText.END)
+
+    def loadStockData(stockDict):
+        today_date = datetime.date.today().strftime("%d%m%y")
+        cache_file = "stock_data_" + str(today_date) + ".pkl"
+        if os.path.exists(cache_file):
+            with open(cache_file, 'rb') as f:
+                try:
+                    stockData = pickle.load(f)
+                    print(colorText.BOLD + colorText.GREEN + "[+] Automatically Using Cached Stock Data due to After-Market hours!" + colorText.END)
+                    for stock in stockData:
+                        stockDict[stock] = stockData.get(stock)
+                except pickle.UnpicklingError:
+                    print(colorText.BOLD + colorText.FAIL + "[+] Error while Reading Stock Cache." + colorText.END)
+                except EOFError:
+                    print(colorText.BOLD + colorText.FAIL + "[+] Stock Cache Corrupted." + colorText.END)
     # Save screened results to excel
     def promptSaveResults(df):
         try:
@@ -87,8 +124,7 @@ class tools:
             minRSI, maxRSI = int(input(colorText.BOLD + colorText.WARN + "\n[+] Enter Min RSI value: " + colorText.END)), int(input(colorText.BOLD + colorText.WARN + "[+] Enter Max RSI value: " + colorText.END))
             if (minRSI >= 0 and minRSI <= 100) and (maxRSI >= 0 and maxRSI <= 100) and (minRSI <= maxRSI):
                 return (minRSI, maxRSI)
-            else:
-                raise ValueError
+            raise ValueError
         except ValueError:
             return (0,0)
 
@@ -98,12 +134,12 @@ class tools:
             resp = int(input(colorText.BOLD + colorText.WARN + """\n[+] Select Option:
     1 > Screen for Buy Signal (Bullish Reversal)
     2 > Screen for Sell Signal (Bearish Reversal)
+    3 > Screen for Momentum Gainers (Rising Bullish Momentum)
     0 > Cancel
 [+] Select option: """ + colorText.END))
-            if resp >= 0 and resp <= 2:
+            if resp >= 0 and resp <= 3:
                 return resp
-            else:
-                raise ValueError
+            raise ValueError
         except ValueError:
             return None
 
@@ -120,8 +156,7 @@ class tools:
                 return (resp, candles)
             if resp >= 0 and resp <= 2:
                 return resp
-            else:
-                raise ValueError
+            raise ValueError
         except ValueError:
             input(colorText.BOLD + colorText.FAIL + "\n[+] Invalid Option Selected. Press Any Key to Continue..." + colorText.END)
             return (None, None)

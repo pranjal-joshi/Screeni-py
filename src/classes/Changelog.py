@@ -83,8 +83,10 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 2. Minor Bug-fixes and Improvements.
 
 [1.16]
-1. Codefactoring Improved.
-2. Ctrl+C crash fixed for Linux.
+1. Bullish Momentum Finder added. Option > 6 > 3
+2. Stock Data Caching added. (Thanks to @swarpatel23)
+3. Codefactoring Improved.
+4. Ctrl+C crash fixed.
 
 --- END ---
 ''' + colorText.END
