@@ -83,7 +83,7 @@ class tools:
         today_date = datetime.date.today().strftime("%d%m%y")
         cache_file = "stock_data_" + str(today_date) + ".pkl"
         configManager.deleteStockData(excludeFile=cache_file)
-        if not os.path.exists(cache_file) or screenCounter > loadCount:
+        if not os.path.exists(cache_file) or screenCounter > (loadCount+1):
             with open(cache_file, 'wb') as f:
                 try:
                     pickle.dump(stockDict.copy(), f)
