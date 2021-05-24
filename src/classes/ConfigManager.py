@@ -148,13 +148,13 @@ class tools:
                     parser.get('config', 'consolidationPercentage'))
                 self.daysToLookback = int(
                     parser.get('config', 'daysToLookback'))
-                if not 'n' in str(parser.get('config', 'shuffle')).lower():
+                if 'n' not in str(parser.get('config', 'shuffle')).lower():
                     self.shuffleEnabled = True
-                if not 'n' in str(parser.get('config', 'cachestockdata')).lower():
+                if 'n' not in str(parser.get('config', 'cachestockdata')).lower():
                     self.cacheEnabled = True
-                if not 'n' in str(parser.get('config', 'onlyStageTwoStocks')).lower():
+                if 'n' not in str(parser.get('config', 'onlyStageTwoStocks')).lower():
                     self.stageTwo = True
-                if not 'y' in str(parser.get('config', 'useEMA')).lower():
+                if 'y' not in str(parser.get('config', 'useEMA')).lower():
                     self.useEMA = False
             except configparser.NoOptionError:
                 input(colorText.BOLD + colorText.FAIL +

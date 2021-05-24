@@ -65,7 +65,7 @@ class StockConsumer(multiprocessing.Process):
                           'MA-Signal': "", 'Volume': "", 'LTP': 0, 'RSI': 0, 'Trend': "", 'Pattern': ""}
 
         try:
-            if (self.stockDict.get(stock) is None) or (configManager.cacheEnabled == False) or self.isTradingTime:
+            if (self.stockDict.get(stock) is None) or (configManager.cacheEnabled is False) or self.isTradingTime:
                 data = fetcher.fetchStockData(stock,
                                               configManager.period,
                                               configManager.duration,
@@ -73,7 +73,7 @@ class StockConsumer(multiprocessing.Process):
                                               self.screenResultsCounter,
                                               self.screenCounter,
                                               totalSymbols)
-                if configManager.cacheEnabled == True and not self.isTradingTime and (self.stockDict.get(stock) is None):
+                if configManager.cacheEnabled is True and not self.isTradingTime and (self.stockDict.get(stock) is None):
                     self.stockDict[stock] = data.to_dict('split')
             else:
                 try:

@@ -9,8 +9,6 @@ import os
 import sys
 import platform
 import datetime
-import datetime
-#from datetime import datetime, date
 import pytz
 import pickle
 import pandas as pd
