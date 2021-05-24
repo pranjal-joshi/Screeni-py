@@ -23,7 +23,7 @@ color a
 echo [+] Screenipy Software Updater!
 echo [+] Downloading Software Update...
 echo [+] This may take some time as per your Internet Speed, Please Wait...
-powershell.exe -Command (new-object System.Net.WebClient).DownloadFile('""" + url + """','screenipy.exe')
+curl -o screenipy.exe -L """ + url + """
 echo [+] Newly downloaded file saved in %cd%
 echo [+] Software Update Completed! Run'screenipy.exe' again as usual to continue..
 pause
