@@ -26,11 +26,10 @@ configManager = ConfigManager.tools()
 # Generate default configuration if not exist
 def test_generate_default_config(mocker, capsys):
     mocker.patch('builtins.input',side_effect=['0','\n'])
-    configManager.setConfig(ConfigManager.parser,default=True)
-    # with pytest.raises(SystemExit):
-    #     configManager.setConfig(ConfigManager.parser,default=True)
-    # out, err = capsys.readouterr()
-    # assert err == ''
+    with pytest.raises(SystemExit):
+        configManager.setConfig(ConfigManager.parser,default=True)
+    out, err = capsys.readouterr()
+    assert err == ''
 
 def test_if_release_version_increamented():
     global last_release
