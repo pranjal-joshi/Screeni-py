@@ -11,8 +11,11 @@ import pandas as pd
 import numpy as np
 import sys
 import os
-import classes.Fetcher as Fetcher
+import pytz
 from queue import Empty
+from datetime import datetime
+import classes.Fetcher as Fetcher
+import classes.Utility as Utility
 from classes.CandlePatterns import CandlePatterns
 from classes.ColorText import colorText
 
@@ -24,17 +27,17 @@ else:
 
 class StockConsumer(multiprocessing.Process):
 
-    def __init__(self, task_queue, result_queue, sc, src, proxyServer, keyboardInterruptEvent):
-        global screenCounter, screenResultsCounter
+    def __init__(self, task_queue, result_queue, screenCounter, screenResultsCounter, stockDict, proxyServer, keyboardInterruptEvent):
         multiprocessing.Process.__init__(self)
         self.multiprocessingForWindows()
         self.task_queue = task_queue
         self.result_queue = result_queue
-        self.screenCounter = sc
-        self.screenResultsCounter = src
+        self.screenCounter = screenCounter
+        self.screenResultsCounter = screenResultsCounter
+        self.stockDict = stockDict
         self.proxyServer = proxyServer
         self.keyboardInterruptEvent = keyboardInterruptEvent
-
+        self.isTradingTime = Utility.tools.isTradingTime()
     def run(self):
         # while True:
         try:
@@ -53,25 +56,40 @@ class StockConsumer(multiprocessing.Process):
             sys.exit(0)
 
     def screenStocks(self, executeOption, reversalOption, daysForLowestVolume, minRSI, maxRSI, respBullBear, insideBarToLookback, totalSymbols,
-                    configManager, fetcher, screener, candlePatterns, stock):
-        global screenCounter, screenResultsCounter
+                     configManager, fetcher, screener, candlePatterns, stock):
         screenResults = pd.DataFrame(columns=[
             'Stock', 'Consolidating', 'Breaking-Out', 'MA-Signal', 'Volume', 'LTP', 'RSI', 'Trend', 'Pattern'])
         screeningDictionary = {'Stock': "", 'Consolidating': "",  'Breaking-Out': "",
                                'MA-Signal': "", 'Volume': "", 'LTP': 0, 'RSI': 0, 'Trend': "", 'Pattern': ""}
-        saveDictionary = {'Stock': "", 'Pattern': "", 'Consolidating': "", 'Breaking-Out': "",
+        saveDictionary = {'Stock': "", 'Consolidating': "", 'Breaking-Out': "",
                           'MA-Signal': "", 'Volume': "", 'LTP': 0, 'RSI': 0, 'Trend': "", 'Pattern': ""}
 
         try:
-            data = fetcher.fetchStockData(stock,
-                                                configManager.period,
-                                                configManager.duration,
-                                                self.proxyServer,
-                                                self.screenResultsCounter,
-                                                self.screenCounter,
-                                                totalSymbols)
-                                                
-            fullData, processedData = screener.preprocessData(data, daysToLookback=configManager.daysToLookback)
+            if (self.stockDict.get(stock) is None) or (configManager.cacheEnabled is False) or self.isTradingTime:
+                data = fetcher.fetchStockData(stock,
+                                              configManager.period,
+                                              configManager.duration,
+                                              self.proxyServer,
+                                              self.screenResultsCounter,
+                                              self.screenCounter,
+                                              totalSymbols)
+                if configManager.cacheEnabled is True and not self.isTradingTime and (self.stockDict.get(stock) is None):
+                    self.stockDict[stock] = data.to_dict('split')
+            else:
+                try:
+                    print(colorText.BOLD + colorText.GREEN + ("[%d%%] Screened %d, Found %d. Fetching data & Analyzing %s..." % (
+                        int((self.screenCounter.value / totalSymbols) * 100), self.screenCounter.value, self.screenResultsCounter.value, stock)) + colorText.END, end='')
+                    print(colorText.BOLD + colorText.GREEN + "=> Done!" +
+                          colorText.END, end='\r', flush=True)
+                except ZeroDivisionError:
+                    pass
+                data = self.stockDict.get(stock)
+                data = pd.DataFrame(
+                    data['data'], columns=data['columns'], index=data['index'])
+                sys.stdout.write("\r\033[K")
+
+            fullData, processedData = screener.preprocessData(
+                data, daysToLookback=configManager.daysToLookback)
 
             with self.screenCounter.get_lock():
                 self.screenCounter.value += 1
@@ -94,7 +112,8 @@ class StockConsumer(multiprocessing.Process):
                 isValidRsi = screener.validateRSI(
                     processedData, screeningDictionary, saveDictionary, minRSI, maxRSI)
                 try:
-                    currentTrend = screener.findTrend(processedData, screeningDictionary, saveDictionary, daysToLookback=configManager.daysToLookback, stockName=stock)
+                    currentTrend = screener.findTrend(
+                        processedData, screeningDictionary, saveDictionary, daysToLookback=configManager.daysToLookback, stockName=stock)
                 except np.RankWarning:
                     screeningDictionary['Trend'] = 'Unknown'
                     saveDictionary['Trend'] = 'Unknown'

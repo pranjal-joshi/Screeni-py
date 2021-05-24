@@ -3,23 +3,26 @@
 # Pyinstaller compile Windows: pyinstaller --onefile --icon=src\icon.ico src\screenipy.py  --hidden-import cmath --hidden-import talib.stream
 # Pyinstaller compile Linux  : pyinstaller --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream
 
+# Keep module imports prior to classes
 import multiprocessing
 multiprocessing.freeze_support()
-import sys
-import urllib
-import numpy as np
-import pandas as pd
-from tabulate import tabulate
 from time import sleep
-import classes.Fetcher as Fetcher
-import classes.ConfigManager as ConfigManager
-import classes.Screener as Screener
-import classes.Utility as Utility
-from classes.ColorText import colorText
-from classes.OtaUpdater import OTAUpdater
-from classes.CandlePatterns import CandlePatterns
-from classes.ParallelProcessing import StockConsumer
+from tabulate import tabulate
+from datetime import datetime
+import pandas as pd
+import numpy as np
+import urllib
+import sys
+import os
 from classes.Changelog import VERSION
+from classes.ParallelProcessing import StockConsumer
+from classes.CandlePatterns import CandlePatterns
+from classes.OtaUpdater import OTAUpdater
+from classes.ColorText import colorText
+import classes.Utility as Utility
+import classes.Screener as Screener
+import classes.ConfigManager as ConfigManager
+import classes.Fetcher as Fetcher
 
 # Try Fixing bug with this symbol
 TEST_STKCODE = "SBIN"
@@ -30,7 +33,10 @@ np.seterr(divide='ignore', invalid='ignore')
 # Global Variabls
 screenCounter = None
 screenResultsCounter = None
+stockDict = None
 keyboardInterruptEvent = None
+loadedStockData = False
+loadCount = 0
 
 configManager = ConfigManager.tools()
 fetcher = Fetcher.tools(configManager)
@@ -81,11 +87,16 @@ def initExecution():
 
 # Main function
 
+
 def main(testing=False):
-    global screenCounter, screenResultsCounter, keyboardInterruptEvent
+    global screenCounter, screenResultsCounter, stockDict, loadedStockData, keyboardInterruptEvent, loadCount
     screenCounter = multiprocessing.Value('i', 1)
     screenResultsCounter = multiprocessing.Value('i', 0)
     keyboardInterruptEvent = multiprocessing.Manager().Event()
+
+    if stockDict is None:
+        stockDict = multiprocessing.Manager().dict()
+        loadCount = 0
 
     minRSI = 0
     maxRSI = 100
@@ -109,7 +120,7 @@ def main(testing=False):
     if executeOption == 4:
         try:
             daysForLowestVolume = int(input(colorText.BOLD + colorText.WARN +
-                                      '\n[+] The Volume should be lowest since last how many candles? '))
+                                            '\n[+] The Volume should be lowest since last how many candles? '))
         except ValueError:
             print(colorText.END)
             print(colorText.BOLD + colorText.FAIL +
@@ -157,18 +168,29 @@ def main(testing=False):
                   "\n\n[+] Oops! It looks like you don't have an Internet connectivity at the moment! Press any key to exit!" + colorText.END)
             input('')
             sys.exit(0)
+        
+        if not Utility.tools.isTradingTime() and configManager.cacheEnabled and not loadedStockData and not testing:
+            Utility.tools.loadStockData(stockDict)
+            loadedStockData = True
+        loadCount = len(stockDict)
+
         print(colorText.BOLD + colorText.WARN +
               "[+] Starting Stock Screening.. Press Ctrl+C to stop!\n")
 
         items = [(executeOption, reversalOption, daysForLowestVolume, minRSI, maxRSI, respBullBear, insideBarToLookback, len(listStockCodes),
-                configManager, fetcher, screener, candlePatterns, stock)
+                  configManager, fetcher, screener, candlePatterns, stock)
                  for stock in listStockCodes]
 
         tasks_queue = multiprocessing.JoinableQueue()
         results_queue = multiprocessing.Queue()
 
-        consumers = [StockConsumer(tasks_queue, results_queue, screenCounter, screenResultsCounter, proxyServer, keyboardInterruptEvent)
-                     for _ in range(multiprocessing.cpu_count())]
+        totalConsumers = multiprocessing.cpu_count()
+        if totalConsumers == 1:
+            totalConsumers = 2      # This is required for single core machine
+        if configManager.cacheEnabled is True and multiprocessing.cpu_count() != 1:
+            totalConsumers -= 1
+        consumers = [StockConsumer(tasks_queue, results_queue, screenCounter, screenResultsCounter, stockDict, proxyServer, keyboardInterruptEvent)
+                     for _ in range(totalConsumers)]
 
         for worker in consumers:
             worker.daemon = True
@@ -212,7 +234,7 @@ def main(testing=False):
         # Exit all processes. Without this, it threw error in next screening session
         for worker in consumers:
             worker.terminate()
-        
+
         # Flush the queue so depending processes will end
         from queue import Empty
         while True:
@@ -238,6 +260,11 @@ def main(testing=False):
             inplace=True
         )
         print(tabulate(screenResults, headers='keys', tablefmt='psql'))
+
+        if executeOption != 0 and configManager.cacheEnabled and not Utility.tools.isTradingTime() and not testing:
+            print(colorText.BOLD + colorText.GREEN + "[+] Caching Stock Data for future use, Please Wait... " + colorText.END, end='')
+            Utility.tools.saveStockData(stockDict, configManager, loadCount, screenCounter.value)
+
         Utility.tools.setLastScreenedResults(screenResults)
         Utility.tools.promptSaveResults(saveResults)
         print(colorText.BOLD + colorText.WARN +
@@ -256,5 +283,6 @@ if __name__ == "__main__":
     except Exception as e:
         if isDevVersion == OTAUpdater.developmentVersion:
             raise(e)
-        input(colorText.BOLD + colorText.FAIL + "[+] Press any key to Exit!" + colorText.END)
+        input(colorText.BOLD + colorText.FAIL +
+              "[+] Press any key to Exit!" + colorText.END)
         sys.exit(0)
