@@ -64,11 +64,11 @@ class tools:
                 print(colorText.BOLD + colorText.GREEN +
                       '[+] Default configuration generated as user configuration is not found!' + colorText.END)
                 print(colorText.BOLD + colorText.GREEN +
-                      '[+] Use Option > 5 to edit in future. Press Enter to Continue...' + colorText.END)
-                # print(colorText.BOLD + colorText.GREEN +
-                #       '[+] Close and Restart the program now.' + colorText.END)
+                      '[+] Use Option > 5 to edit in future.' + colorText.END)
+                print(colorText.BOLD + colorText.GREEN +
+                      '[+] Close and Restart the program now.' + colorText.END)
                 input('')
-                # sys.exit(0)
+                sys.exit(0)
             except IOError:
                 print(colorText.BOLD + colorText.FAIL +
                       '[+] Failed to save user config. Exiting..' + colorText.END)
@@ -126,9 +126,9 @@ class tools:
                 print(colorText.BOLD + colorText.GREEN +
                       '[+] User configuration saved.' + colorText.END)
                 print(colorText.BOLD + colorText.GREEN +
-                      '[+] Press Enter to Continue...' + colorText.END)
+                      '[+] Restart the Program to start Screening...' + colorText.END)
                 input('')
-                # sys.exit(0)
+                sys.exit(0)
             except IOError:
                 print(colorText.BOLD + colorText.FAIL +
                       '[+] Failed to save user config. Exiting..' + colorText.END)
