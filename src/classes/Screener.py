@@ -176,6 +176,9 @@ class tools:
         data = data.fillna(0)
         data = data.replace([np.inf, -np.inf], 0)
         recent = data.head(1)
+        # Consider only for Green Candle
+        if not self.getCandleType(recent):
+            return False
         data = data[1:]
         hs = round(data.describe()['High']['max'],2)
         hc = round(data.describe()['Close']['max'],2)

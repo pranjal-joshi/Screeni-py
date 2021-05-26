@@ -107,6 +107,7 @@ jobs:
           path: ${{ matrix.OUT_PATH }}
 
       - name: Read release.md
+        if: startsWith(runner.os, 'Linux')
         id: read_release
         shell: bash
         run: |

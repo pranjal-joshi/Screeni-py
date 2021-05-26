@@ -18,6 +18,7 @@ import classes.Fetcher as Fetcher
 import classes.Utility as Utility
 from classes.CandlePatterns import CandlePatterns
 from classes.ColorText import colorText
+from classes.SuppressOutput import SuppressOutput
 
 if sys.platform.startswith('win'):
     import multiprocessing.popen_spawn_win32 as forking
@@ -56,7 +57,7 @@ class StockConsumer(multiprocessing.Process):
             sys.exit(0)
 
     def screenStocks(self, executeOption, reversalOption, daysForLowestVolume, minRSI, maxRSI, respBullBear, insideBarToLookback, totalSymbols,
-                     configManager, fetcher, screener, candlePatterns, stock):
+                     configManager, fetcher, screener, candlePatterns, stock, printCounter=False):
         screenResults = pd.DataFrame(columns=[
             'Stock', 'Consolidating', 'Breaking-Out', 'MA-Signal', 'Volume', 'LTP', 'RSI', 'Trend', 'Pattern'])
         screeningDictionary = {'Stock': "", 'Consolidating': "",  'Breaking-Out': "",
@@ -76,17 +77,18 @@ class StockConsumer(multiprocessing.Process):
                 if configManager.cacheEnabled is True and not self.isTradingTime and (self.stockDict.get(stock) is None):
                     self.stockDict[stock] = data.to_dict('split')
             else:
-                try:
-                    print(colorText.BOLD + colorText.GREEN + ("[%d%%] Screened %d, Found %d. Fetching data & Analyzing %s..." % (
-                        int((self.screenCounter.value / totalSymbols) * 100), self.screenCounter.value, self.screenResultsCounter.value, stock)) + colorText.END, end='')
-                    print(colorText.BOLD + colorText.GREEN + "=> Done!" +
-                          colorText.END, end='\r', flush=True)
-                except ZeroDivisionError:
-                    pass
+                if printCounter:
+                    try:
+                        print(colorText.BOLD + colorText.GREEN + ("[%d%%] Screened %d, Found %d. Fetching data & Analyzing %s..." % (
+                            int((self.screenCounter.value / totalSymbols) * 100), self.screenCounter.value, self.screenResultsCounter.value, stock)) + colorText.END, end='')
+                        print(colorText.BOLD + colorText.GREEN + "=> Done!" +
+                            colorText.END, end='\r', flush=True)
+                    except ZeroDivisionError:
+                        pass
+                    sys.stdout.write("\r\033[K")
                 data = self.stockDict.get(stock)
                 data = pd.DataFrame(
                     data['data'], columns=data['columns'], index=data['index'])
-                sys.stdout.write("\r\033[K")
 
             fullData, processedData = screener.preprocessData(
                 data, daysToLookback=configManager.daysToLookback)
@@ -112,8 +114,13 @@ class StockConsumer(multiprocessing.Process):
                 isValidRsi = screener.validateRSI(
                     processedData, screeningDictionary, saveDictionary, minRSI, maxRSI)
                 try:
-                    currentTrend = screener.findTrend(
-                        processedData, screeningDictionary, saveDictionary, daysToLookback=configManager.daysToLookback, stockName=stock)
+                    with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
+                        currentTrend = screener.findTrend(
+                            processedData,
+                            screeningDictionary,
+                            saveDictionary,
+                            daysToLookback=configManager.daysToLookback,
+                            stockName=stock)
                 except np.RankWarning:
                     screeningDictionary['Trend'] = 'Unknown'
                     saveDictionary['Trend'] = 'Unknown'
@@ -124,7 +131,7 @@ class StockConsumer(multiprocessing.Process):
                 isMomentum = screener.validateMomentum(processedData, screeningDictionary, saveDictionary)
 
                 with self.screenResultsCounter.get_lock():
-                    if executeOption == 0:
+                    if executeOption == 0 or executeOption == 'W':
                         self.screenResultsCounter.value += 1
                         return screeningDictionary, saveDictionary
                     if (executeOption == 1 or executeOption == 2) and isBreaking and isVolumeHigh and isLtpValid:
@@ -162,7 +169,8 @@ class StockConsumer(multiprocessing.Process):
         except KeyError:
             pass
         except Exception as e:
-            print(colorText.FAIL +
+            if printCounter:
+                print(colorText.FAIL +
                   ("\n[+] Exception Occured while Screening %s! Skipping this stock.." % stock) + colorText.END)
         return
 
