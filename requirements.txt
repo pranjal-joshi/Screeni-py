@@ -20,6 +20,7 @@ scipy
 ta-lib
 tabulate
 yfinance
+alive-progress
 altgraph # Installed as dependency for pyinstaller
 atomicwrites # Installed as dependency for pytest
 attrs # Installed as dependency for pytest

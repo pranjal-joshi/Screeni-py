@@ -13,7 +13,9 @@ import pandas as pd
 import numpy as np
 import urllib
 import sys
+import platform
 import os
+from alive_progress import alive_bar
 from classes.Changelog import VERSION
 from classes.ParallelProcessing import StockConsumer
 from classes.CandlePatterns import CandlePatterns
@@ -55,7 +57,8 @@ except KeyError:
 def initExecution():
     print(colorText.BOLD + colorText.WARN +
           '[+] Press a number to start stock screening: ' + colorText.END)
-    print(colorText.BOLD + '''     0 > Screen stocks by stock name (NSE Stock Code)
+    print(colorText.BOLD + '''     W > Screen stocks from the Watchlist
+     0 > Screen stocks by stock name (NSE Stock Code)
      1 > Screen stocks for Breakout or Consolidation
      2 > Screen for the stocks with recent Breakout & Volume
      3 > Screen for the Consolidating stocks
@@ -72,6 +75,8 @@ def initExecution():
     try:
         result = input(colorText.BOLD + colorText.FAIL + '[+] Select option: ')
         print(colorText.END, end='')
+        if isinstance(result, str) and result.upper() == 'W':
+            return result.upper()
         result = int(result)
         if(result < 0 or result > 12):
             raise ValueError
@@ -159,10 +164,16 @@ def main(testing=False):
         input(colorText.BOLD + colorText.FAIL +
               "[+] Press any key to Exit!" + colorText.END)
         sys.exit(0)
-    if executeOption >= 0 and executeOption < 8:
+    if executeOption == 'W' or (executeOption >= 0 and executeOption < 8):
         configManager.getConfig(ConfigManager.parser)
         try:
-            listStockCodes = fetcher.fetchStockCodes(executeOption)
+            if executeOption == 'W':
+                listStockCodes = fetcher.fetchWatchlist()
+                if listStockCodes is None:
+                    input(colorText.BOLD + colorText.FAIL + f'[+] Create the watchlist.xlsx file in {os.getcwd()} and Restart the Program!' + colorText.END)                    
+                    sys.exit(0)
+            else:
+                listStockCodes = fetcher.fetchStockCodes(executeOption)
         except urllib.error.URLError:
             print(colorText.BOLD + colorText.FAIL +
                   "\n\n[+] Oops! It looks like you don't have an Internet connectivity at the moment! Press any key to exit!" + colorText.END)
@@ -214,14 +225,23 @@ def main(testing=False):
                 tasks_queue.put(None)
             try:
                 numStocks = len(listStockCodes)
-                while numStocks:
-                    result = results_queue.get()
-                    if result is not None:
-                        screenResults = screenResults.append(
-                            result[0], ignore_index=True)
-                        saveResults = saveResults.append(
-                            result[1], ignore_index=True)
-                    numStocks -= 1
+                print(colorText.END+colorText.BOLD)
+                bar = 'smooth'
+                spinner = 'waves'
+                if 'Windows' in platform.platform():
+                    bar = 'classic2'
+                    spinner = 'dots_recur'
+                with alive_bar(numStocks,bar=bar,spinner=spinner) as progressbar:
+                    while numStocks:
+                        result = results_queue.get()
+                        if result is not None:
+                            screenResults = screenResults.append(
+                                result[0], ignore_index=True)
+                            saveResults = saveResults.append(
+                                result[1], ignore_index=True)
+                        numStocks -= 1
+                        progressbar.text(colorText.BOLD + colorText.GREEN + f'Found {screenResultsCounter.value} Stocks' + colorText.END)
+                        progressbar()
             except KeyboardInterrupt:
                 try:
                     keyboardInterruptEvent.set()
@@ -230,7 +250,8 @@ def main(testing=False):
                 print(colorText.BOLD + colorText.FAIL +"\n[+] Terminating Script, Please wait..." + colorText.END)
                 for worker in consumers:
                     worker.terminate()
-
+        
+        print(colorText.END)
         # Exit all processes. Without this, it threw error in next screening session
         for worker in consumers:
             worker.terminate()

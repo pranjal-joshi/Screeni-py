@@ -67,8 +67,8 @@ echo "[+] Downloading Software Update..."
 echo "[+] This may take some time as per your Internet Speed, Please Wait..."
 curl -o screenipy.run -L """ + url + """
 echo "[+] Newly downloaded file saved in $(pwd)"
-chmod +x screenipy.bin
-echo "[+] Update Completed! Run 'screenipy.bin' again as usual to continue.."
+chmod +x screenipy.run
+echo "[+] Update Completed! Run 'screenipy.run' again as usual to continue.."
 rm updater.sh
         """
         f = open("updater.sh",'w')

@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.16"
+VERSION = "1.17"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -87,6 +87,11 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 2. Stock Data Caching added. (Thanks to @swarpatel23)
 3. Codefactoring Improved.
 4. Ctrl+C crash fixed.
+
+[1.17]
+1. Breakout detection improved.
+2. Progressbar added.
+3. Watchlist creation in Excel file and its screening.
 
 --- END ---
 ''' + colorText.END
