@@ -1,16 +1,16 @@
 # Make sure to download the latest release! ![GitHub release (latest by date)](https://img.shields.io/github/v/release/pranjal-joshi/Screeni-py)
 
 ## What's New?
-1. New **Chart Pattern** **`Bullish Momentum Gainer`** added! Try `Option > 6 > 3` :rocket:
-2. **Data Saver Mode**: Intellegently Stores Stock Data for After-Market hours screening without using extra bandwidth! :pencil: (Thanks to [**swarpatel23**](https://github.com/swarpatel23))
-3. **Massive Improvement in screening speed!** :zap: Now we take just around 3-4 minutes to screen thousands of stocks in real time! (Thanks to [**swarpatel23**](https://github.com/swarpatel23))
-4. **MA** now gives more info like **Candle Crossing and At Support/Resistance**. :chart_with_upwards_trend:
-5. Fixed Crashes! :wrench:
+1. Now **Create Your Own Watchlist** in Excel and screen for only those stocks! Try `Option > W` :chart_with_upwards_trend:
+2. New Improved **Breakout Detection.** :rocket:
+3. New **Chart Pattern** **`Bullish Momentum Gainer`** added! Try `Option > 6 > 3` :tada:
+4. **Data Saver & High Performance Mode**: Intellegently Stores Stock Data for After-Market hours screening without using extra bandwidth. Also, uses multiple CPU cores available on your computer for supperfast screening! :sparkles: (Thanks to [**swarpatel23**](https://github.com/swarpatel23))
+5. Cosmetic Updates! :lipstick:
 
 ## Downloads
-* For :desktop_computer: **Windows** users, download **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.16/screenipy.exe)**
-* For :penguin: **Linux** users, download **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.16/screenipy.bin)**
-* For :apple: **MacOS** users, download **[screenipy.run](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.16/screenipy.run)** ([Read Installation Guide](../INSTALLATION.md#For-MacOS))
+* For :desktop_computer: **Windows** users, download **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.17/screenipy.exe)**
+* For :penguin: **Linux** users, download **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.17/screenipy.bin)**
+* For :apple: **MacOS** users, download **[screenipy.run](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.17/screenipy.run)** ([Read Installation Guide](https://github.com/pranjal-joshi/Screeni-py/blob/main/INSTALLATION.md#for-macos))
 
 ## How to use?
 

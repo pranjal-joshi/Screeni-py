@@ -9,6 +9,7 @@ import sys
 import urllib
 import requests
 import random
+import os
 import yfinance as yf
 import pandas as pd
 from nsetools import Nse
@@ -69,7 +70,7 @@ class tools:
         return listStockCodes
 
     # Fetch stock price data from Yahoo finance
-    def fetchStockData(self, stockCode, period, duration, proxyServer, screenResultsCounter, screenCounter, totalSymbols):
+    def fetchStockData(self, stockCode, period, duration, proxyServer, screenResultsCounter, screenCounter, totalSymbols,printCounter=False):
         with SuppressOutput(suppress_stdout=True, suppress_stderr=True):
             data = yf.download(
                 tickers=stockCode+".NS",
@@ -79,17 +80,41 @@ class tools:
                 progress=False,
                 threads=True
             )
-        sys.stdout.write("\r\033[K")
+        if printCounter:
+            sys.stdout.write("\r\033[K")
+            try:
+                print(colorText.BOLD + colorText.GREEN + ("[%d%%] Screened %d, Found %d. Fetching data & Analyzing %s..." % (
+                    int((screenCounter.value/totalSymbols)*100), screenCounter.value, screenResultsCounter.value, stockCode)) + colorText.END, end='')
+            except ZeroDivisionError:
+                pass
+            if len(data) == 0:
+                print(colorText.BOLD + colorText.FAIL +
+                    "=> Failed to fetch!" + colorText.END, end='\r', flush=True)
+                raise StockDataEmptyException
+                return None
+            print(colorText.BOLD + colorText.GREEN + "=> Done!" +
+                colorText.END, end='\r', flush=True)
+        return data
+
+    # Load stockCodes from the watchlist.xlsx
+    def fetchWatchlist(self):
+        createTemplate = False
+        data = pd.DataFrame()
         try:
-            print(colorText.BOLD + colorText.GREEN + ("[%d%%] Screened %d, Found %d. Fetching data & Analyzing %s..." % (
-                int((screenCounter.value/totalSymbols)*100), screenCounter.value, screenResultsCounter.value, stockCode)) + colorText.END, end='')
-        except ZeroDivisionError:
-            pass
-        if len(data) == 0:
-            print(colorText.BOLD + colorText.FAIL +
-                  "=> Failed to fetch!" + colorText.END, end='\r', flush=True)
-            raise StockDataEmptyException
+            data = pd.read_excel('watchlist.xlsx')
+        except FileNotFoundError:
+            print(colorText.BOLD + colorText.FAIL + f'[+] watchlist.xlsx not found in f{os.getcwd()}' + colorText.END)
+            createTemplate = True
+        try:
+            if not createTemplate:
+                data = data['Stock Code'].values.tolist()
+        except KeyError:
+            print(colorText.BOLD + colorText.FAIL + '[+] Bad Watchlist Format: First Column (A1) should have Header named "Stock Code"' + colorText.END)
+            createTemplate = True
+        if createTemplate:
+            sample = {'Stock Code': ['SBIN', 'INFY', 'TATAMOTORS', 'ITC']}
+            sample_data = pd.DataFrame(sample, columns=['Stock Code'])
+            sample_data.to_excel('watchlist_template.xlsx', index=False, header=True)
+            print(colorText.BOLD + colorText.BLUE + f'[+] watchlist_template.xlsx created in {os.getcwd()} as a referance template.' + colorText.END)
             return None
-        print(colorText.BOLD + colorText.GREEN + "=> Done!" +
-              colorText.END, end='\r', flush=True)
         return data
