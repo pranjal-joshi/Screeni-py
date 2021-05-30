@@ -176,9 +176,6 @@ class tools:
         data = data.fillna(0)
         data = data.replace([np.inf, -np.inf], 0)
         recent = data.head(1)
-        # Consider only for Green Candle
-        if not self.getCandleType(recent):
-            return False
         data = data[1:]
         hs = round(data.describe()['High']['max'],2)
         hc = round(data.describe()['Close']['max'],2)
@@ -188,7 +185,7 @@ class tools:
                 saveDict['Breaking-Out'] = str(hc)
                 if rc >= hc:
                     screenDict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "BO: " + str(hc) + " R: " + str(hs) + colorText.END
-                    return True
+                    return True and self.getCandleType(recent)
                 screenDict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "BO: " + str(hc) + " R: " + str(hs) + colorText.END
                 return False
             noOfHigherShadows = len(data[data.High > hc])
@@ -196,20 +193,20 @@ class tools:
                 saveDict['Breaking-Out'] = str(hs)
                 if rc >= hs:
                     screenDict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "BO: " + str(hs) + colorText.END
-                    return True
+                    return True and self.getCandleType(recent)
                 screenDict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "BO: " + str(hs) + colorText.END
                 return False
             saveDict['Breaking-Out'] = str(hc) + ", " + str(hs)
             if rc >= hc:
                 screenDict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "BO: " + str(hc) + " R: " + str(hs) + colorText.END
-                return True
+                return True and self.getCandleType(recent)
             screenDict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "BO: " + str(hc) + " R: " + str(hs) + colorText.END
             return False
         else:
             saveDict['Breaking-Out'] = str(hc)
             if rc >= hc:
                 screenDict['Breaking-Out'] = colorText.BOLD + colorText.GREEN + "BO: " + str(hc) + colorText.END
-                return True
+                return True and self.getCandleType(recent)
             screenDict['Breaking-Out'] = colorText.BOLD + colorText.FAIL + "BO: " + str(hc) + colorText.END
             return False
 

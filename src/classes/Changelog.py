@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.17"
+VERSION = "1.18"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -92,6 +92,10 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 1. Breakout detection improved.
 2. Progressbar added.
 3. Watchlist creation in Excel file and its screening.
+
+[1.18]
+1. Cache and Performance fixes.
+2. Breakout Calculation Enhanced.
 
 --- END ---
 ''' + colorText.END

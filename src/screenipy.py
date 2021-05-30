@@ -269,14 +269,14 @@ def main(testing=False):
         screenResults.rename(
             columns={
                 'Trend': f'Trend ({configManager.daysToLookback}Days)',
-                'Breaking-Out': 'Breakout-Levels'
+                'Breaking-Out': f'Breakout ({configManager.daysToLookback}Days)'
             },
             inplace=True
         )
         saveResults.rename(
             columns={
                 'Trend': f'Trend ({configManager.daysToLookback}Days)',
-                'Breaking-Out': 'Breakout-Levels'
+                'Breaking-Out': 'Breakout ({configManager.daysToLookback}Days)'
             },
             inplace=True
         )
