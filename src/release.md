@@ -5,12 +5,13 @@
 2. New Improved **Breakout Detection.** :rocket:
 3. New **Chart Pattern** **`Bullish Momentum Gainer`** added! Try `Option > 6 > 3` :tada:
 4. **Data Saver & High Performance Mode**: Intellegently Stores Stock Data for After-Market hours screening without using extra bandwidth. Also, uses multiple CPU cores available on your computer for supperfast screening! :sparkles: (Thanks to [**swarpatel23**](https://github.com/swarpatel23))
-5. Cosmetic Updates! :lipstick:
+5. Cosmetic Updates - Progressbar for showing screening process! :lipstick:
+6. Performance Upgrades! :gear:
 
 ## Downloads
-* For :desktop_computer: **Windows** users, download **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.17/screenipy.exe)**
-* For :penguin: **Linux** users, download **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.17/screenipy.bin)**
-* For :apple: **MacOS** users, download **[screenipy.run](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.17/screenipy.run)** ([Read Installation Guide](https://github.com/pranjal-joshi/Screeni-py/blob/main/INSTALLATION.md#for-macos))
+* For :desktop_computer: **Windows** users, download **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.18/screenipy.exe)**
+* For :penguin: **Linux** users, download **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.18/screenipy.bin)**
+* For :apple: **MacOS** users, download **[screenipy.run](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.18/screenipy.run)** ([Read Installation Guide](https://github.com/pranjal-joshi/Screeni-py/blob/main/INSTALLATION.md#for-macos))
 
 ## How to use?
 
