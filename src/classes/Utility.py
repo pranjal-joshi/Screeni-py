@@ -167,13 +167,20 @@ class tools:
     1 > Screen for Buy Signal (Bullish Reversal)
     2 > Screen for Sell Signal (Bearish Reversal)
     3 > Screen for Momentum Gainers (Rising Bullish Momentum)
+    4 > Screen for Reversal at Moving Average (Bullish Reversal)
     0 > Cancel
 [+] Select option: """ + colorText.END))
-            if resp >= 0 and resp <= 3:
-                return resp
+            if resp >= 0 and resp <= 4:
+                if resp == 4:
+                    try:
+                        maLength = int(input(colorText.BOLD + colorText.WARN + '\n[+] Enter MA Length (E.g. 20/50): ' + colorText.END))
+                        return resp, maLength
+                    except ValueError:
+                        raise ValueError
+                return resp, None
             raise ValueError
         except ValueError:
-            return None
+            return None, None
 
     # Prompt for Reversal screening
     def promptChartPatterns():

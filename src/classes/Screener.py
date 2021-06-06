@@ -331,6 +331,23 @@ class tools:
             traceback.print_exc()
             return False
 
+    # Find stock reversing at given MA
+    def findReversalMA(self, data, screenDict, saveDict, maLength, percentage=0.015):
+        if maLength is None:
+            maLength = 20
+        data = data[::-1]
+        if self.configManager.useEMA:
+            maRev = talib.EMA(data['Close'],timeperiod=maLength)
+        else:
+            maRev = talib.MA(data['Close'],timeperiod=maLength)
+        data.insert(10,'maRev',maRev)
+        data = data[::-1].head(3)
+        if data.equals(data[(data.Close >= (data.maRev - (data.maRev*percentage))) & (data.Close <= (data.maRev + (data.maRev*percentage)))]) and data.head(1)['Close'][0] >= data.head(1)['maRev'][0]:
+            screenDict['MA-Signal'] = colorText.BOLD + colorText.GREEN + f'Reversal-{maLength}MA' + colorText.END
+            saveDict['MA-Signal'] = f'Reversal-{maLength}MA'
+            return True
+        return False
+
     '''
     # Find out trend for days to lookback
     def validateVCP(data, screenDict, saveDict, daysToLookback=ConfigManager.daysToLookback, stockName=None):

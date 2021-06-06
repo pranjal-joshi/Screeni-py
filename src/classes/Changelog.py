@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.18"
+VERSION = "1.19"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -97,5 +97,7 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 1. Cache and Performance fixes.
 2. Breakout Calculation Enhanced.
 
+[1.19]
+1. New Feature: Search for Bullish Reversal at MA. Option > 6 > 4
 --- END ---
 ''' + colorText.END
