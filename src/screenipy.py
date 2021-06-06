@@ -39,6 +39,7 @@ stockDict = None
 keyboardInterruptEvent = None
 loadedStockData = False
 loadCount = 0
+maLength = None
 
 configManager = ConfigManager.tools()
 fetcher = Fetcher.tools(configManager)
@@ -94,7 +95,7 @@ def initExecution():
 
 
 def main(testing=False):
-    global screenCounter, screenResultsCounter, stockDict, loadedStockData, keyboardInterruptEvent, loadCount
+    global screenCounter, screenResultsCounter, stockDict, loadedStockData, keyboardInterruptEvent, loadCount, maLength
     screenCounter = multiprocessing.Value('i', 1)
     screenResultsCounter = multiprocessing.Value('i', 0)
     keyboardInterruptEvent = multiprocessing.Manager().Event()
@@ -141,7 +142,7 @@ def main(testing=False):
             input('')
             main()
     if executeOption == 6:
-        reversalOption = Utility.tools.promptReversalScreening()
+        reversalOption, maLength = Utility.tools.promptReversalScreening()
         if reversalOption is None or reversalOption == 0:
             main()
     if executeOption == 7:
@@ -188,7 +189,7 @@ def main(testing=False):
         print(colorText.BOLD + colorText.WARN +
               "[+] Starting Stock Screening.. Press Ctrl+C to stop!\n")
 
-        items = [(executeOption, reversalOption, daysForLowestVolume, minRSI, maxRSI, respBullBear, insideBarToLookback, len(listStockCodes),
+        items = [(executeOption, reversalOption, maLength, daysForLowestVolume, minRSI, maxRSI, respBullBear, insideBarToLookback, len(listStockCodes),
                   configManager, fetcher, screener, candlePatterns, stock)
                  for stock in listStockCodes]
 
