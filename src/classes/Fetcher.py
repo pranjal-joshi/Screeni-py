@@ -54,13 +54,11 @@ class tools:
         url = tickerMapping.get(tickerOption)
 
         try:
-            req = urllib.request.Request(url)
-            with urllib.request.urlopen(req) as res:
-                lines = [l.decode('utf-8') for l in res.readlines()]
-                cr = csv.reader(lines)
-                next(cr)  # skipping first line
-                for row in cr:
-                    listStockCodes.append(row[2])
+            res = requests.get(url)
+            cr = csv.reader(res.text.strip().split('\n'))
+            next(cr)  # skipping first line
+            for row in cr:
+                listStockCodes.append(row[2])
         except Exception as error:
             print(error)
 
