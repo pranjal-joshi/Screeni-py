@@ -1,11 +1,11 @@
 # Make sure to download the latest release! ![GitHub release (latest by date)](https://img.shields.io/github/v/release/pranjal-joshi/Screeni-py)
 
 ## What's New?
-1. Search stocks which are **Reversed** by taking Support at Moving Average! Try `Option > 6 > 4`.
+1. Search stocks that are **Reversed** by taking Support at Moving Average! Try `Option > 6 > 4`.
 2. Now **Create Your Own Watchlist** in Excel and screen for only those stocks! Try `Option > W` :chart_with_upwards_trend:
 3. New Improved **Breakout Detection.** :rocket:
 4. New **Chart Pattern** **`Bullish Momentum Gainer`** added! Try `Option > 6 > 3` :tada:
-5. **Data Saver & High Performance Mode**: Intellegently Stores Stock Data for After-Market hours screening without using extra bandwidth. Also, uses multiple CPU cores available on your computer for supperfast screening! :sparkles: (Thanks to [**swarpatel23**](https://github.com/swarpatel23))
+5. **Data Saver & High-Performance Mode**: Intelligently Stores Stock Data for After-Market hours screening without using extra bandwidth. Also, uses multiple CPU cores available on your computer for superfast screening! :sparkles: (Thanks to [**swarpatel23**](https://github.com/swarpatel23))
 6. Cosmetic Updates - Progressbar for showing screening process! :lipstick:
 
 ## Downloads
@@ -19,9 +19,9 @@
 
 ## Want to Contribute?
 
-[**Click Here**](https://github.com/pranjal-joshi/Screeni-py/blob/main/CONTRIBUTING.md) before you start working with us on new-features!
+[**Click Here**](https://github.com/pranjal-joshi/Screeni-py/blob/main/CONTRIBUTING.md) before you start working with us on new features!
 
 ## Disclaimer:
-* DO NOT use the result provided by the software 'solely' to make your trading decisions.
+* DO NOT use the result provided by the software solely to make your trading decisions.
 * Always backtest and analyze the stocks manually before you trade.
 * The Author(s) and the software will not be held liable for any losses.
