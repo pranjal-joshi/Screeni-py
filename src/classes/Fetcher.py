@@ -6,7 +6,8 @@
 '''
 
 import sys
-import urllib
+import urllib.request
+import csv
 import requests
 import random
 import os
@@ -19,6 +20,8 @@ from classes.SuppressOutput import SuppressOutput
 nse = Nse()
 
 # Exception class if yfinance stock delisted
+
+
 class StockDataEmptyException(Exception):
     pass
 
@@ -31,10 +34,41 @@ class tools:
         self.configManager = configManager
         pass
 
-    # Fetch all stock codes from NSE
-    def fetchStockCodes(self, executeOption):
+    def fetchCodes(self, tickerOption):
         listStockCodes = []
-        if executeOption == 0:
+        if tickerOption == 12:
+            return list(nse.get_stock_codes(cached=False))[1:]
+        tickerMapping = {
+            1: "https://www1.nseindia.com/content/indices/ind_nifty50list.csv",
+            2: "https://www1.nseindia.com/content/indices/ind_niftynext50list.csv",
+            3: "https://www1.nseindia.com/content/indices/ind_nifty100list.csv",
+            4: "https://www1.nseindia.com/content/indices/ind_nifty200list.csv",
+            5: "https://www1.nseindia.com/content/indices/ind_nifty500list.csv",
+            6: "https://www1.nseindia.com/content/indices/ind_niftysmallcap50list.csv",
+            7: "https://www1.nseindia.com/content/indices/ind_niftysmallcap100list.csv",
+            8: "https://www1.nseindia.com/content/indices/ind_niftysmallcap250list.csv",
+            9: "https://www1.nseindia.com/content/indices/ind_niftymidcap50list.csv",
+            10: "https://www1.nseindia.com/content/indices/ind_niftymidcap100list.csv",
+            11: "https://www1.nseindia.com/content/indices/ind_niftymidcap150list.csv"}
+
+        url = tickerMapping.get(tickerOption)
+
+        try:
+            res = urllib.request.urlopen(url)
+            lines = [l.decode('utf-8') for l in res.readlines()]
+            cr = csv.reader(lines)
+            next(cr)  # skipping first line
+            for row in cr:
+                listStockCodes.append(row[2])
+        except Exception as error:
+            print(error)
+
+        return listStockCodes
+
+    # Fetch all stock codes from NSE
+    def fetchStockCodes(self, tickerOption):
+        listStockCodes = []
+        if tickerOption == 0:
             stockCode = None
             while stockCode == None or stockCode == "":
                 stockCode = str(input(colorText.BOLD + colorText.BLUE +
@@ -44,7 +78,7 @@ class tools:
         else:
             print(colorText.BOLD +
                   "[+] Getting Stock Codes From NSE... ", end='')
-            listStockCodes = list(nse.get_stock_codes(cached=False))[1:]
+            listStockCodes = self.fetchCodes(tickerOption)
             if len(listStockCodes) > 10:
                 print(colorText.GREEN + ("=> Done! Fetched %d stock codes." %
                                          len(listStockCodes)) + colorText.END)
@@ -70,7 +104,7 @@ class tools:
         return listStockCodes
 
     # Fetch stock price data from Yahoo finance
-    def fetchStockData(self, stockCode, period, duration, proxyServer, screenResultsCounter, screenCounter, totalSymbols,printCounter=False):
+    def fetchStockData(self, stockCode, period, duration, proxyServer, screenResultsCounter, screenCounter, totalSymbols, printCounter=False):
         with SuppressOutput(suppress_stdout=True, suppress_stderr=True):
             data = yf.download(
                 tickers=stockCode+".NS",
@@ -78,7 +112,6 @@ class tools:
                 duration=duration,
                 proxy=proxyServer,
                 progress=False,
-                threads=True
             )
         if printCounter:
             sys.stdout.write("\r\033[K")
@@ -89,11 +122,11 @@ class tools:
                 pass
             if len(data) == 0:
                 print(colorText.BOLD + colorText.FAIL +
-                    "=> Failed to fetch!" + colorText.END, end='\r', flush=True)
+                      "=> Failed to fetch!" + colorText.END, end='\r', flush=True)
                 raise StockDataEmptyException
                 return None
             print(colorText.BOLD + colorText.GREEN + "=> Done!" +
-                colorText.END, end='\r', flush=True)
+                  colorText.END, end='\r', flush=True)
         return data
 
     # Load stockCodes from the watchlist.xlsx
@@ -103,18 +136,22 @@ class tools:
         try:
             data = pd.read_excel('watchlist.xlsx')
         except FileNotFoundError:
-            print(colorText.BOLD + colorText.FAIL + f'[+] watchlist.xlsx not found in f{os.getcwd()}' + colorText.END)
+            print(colorText.BOLD + colorText.FAIL +
+                  f'[+] watchlist.xlsx not found in f{os.getcwd()}' + colorText.END)
             createTemplate = True
         try:
             if not createTemplate:
                 data = data['Stock Code'].values.tolist()
         except KeyError:
-            print(colorText.BOLD + colorText.FAIL + '[+] Bad Watchlist Format: First Column (A1) should have Header named "Stock Code"' + colorText.END)
+            print(colorText.BOLD + colorText.FAIL +
+                  '[+] Bad Watchlist Format: First Column (A1) should have Header named "Stock Code"' + colorText.END)
             createTemplate = True
         if createTemplate:
             sample = {'Stock Code': ['SBIN', 'INFY', 'TATAMOTORS', 'ITC']}
             sample_data = pd.DataFrame(sample, columns=['Stock Code'])
-            sample_data.to_excel('watchlist_template.xlsx', index=False, header=True)
-            print(colorText.BOLD + colorText.BLUE + f'[+] watchlist_template.xlsx created in {os.getcwd()} as a referance template.' + colorText.END)
+            sample_data.to_excel('watchlist_template.xlsx',
+                                 index=False, header=True)
+            print(colorText.BOLD + colorText.BLUE +
+                  f'[+] watchlist_template.xlsx created in {os.getcwd()} as a referance template.' + colorText.END)
             return None
         return data
