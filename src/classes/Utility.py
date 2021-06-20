@@ -90,7 +90,7 @@ class tools:
         closeTime = curr.replace(hour=15, minute=30)
         return ((openTime <= curr <= closeTime) and (0 <= curr.weekday() <= 4))
 
-    def saveStockData(stockDict, configManager, loadCount, screenCounter):
+    def saveStockData(stockDict, configManager, loadCount):
         today_date = datetime.date.today().strftime("%d%m%y")
         cache_file = "stock_data_" + str(today_date) + ".pkl"
         weekday = datetime.date.today().weekday()
@@ -99,7 +99,8 @@ class tools:
             last_friday = last_friday.strftime("%d%m%y")
             cache_file = "stock_data_" + str(last_friday) + ".pkl"
         configManager.deleteStockData(excludeFile=cache_file)
-        if not os.path.exists(cache_file) or screenCounter > (loadCount+1):
+
+        if not os.path.exists(cache_file) or len(stockDict) > (loadCount+1):
             with open(cache_file, 'wb') as f:
                 try:
                     pickle.dump(stockDict.copy(), f)
@@ -173,7 +174,8 @@ class tools:
             if resp >= 0 and resp <= 4:
                 if resp == 4:
                     try:
-                        maLength = int(input(colorText.BOLD + colorText.WARN + '\n[+] Enter MA Length (E.g. 20/50): ' + colorText.END))
+                        maLength = int(input(colorText.BOLD + colorText.WARN +
+                                             '\n[+] Enter MA Length (E.g. 20/50): ' + colorText.END))
                         return resp, maLength
                     except ValueError:
                         raise ValueError

@@ -39,6 +39,7 @@ class StockConsumer(multiprocessing.Process):
         self.proxyServer = proxyServer
         self.keyboardInterruptEvent = keyboardInterruptEvent
         self.isTradingTime = Utility.tools.isTradingTime()
+
     def run(self):
         # while True:
         try:
@@ -82,7 +83,7 @@ class StockConsumer(multiprocessing.Process):
                         print(colorText.BOLD + colorText.GREEN + ("[%d%%] Screened %d, Found %d. Fetching data & Analyzing %s..." % (
                             int((self.screenCounter.value / totalSymbols) * 100), self.screenCounter.value, self.screenResultsCounter.value, stock)) + colorText.END, end='')
                         print(colorText.BOLD + colorText.GREEN + "=> Done!" +
-                            colorText.END, end='\r', flush=True)
+                              colorText.END, end='\r', flush=True)
                     except ZeroDivisionError:
                         pass
                     sys.stdout.write("\r\033[K")
@@ -128,12 +129,13 @@ class StockConsumer(multiprocessing.Process):
                     processedData, screeningDictionary, saveDictionary)
                 isInsideBar = screener.validateInsideBar(
                     processedData, screeningDictionary, saveDictionary, bullBear=respBullBear, daysToLookback=insideBarToLookback)
+
                 isMomentum = screener.validateMomentum(processedData, screeningDictionary, saveDictionary)
                 if maLength is not None and executeOption == 6:
                     isMaSupport = screener.findReversalMA(fullData, screeningDictionary, saveDictionary, maLength)
 
                 with self.screenResultsCounter.get_lock():
-                    if executeOption == 0 or executeOption == 'W':
+                    if executeOption == 0:
                         self.screenResultsCounter.value += 1
                         return screeningDictionary, saveDictionary
                     if (executeOption == 1 or executeOption == 2) and isBreaking and isVolumeHigh and isLtpValid:
@@ -176,7 +178,7 @@ class StockConsumer(multiprocessing.Process):
         except Exception as e:
             if printCounter:
                 print(colorText.FAIL +
-                  ("\n[+] Exception Occured while Screening %s! Skipping this stock.." % stock) + colorText.END)
+                      ("\n[+] Exception Occured while Screening %s! Skipping this stock.." % stock) + colorText.END)
         return
 
     def multiprocessingForWindows(self):
