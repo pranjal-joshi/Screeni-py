@@ -44,7 +44,7 @@ def test_if_release_version_increamented():
 
 def test_option_0(mocker):
     try:
-        mocker.patch('builtins.input', side_effect=['0', '0', TEST_STKCODE, 'y'])
+        mocker.patch('builtins.input', side_effect=['0', TEST_STKCODE, 'y'])
         main(testing=True)
         assert len(screenResults) == 1
     except StopIteration:

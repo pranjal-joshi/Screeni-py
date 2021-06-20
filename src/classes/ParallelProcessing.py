@@ -129,11 +129,10 @@ class StockConsumer(multiprocessing.Process):
                     processedData, screeningDictionary, saveDictionary)
                 isInsideBar = screener.validateInsideBar(
                     processedData, screeningDictionary, saveDictionary, bullBear=respBullBear, daysToLookback=insideBarToLookback)
-                isMomentum = screener.validateMomentum(
-                    processedData, screeningDictionary, saveDictionary)
+
+                isMomentum = screener.validateMomentum(processedData, screeningDictionary, saveDictionary)
                 if maLength is not None and executeOption == 6:
-                    isMaSupport = screener.findReversalMA(
-                        fullData, screeningDictionary, saveDictionary, maLength)
+                    isMaSupport = screener.findReversalMA(fullData, screeningDictionary, saveDictionary, maLength)
 
                 with self.screenResultsCounter.get_lock():
                     if executeOption == 0:

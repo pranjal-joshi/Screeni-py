@@ -57,20 +57,19 @@ except KeyError:
 
 def initExecution():
     print(colorText.BOLD + colorText.WARN +
-          '[+] Press a number to select stock symbols: ' + colorText.END)
-    print(colorText.BOLD + '''     W > Screen stocks from the Watchlist
-     0 > Screen stocks by stock name (NSE Stock Code)
-     1 > Nifty 50             2 > Nifty Next 50       3 > Nifty 100
-     4 > Nifty 200            5 > Nifty 500           6 > Nifty Smallcap 50
-     7 > Nifty Smallcap 100   8 > Nifty Smallcap 250  9 > Nifty Midcap 50
-    10 > Nifty Midcap 100    11 > Nifty Midcap 150
-    12 > All Stocks (default) ''' + colorText.END
+          '[+] Select an Index for Screening: ' + colorText.END)
+    print(colorText.BOLD + '''     W > Screen stocks from my own Watchlist
+     0 > Screen stocks by the stock names (NSE Stock Code)
+     1 > Nifty 50               2 > Nifty Next 50           3 > Nifty 100
+     4 > Nifty 200              5 > Nifty 500               6 > Nifty Smallcap 50
+     7 > Nifty Smallcap 100     8 > Nifty Smallcap 250      9 > Nifty Midcap 50
+    10 > Nifty Midcap 100      11 > Nifty Midcap 150
+    Enter > All Stocks (default) ''' + colorText.END
           )
     try:
         tickerOption = input(
             colorText.BOLD + colorText.FAIL + '[+] Select option: ')
         print(colorText.END, end='')
-        print(tickerOption)
         if tickerOption == '':
             tickerOption = 12
         if tickerOption == 'W' or tickerOption == 'w':
@@ -88,32 +87,36 @@ def initExecution():
         Utility.tools.clearScreen()
         return initExecution()
 
-    print(colorText.BOLD + colorText.WARN +
-          '[+] Press a number to start stock screening: ' + colorText.END)
-    print(colorText.BOLD + '''
-     0 > General Screening
-     1 > Screen stocks for Breakout or Consolidation
-     2 > Screen for the stocks with recent Breakout & Volume
-     3 > Screen for the Consolidating stocks
-     4 > Screen for the stocks with Lowest Volume in last 'N'-days (Early Breakout Detection)
-     5 > Screen for the stocks with RSI
-     6 > Screen for the stocks showing Reversal Signals
-     7 > Screen for the stocks making Chart Patterns
-     8 > Edit user configuration
-     9 > Show user configuration
+    if tickerOption and tickerOption != 'W':
+        print(colorText.BOLD + colorText.WARN +
+            '\n[+] Select a Critera for Stock Screening: ' + colorText.END)
+        print(colorText.BOLD + '''
+    0 > Full Screening (Shows Technical Parameters without Any Criteria)
+    1 > Screen stocks for Breakout or Consolidation
+    2 > Screen for the stocks with recent Breakout & Volume
+    3 > Screen for the Consolidating stocks
+    4 > Screen for the stocks with Lowest Volume in last 'N'-days (Early Breakout Detection)
+    5 > Screen for the stocks with RSI
+    6 > Screen for the stocks showing Reversal Signals
+    7 > Screen for the stocks making Chart Patterns
+    8 > Edit user configuration
+    9 > Show user configuration
     10 > Show Last Screened Results
     11 > About Developer
     12 > Exit''' + colorText.END
-          )
+            )
     try:
-        executeOption = input(
-            colorText.BOLD + colorText.FAIL + '[+] Select option: ')
-        print(colorText.END, end='')
-        if executeOption == '':
+        if tickerOption and tickerOption != 'W':
+            executeOption = input(
+                colorText.BOLD + colorText.FAIL + '[+] Select option: ')
+            print(colorText.END, end='')
+            if executeOption == '':
+                executeOption = 0
+            executeOption = int(executeOption)
+            if(executeOption < 0 or executeOption > 12):
+                raise ValueError
+        else:
             executeOption = 0
-        executeOption = int(executeOption)
-        if(executeOption < 0 or executeOption > 12):
-            raise ValueError
     except KeyboardInterrupt:
         raise KeyboardInterrupt
     except Exception as e:
@@ -123,9 +126,8 @@ def initExecution():
         Utility.tools.clearScreen()
         return initExecution()
     return tickerOption, executeOption
+
 # Main function
-
-
 def main(testing=False):
     global screenCounter, screenResultsCounter, stockDict, loadedStockData, keyboardInterruptEvent, loadCount, maLength
     screenCounter = multiprocessing.Value('i', 1)
