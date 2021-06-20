@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.19"
+VERSION = "1.20"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -99,5 +99,9 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [1.19]
 1. New Feature: Search for Bullish Reversal at MA. Option > 6 > 4
+
+[1.20]
+1. Screen stocks as per your favorite index. (Thanks to @swarpatel23)
+
 --- END ---
 ''' + colorText.END

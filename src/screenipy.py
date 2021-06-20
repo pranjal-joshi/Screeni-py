@@ -4,27 +4,27 @@
 # Pyinstaller compile Linux  : pyinstaller --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream
 
 # Keep module imports prior to classes
-import multiprocessing
-multiprocessing.freeze_support()
+import classes.Fetcher as Fetcher
+import classes.ConfigManager as ConfigManager
+import classes.Screener as Screener
+import classes.Utility as Utility
+from classes.ColorText import colorText
+from classes.OtaUpdater import OTAUpdater
+from classes.CandlePatterns import CandlePatterns
+from classes.ParallelProcessing import StockConsumer
+from classes.Changelog import VERSION
+from alive_progress import alive_bar
+import os
+import platform
+import sys
+import urllib
+import numpy as np
+import pandas as pd
+from datetime import datetime
 from time import sleep
 from tabulate import tabulate
-from datetime import datetime
-import pandas as pd
-import numpy as np
-import urllib
-import sys
-import platform
-import os
-from alive_progress import alive_bar
-from classes.Changelog import VERSION
-from classes.ParallelProcessing import StockConsumer
-from classes.CandlePatterns import CandlePatterns
-from classes.OtaUpdater import OTAUpdater
-from classes.ColorText import colorText
-import classes.Utility as Utility
-import classes.Screener as Screener
-import classes.ConfigManager as ConfigManager
-import classes.Fetcher as Fetcher
+import multiprocessing
+multiprocessing.freeze_support()
 
 # Try Fixing bug with this symbol
 TEST_STKCODE = "SBIN"
@@ -57,31 +57,27 @@ except KeyError:
 
 def initExecution():
     print(colorText.BOLD + colorText.WARN +
-          '[+] Press a number to start stock screening: ' + colorText.END)
-    print(colorText.BOLD + '''     W > Screen stocks from the Watchlist
-     0 > Screen stocks by stock name (NSE Stock Code)
-     1 > Screen stocks for Breakout or Consolidation
-     2 > Screen for the stocks with recent Breakout & Volume
-     3 > Screen for the Consolidating stocks
-     4 > Screen for the stocks with Lowest Volume in last 'N'-days (Early Breakout Detection)
-     5 > Screen for the stocks with RSI
-     6 > Screen for the stocks showing Reversal Signals
-     7 > Screen for the stocks making Chart Patterns
-     8 > Edit user configuration
-     9 > Show user configuration
-    10 > Show Last Screened Results
-    11 > About Developer
-    12 > Exit''' + colorText.END
+          '[+] Select an Index for Screening: ' + colorText.END)
+    print(colorText.BOLD + '''     W > Screen stocks from my own Watchlist
+     0 > Screen stocks by the stock names (NSE Stock Code)
+     1 > Nifty 50               2 > Nifty Next 50           3 > Nifty 100
+     4 > Nifty 200              5 > Nifty 500               6 > Nifty Smallcap 50
+     7 > Nifty Smallcap 100     8 > Nifty Smallcap 250      9 > Nifty Midcap 50
+    10 > Nifty Midcap 100      11 > Nifty Midcap 150
+    Enter > All Stocks (default) ''' + colorText.END
           )
     try:
-        result = input(colorText.BOLD + colorText.FAIL + '[+] Select option: ')
+        tickerOption = input(
+            colorText.BOLD + colorText.FAIL + '[+] Select option: ')
         print(colorText.END, end='')
-        if isinstance(result, str) and result.upper() == 'W':
-            return result.upper()
-        result = int(result)
-        if(result < 0 or result > 12):
-            raise ValueError
-        return result
+        if tickerOption == '':
+            tickerOption = 12
+        if tickerOption == 'W' or tickerOption == 'w':
+            tickerOption = tickerOption.upper()
+        else:
+            tickerOption = int(tickerOption)
+            if(tickerOption < 0 or tickerOption > 12):
+                raise ValueError
     except KeyboardInterrupt:
         raise KeyboardInterrupt
     except Exception as e:
@@ -91,9 +87,47 @@ def initExecution():
         Utility.tools.clearScreen()
         return initExecution()
 
+    if tickerOption and tickerOption != 'W':
+        print(colorText.BOLD + colorText.WARN +
+            '\n[+] Select a Critera for Stock Screening: ' + colorText.END)
+        print(colorText.BOLD + '''
+    0 > Full Screening (Shows Technical Parameters without Any Criteria)
+    1 > Screen stocks for Breakout or Consolidation
+    2 > Screen for the stocks with recent Breakout & Volume
+    3 > Screen for the Consolidating stocks
+    4 > Screen for the stocks with Lowest Volume in last 'N'-days (Early Breakout Detection)
+    5 > Screen for the stocks with RSI
+    6 > Screen for the stocks showing Reversal Signals
+    7 > Screen for the stocks making Chart Patterns
+    8 > Edit user configuration
+    9 > Show user configuration
+    10 > Show Last Screened Results
+    11 > About Developer
+    12 > Exit''' + colorText.END
+            )
+    try:
+        if tickerOption and tickerOption != 'W':
+            executeOption = input(
+                colorText.BOLD + colorText.FAIL + '[+] Select option: ')
+            print(colorText.END, end='')
+            if executeOption == '':
+                executeOption = 0
+            executeOption = int(executeOption)
+            if(executeOption < 0 or executeOption > 12):
+                raise ValueError
+        else:
+            executeOption = 0
+    except KeyboardInterrupt:
+        raise KeyboardInterrupt
+    except Exception as e:
+        print(colorText.BOLD + colorText.FAIL +
+              '\n[+] Please enter a valid numeric option & Try Again!' + colorText.END)
+        sleep(2)
+        Utility.tools.clearScreen()
+        return initExecution()
+    return tickerOption, executeOption
+
 # Main function
-
-
 def main(testing=False):
     global screenCounter, screenResultsCounter, stockDict, loadedStockData, keyboardInterruptEvent, loadCount, maLength
     screenCounter = multiprocessing.Value('i', 1)
@@ -117,7 +151,7 @@ def main(testing=False):
                                'Stock', 'Consolidating', 'Breaking-Out', 'LTP', 'Volume', 'MA-Signal', 'RSI', 'Trend', 'Pattern'])
 
     try:
-        executeOption = initExecution()
+        tickerOption, executeOption = initExecution()
     except KeyboardInterrupt:
         input(colorText.BOLD + colorText.FAIL +
               "[+] Press any key to Exit!" + colorText.END)
@@ -165,22 +199,24 @@ def main(testing=False):
         input(colorText.BOLD + colorText.FAIL +
               "[+] Press any key to Exit!" + colorText.END)
         sys.exit(0)
-    if executeOption == 'W' or (executeOption >= 0 and executeOption < 8):
+
+    if tickerOption == 'W' or (tickerOption >= 0 and tickerOption < 13):
         configManager.getConfig(ConfigManager.parser)
         try:
-            if executeOption == 'W':
+            if tickerOption == 'W':
                 listStockCodes = fetcher.fetchWatchlist()
                 if listStockCodes is None:
-                    input(colorText.BOLD + colorText.FAIL + f'[+] Create the watchlist.xlsx file in {os.getcwd()} and Restart the Program!' + colorText.END)                    
+                    input(colorText.BOLD + colorText.FAIL +
+                          f'[+] Create the watchlist.xlsx file in {os.getcwd()} and Restart the Program!' + colorText.END)
                     sys.exit(0)
             else:
-                listStockCodes = fetcher.fetchStockCodes(executeOption)
+                listStockCodes = fetcher.fetchStockCodes(tickerOption)
         except urllib.error.URLError:
             print(colorText.BOLD + colorText.FAIL +
                   "\n\n[+] Oops! It looks like you don't have an Internet connectivity at the moment! Press any key to exit!" + colorText.END)
             input('')
             sys.exit(0)
-        
+
         if not Utility.tools.isTradingTime() and configManager.cacheEnabled and not loadedStockData and not testing:
             Utility.tools.loadStockData(stockDict)
             loadedStockData = True
@@ -232,7 +268,7 @@ def main(testing=False):
                 if 'Windows' in platform.platform():
                     bar = 'classic2'
                     spinner = 'dots_recur'
-                with alive_bar(numStocks,bar=bar,spinner=spinner) as progressbar:
+                with alive_bar(numStocks, bar=bar, spinner=spinner) as progressbar:
                     while numStocks:
                         result = results_queue.get()
                         if result is not None:
@@ -241,17 +277,19 @@ def main(testing=False):
                             saveResults = saveResults.append(
                                 result[1], ignore_index=True)
                         numStocks -= 1
-                        progressbar.text(colorText.BOLD + colorText.GREEN + f'Found {screenResultsCounter.value} Stocks' + colorText.END)
+                        progressbar.text(colorText.BOLD + colorText.GREEN +
+                                         f'Found {screenResultsCounter.value} Stocks' + colorText.END)
                         progressbar()
             except KeyboardInterrupt:
                 try:
                     keyboardInterruptEvent.set()
                 except KeyboardInterrupt:
                     pass
-                print(colorText.BOLD + colorText.FAIL +"\n[+] Terminating Script, Please wait..." + colorText.END)
+                print(colorText.BOLD + colorText.FAIL +
+                      "\n[+] Terminating Script, Please wait..." + colorText.END)
                 for worker in consumers:
                     worker.terminate()
-        
+
         print(colorText.END)
         # Exit all processes. Without this, it threw error in next screening session
         for worker in consumers:
@@ -283,9 +321,11 @@ def main(testing=False):
         )
         print(tabulate(screenResults, headers='keys', tablefmt='psql'))
 
-        if executeOption != 0 and configManager.cacheEnabled and not Utility.tools.isTradingTime() and not testing:
-            print(colorText.BOLD + colorText.GREEN + "[+] Caching Stock Data for future use, Please Wait... " + colorText.END, end='')
-            Utility.tools.saveStockData(stockDict, configManager, loadCount, screenCounter.value)
+        if configManager.cacheEnabled and not Utility.tools.isTradingTime() and not testing:
+            print(colorText.BOLD + colorText.GREEN +
+                  "[+] Caching Stock Data for future use, Please Wait... " + colorText.END, end='')
+            Utility.tools.saveStockData(
+                stockDict, configManager, loadCount)
 
         Utility.tools.setLastScreenedResults(screenResults)
         Utility.tools.promptSaveResults(saveResults)
