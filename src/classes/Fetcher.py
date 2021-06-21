@@ -34,7 +34,7 @@ class tools:
         self.configManager = configManager
         pass
 
-    def fetchCodes(self, tickerOption):
+    def fetchCodes(self, tickerOption,proxyServer=None):
         listStockCodes = []
         if tickerOption == 12:
             return list(nse.get_stock_codes(cached=False))[1:]
@@ -54,7 +54,10 @@ class tools:
         url = tickerMapping.get(tickerOption)
 
         try:
-            res = requests.get(url)
+            if proxyServer:
+                res = requests.get(url,proxies={'https':proxyServer})
+            else:
+                res = requests.get(url)
             cr = csv.reader(res.text.strip().split('\n'))
             next(cr)  # skipping first line
             for row in cr:
@@ -65,7 +68,7 @@ class tools:
         return listStockCodes
 
     # Fetch all stock codes from NSE
-    def fetchStockCodes(self, tickerOption):
+    def fetchStockCodes(self, tickerOption, proxyServer=None):
         listStockCodes = []
         if tickerOption == 0:
             stockCode = None
@@ -77,7 +80,7 @@ class tools:
         else:
             print(colorText.BOLD +
                   "[+] Getting Stock Codes From NSE... ", end='')
-            listStockCodes = self.fetchCodes(tickerOption)
+            listStockCodes = self.fetchCodes(tickerOption,proxyServer=proxyServer)
             if len(listStockCodes) > 10:
                 print(colorText.GREEN + ("=> Done! Fetched %d stock codes." %
                                          len(listStockCodes)) + colorText.END)
