@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.20"
+VERSION = "1.21"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -102,6 +102,9 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [1.20]
 1. Screen stocks as per your favorite index. (Thanks to @swarpatel23)
+
+[1.21]
+1. TradingView Hyperlink added for stock symbol.
 
 --- END ---
 ''' + colorText.END
