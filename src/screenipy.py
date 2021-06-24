@@ -210,7 +210,7 @@ def main(testing=False):
                           f'[+] Create the watchlist.xlsx file in {os.getcwd()} and Restart the Program!' + colorText.END)
                     sys.exit(0)
             else:
-                listStockCodes = fetcher.fetchStockCodes(tickerOption)
+                listStockCodes = fetcher.fetchStockCodes(tickerOption, proxyServer=proxyServer)
         except urllib.error.URLError:
             print(colorText.BOLD + colorText.FAIL +
                   "\n\n[+] Oops! It looks like you don't have an Internet connectivity at the moment! Press any key to exit!" + colorText.END)
