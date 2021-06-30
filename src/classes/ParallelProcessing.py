@@ -97,8 +97,10 @@ class StockConsumer(multiprocessing.Process):
             with self.screenCounter.get_lock():
                 self.screenCounter.value += 1
             if not processedData.empty:
+                # screeningDictionary['Stock'] = colorText.BOLD + \
+                #     colorText.BLUE + stock + colorText.END
                 screeningDictionary['Stock'] = colorText.BOLD + \
-                    colorText.BLUE + stock + colorText.END
+                     colorText.BLUE + f'\x1B]8;;https://in.tradingview.com/chart?symbol=NSE%3A{stock}\x1B\\{stock}\x1B]8;;\x1B\\' + colorText.END
                 saveDictionary['Stock'] = stock
                 consolidationValue = screener.validateConsolidation(
                     processedData, screeningDictionary, saveDictionary, percentage=configManager.consolidationPercentage)
