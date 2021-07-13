@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.21"
+VERSION = "1.22"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -105,6 +105,9 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [1.21]
 1. TradingView Hyperlink added for stock symbol.
+
+[1.22]
+1. Broken yfinance API fixed.
 
 --- END ---
 ''' + colorText.END

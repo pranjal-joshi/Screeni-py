@@ -7,9 +7,9 @@
 4. Cosmetic Updates - Progressbar for showing screening process! :lipstick:
 
 ## Downloads
-* For :desktop_computer: **Windows** users, download **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.21/screenipy.exe)**
-* For :penguin: **Linux** users, download **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.21/screenipy.bin)**
-* For :apple: **MacOS** users, download **[screenipy.run](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.21/screenipy.run)** ([Read Installation Guide](https://github.com/pranjal-joshi/Screeni-py/blob/main/INSTALLATION.md#for-macos))
+* For :desktop_computer: **Windows** users, download **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.22/screenipy.exe)**
+* For :penguin: **Linux** users, download **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.22/screenipy.bin)**
+* For :apple: **MacOS** users, download **[screenipy.run](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.22/screenipy.run)** ([Read Installation Guide](https://github.com/pranjal-joshi/Screeni-py/blob/main/INSTALLATION.md#for-macos))
 
 ## How to use?
 
