@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.22"
+VERSION = "1.23"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -108,6 +108,10 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [1.22]
 1. Broken yfinance API fixed.
+
+[1.23]
+1. Bug fixed for DualCore CPU.
+2. Dependencies updated.
 
 --- END ---
 ''' + colorText.END
