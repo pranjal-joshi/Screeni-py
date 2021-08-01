@@ -114,8 +114,10 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 2. Dependencies updated.
 
 [1.24]
-1. Permission bug-fixes for some windows users.
-2. Result table optimized.
+1. IPO Base Breakout pattern added. Option > 7 > 3.
+2. Data fetching interval fixed.
+3. Permission bug-fixes for some windows users.
+4. Result table optimized.
 
 --- END ---
 ''' + colorText.END

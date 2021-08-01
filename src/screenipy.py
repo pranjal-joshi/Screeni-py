@@ -141,7 +141,7 @@ def main(testing=False):
     minRSI = 0
     maxRSI = 100
     insideBarToLookback = 7
-    respBullBear = 1
+    respChartPattern = 1
     daysForLowestVolume = 30
     reversalOption = None
 
@@ -180,7 +180,7 @@ def main(testing=False):
         if reversalOption is None or reversalOption == 0:
             main()
     if executeOption == 7:
-        respBullBear, insideBarToLookback = Utility.tools.promptChartPatterns()
+        respChartPattern, insideBarToLookback = Utility.tools.promptChartPatterns()
         if insideBarToLookback is None:
             main()
     if executeOption == 8:
@@ -225,7 +225,7 @@ def main(testing=False):
         print(colorText.BOLD + colorText.WARN +
               "[+] Starting Stock Screening.. Press Ctrl+C to stop!\n")
 
-        items = [(executeOption, reversalOption, maLength, daysForLowestVolume, minRSI, maxRSI, respBullBear, insideBarToLookback, len(listStockCodes),
+        items = [(executeOption, reversalOption, maLength, daysForLowestVolume, minRSI, maxRSI, respChartPattern, insideBarToLookback, len(listStockCodes),
                   configManager, fetcher, screener, candlePatterns, stock)
                  for stock in listStockCodes]
 

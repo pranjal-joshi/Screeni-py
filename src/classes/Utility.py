@@ -190,13 +190,16 @@ class tools:
             resp = int(input(colorText.BOLD + colorText.WARN + """\n[+] Select Option:
     1 > Screen for Bullish Inside Bar (Flag) Pattern
     2 > Screen for Bearish Inside Bar (Flag) Pattern
+    3 > Screen for IPO Base Breakout Pattern
     0 > Cancel
 [+] Select option: """ + colorText.END))
             if resp == 1 or resp == 2:
                 candles = int(input(colorText.BOLD + colorText.WARN +
                                     "\n[+] How many candles (TimeFrame) to look back Inside Bar formation? : " + colorText.END))
                 return (resp, candles)
-            if resp >= 0 and resp <= 2:
+            if resp == 3:
+                return (resp, 1)
+            if resp >= 0 and resp <= 3:
                 return resp
             raise ValueError
         except ValueError:
