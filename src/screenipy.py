@@ -235,7 +235,7 @@ def main(testing=False):
         totalConsumers = multiprocessing.cpu_count()
         if totalConsumers == 1:
             totalConsumers = 2      # This is required for single core machine
-        if configManager.cacheEnabled is True and multiprocessing.cpu_count() != 1:
+        if configManager.cacheEnabled is True and multiprocessing.cpu_count() > 2:
             totalConsumers -= 1
         consumers = [StockConsumer(tasks_queue, results_queue, screenCounter, screenResultsCounter, stockDict, proxyServer, keyboardInterruptEvent)
                      for _ in range(totalConsumers)]
