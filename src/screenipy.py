@@ -293,7 +293,11 @@ def main(testing=False):
         print(colorText.END)
         # Exit all processes. Without this, it threw error in next screening session
         for worker in consumers:
-            worker.terminate()
+            try:
+                worker.terminate()
+            except OSError as e:
+                if e.winerror == 5:
+                    pass
 
         # Flush the queue so depending processes will end
         from queue import Empty
@@ -305,6 +309,8 @@ def main(testing=False):
 
         screenResults.sort_values(by=['Stock'], ascending=True, inplace=True)
         saveResults.sort_values(by=['Stock'], ascending=True, inplace=True)
+        screenResults.set_index('Stock', inplace=True)
+        saveResults.set_index('Stock', inplace=True)
         screenResults.rename(
             columns={
                 'Trend': f'Trend ({configManager.daysToLookback}Days)',
