@@ -111,7 +111,7 @@ class tools:
             data = yf.download(
                 tickers=stockCode+".NS",
                 period=period,
-                duration=duration,
+                interval=duration,
                 proxy=proxyServer,
                 progress=False,
             )

@@ -57,7 +57,7 @@ class StockConsumer(multiprocessing.Process):
         except Exception as e:
             sys.exit(0)
 
-    def screenStocks(self, executeOption, reversalOption, maLength, daysForLowestVolume, minRSI, maxRSI, respBullBear, insideBarToLookback, totalSymbols,
+    def screenStocks(self, executeOption, reversalOption, maLength, daysForLowestVolume, minRSI, maxRSI, respChartPattern, insideBarToLookback, totalSymbols,
                      configManager, fetcher, screener, candlePatterns, stock, printCounter=False):
         screenResults = pd.DataFrame(columns=[
             'Stock', 'Consolidating', 'Breaking-Out', 'MA-Signal', 'Volume', 'LTP', 'RSI', 'Trend', 'Pattern'])
@@ -67,9 +67,14 @@ class StockConsumer(multiprocessing.Process):
                           'MA-Signal': "", 'Volume': "", 'LTP': 0, 'RSI': 0, 'Trend': "", 'Pattern': ""}
 
         try:
-            if (self.stockDict.get(stock) is None) or (configManager.cacheEnabled is False) or self.isTradingTime:
+            period = configManager.period
+            # Data download adjustment for IPO Base feature
+            if executeOption == 7 and respChartPattern == 3:
+                period = 'max'
+
+            if (self.stockDict.get(stock) is None) or (respChartPattern == 3) or (configManager.cacheEnabled is False) or self.isTradingTime:
                 data = fetcher.fetchStockData(stock,
-                                              configManager.period,
+                                              period,
                                               configManager.duration,
                                               self.proxyServer,
                                               self.screenResultsCounter,
@@ -130,9 +135,12 @@ class StockConsumer(multiprocessing.Process):
                 isCandlePattern = candlePatterns.findPattern(
                     processedData, screeningDictionary, saveDictionary)
                 isInsideBar = screener.validateInsideBar(
-                    processedData, screeningDictionary, saveDictionary, bullBear=respBullBear, daysToLookback=insideBarToLookback)
-
+                    processedData, screeningDictionary, saveDictionary, chartPattern=respChartPattern, daysToLookback=insideBarToLookback)
                 isMomentum = screener.validateMomentum(processedData, screeningDictionary, saveDictionary)
+                
+                if respChartPattern == 3 and executeOption == 7:
+                    isIpoBase = screener.validateIpoBase(stock, fullData, screeningDictionary, saveDictionary)
+
                 if maLength is not None and executeOption == 6:
                     isMaSupport = screener.findReversalMA(fullData, screeningDictionary, saveDictionary, maLength)
 
@@ -167,9 +175,13 @@ class StockConsumer(multiprocessing.Process):
                         elif reversalOption == 4 and isMaSupport:
                             self.screenResultsCounter.value += 1
                             return screeningDictionary, saveDictionary
-                    if executeOption == 7 and isLtpValid and isInsideBar:
-                        self.screenResultsCounter.value += 1
-                        return screeningDictionary, saveDictionary
+                    if executeOption == 7 and isLtpValid:
+                        if respChartPattern != 3 and isInsideBar:
+                            self.screenResultsCounter.value += 1
+                            return screeningDictionary, saveDictionary
+                        elif isIpoBase:
+                            self.screenResultsCounter.value += 1
+                            return screeningDictionary, saveDictionary
         except KeyboardInterrupt:
             # Capturing Ctr+C Here isn't a great idea
             pass

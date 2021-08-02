@@ -211,12 +211,12 @@ class tools:
             return False
 
     # Validate 'Inside Bar' structure for recent days
-    def validateInsideBar(self, data, screenDict, saveDict, bullBear=1, daysToLookback=5):
+    def validateInsideBar(self, data, screenDict, saveDict, chartPattern=1, daysToLookback=5):
         orgData = data
         for i in range(daysToLookback, round(daysToLookback*0.5)-1, -1):
             if i == 2:
                 return 0        # Exit if only last 2 candles are left
-            if bullBear == 1:
+            if chartPattern == 1:
                 if "Up" in saveDict['Trend'] and ("Bull" in saveDict['MA-Signal'] or "Support" in saveDict['MA-Signal']):
                     data = orgData.head(i)
                     refCandle = data.tail(1)
@@ -345,6 +345,23 @@ class tools:
         if data.equals(data[(data.Close >= (data.maRev - (data.maRev*percentage))) & (data.Close <= (data.maRev + (data.maRev*percentage)))]) and data.head(1)['Close'][0] >= data.head(1)['maRev'][0]:
             screenDict['MA-Signal'] = colorText.BOLD + colorText.GREEN + f'Reversal-{maLength}MA' + colorText.END
             saveDict['MA-Signal'] = f'Reversal-{maLength}MA'
+            return True
+        return False
+
+    # Find IPO base
+    def validateIpoBase(self, stock, data, screenDict, saveDict, percentage=0.3):
+        listingPrice = data[::-1].head(1)['Open'][0]
+        currentPrice = data.head(1)['Close'][0]
+        ATH = data.describe()['High']['max']
+        if ATH > (listingPrice + (listingPrice * percentage)):
+            return False
+        away = round(((currentPrice - listingPrice)/listingPrice)*100, 1)
+        if((listingPrice - (listingPrice * percentage)) <= currentPrice <= (listingPrice + (listingPrice * percentage))):
+            if away > 0:
+                screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + f'IPO Base ({away} %)' + colorText.END
+            else:
+                screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + 'IPO Base ' + colorText.FAIL + f'({away} %)' + colorText.END
+            saveDict['Pattern'] = f'IPO Base ({away} %)'
             return True
         return False
 

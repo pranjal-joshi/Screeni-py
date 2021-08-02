@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.23"
+VERSION = "1.24"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -112,6 +112,12 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 [1.23]
 1. Bug fixed for DualCore CPU.
 2. Dependencies updated.
+
+[1.24]
+1. IPO Base Breakout pattern added. Option > 7 > 3.
+2. Data fetching interval fixed.
+3. Permission bug-fixes for some windows users.
+4. Result table optimized.
 
 --- END ---
 ''' + colorText.END
