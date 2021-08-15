@@ -361,7 +361,7 @@ class tools:
                 screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + f'IPO Base ({away} %)' + colorText.END
             else:
                 screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + 'IPO Base ' + colorText.FAIL + f'({away} %)' + colorText.END
-            saveDict['Pattern'] = 'IPO Base'
+            saveDict['Pattern'] = f'IPO Base ({away} %)'
             return True
         return False
 
