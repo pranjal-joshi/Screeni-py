@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 127.039 43.1">
+    <defs>
+        <style>
+            .cls-1{fill:#ffffff}.cls-2{fill:#fff}.cls-3{fill:none}.cls-4{fill:#e66f25}.cls-5{fill:#3a2e7d}.cls-6{fill:#efb41d}.cls-7{fill:#e22028}
+        </style>
+    </defs>
+    <g id="NSE_Logo" data-name="NSE Logo" transform="translate(-976 716)">
+        <g id="Group_11" data-name="Group 11" transform="translate(976 -716)">
+            <g id="Group_10" data-name="Group 10" transform="translate(51.87 6.469)">
+                <path id="Path_5" d="M116.109 32.135L104.541 13.7H99.1v28.789h6.075l-.317-18.33 11.463 18.33h5.279V13.7h-6.075z" class="cls-1" data-name="Path 5" transform="translate(-99.1 -13.013)"/>
+                <path id="Path_6" d="M163.042 24.444l-2.905-.634c-2.536-.528-3.909-.9-4.49-1.849a1.689 1.689 0 0 1-.264-1 1.856 1.856 0 0 1 .264-1.056c.951-1.8 3.909-1.9 4.49-1.9a7.6 7.6 0 0 1 6.814 3.909l.264.423 5.071-3.75-.264-.37A13.63 13.63 0 0 0 160.4 12.4c-6.761 0-9.508 3.381-10.354 4.807a8.85 8.85 0 0 0-1.109 4.332 7.445 7.445 0 0 0 4.226 6.867 13.994 13.994 0 0 0 4.067 1.268l3.592.792.634.158c1.268.264 3.222.687 3.962 1.638a2.463 2.463 0 0 1 .423 1.373c0 2.377-2.641 2.958-2.958 3.011a8.049 8.049 0 0 1-1.954.158c-5.018 0-7.131-2.271-8.241-3.962l-.264-.37-5.124 3.54.211.37a9.413 9.413 0 0 0 1.426 1.9c1.849 1.954 5.335 4.279 11.2 4.279 4.86 0 7.818-1.638 9.4-3.011a8.035 8.035 0 0 0 2.905-6.5 6.913 6.913 0 0 0-1.743-5.018c-1.952-2.162-4.963-3.007-7.657-3.588z" class="cls-1" data-name="Path 6" transform="translate(-121.839 -12.4)"/>
+                <path id="Path_7" d="M207.622 36.889v-6.55h12.783V24.9h-12.783v-5.6h14v-5.6H201.6v28.789h21.024v-5.6z" class="cls-1" data-name="Path 7" transform="translate(-147.455 -13.013)"/>
+            </g>
+            <path id="Rectangle_8" d="M0 0h13.47v13.47H0z" class="cls-2" data-name="Rectangle 8" transform="rotate(45 -3.684 32.134)"/>
+            <path id="Rectangle_9" d="M0 0h13.47v13.47H0z" class="cls-3" data-name="Rectangle 9" transform="rotate(-45 32.082 -3.829)"/>
+            <path id="Path_8" d="M42.638 6.339L27.319 0 12 6.339 27.319 12.1z" class="cls-4" data-name="Path 8" transform="translate(-5.661)"/>
+            <path id="Path_9" d="M50.508 27.319L56.319 12 41 17.758z" class="cls-5" data-name="Path 9" transform="translate(-19.434 -5.661)"/>
+            <path id="Path_10" d="M41 50.508l15.319 5.758L50.508 41z" class="cls-6" data-name="Path 10" transform="translate(-19.434 -19.505)"/>
+            <path id="Path_11" d="M27.319 17.758L12 12l5.811 15.319z" class="cls-6" data-name="Path 11" transform="translate(-5.661 -5.661)"/>
+            <path id="Path_12" d="M6.339 12C6.286 11.947 0 27.185 0 27.185l6.339 15.237 5.811-15.185z" class="cls-7" data-name="Path 12" transform="translate(0 -5.661)"/>
+            <path id="Path_13" d="M17.811 41L12 56.266l15.319-5.758z" class="cls-6" data-name="Path 13" transform="translate(-5.661 -19.505)"/>
+            <path id="Path_14" d="M12 64.758L27.319 71.1l15.319-6.339L27.319 59z" class="cls-7" data-name="Path 14" transform="translate(-5.661 -27.996)"/>
+            <path id="Path_15" d="M64.811 12L59 27.238l5.811 15.185 6.339-15.185z" class="cls-4" data-name="Path 15" transform="translate(-27.963 -5.661)"/>
+        </g>
+    </g>
+</svg>

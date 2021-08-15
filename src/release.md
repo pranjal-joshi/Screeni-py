@@ -1,5 +1,4 @@
-# Make sure to download the latest release! ![GitHub release (latest by date)](https://img.shields.io/github/v/release/pranjal-joshi/Screeni-py)
-
+![MADE-IN-INDIA](https://img.shields.io/badge/MADE%20WITH%20%E2%9D%A4%20IN-INDIA-orange?style=for-the-badge) ![GitHub release (latest by date)](https://img.shields.io/github/v/release/pranjal-joshi/Screeni-py?style=for-the-badge) ![GitHub all releases](https://img.shields.io/github/downloads/pranjal-joshi/Screeni-py/total?color=Green&label=Downloads&style=for-the-badge) ![MADE_WITH](https://img.shields.io/badge/BUILT%20USING-PYTHON-yellow?style=for-the-badge&logo=python&logoColor=yellow)
 ## What's New?
 1. New **Chart Pattern** Added! **IPO Base Breakout** - Try `Option > 7 > 3`
 2. Now, Open TradingView chart directly by clicking on the stock symbol! :tada: (Windows users should download and run the Application through  the **Windows Terminal** from the Microsoft Store.)
