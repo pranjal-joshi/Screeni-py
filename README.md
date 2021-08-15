@@ -1,18 +1,18 @@
-# Screeni-py
+![Screeni-py](https://socialify.git.ci/pranjal-joshi/Screeni-py/image?description=1&descriptionEditable=A%20Python-based%20Real-Time%20Stock%20Screener%20to%20Find%20The%20Most%20Profitable%20Stocks%2C%20Just%20In%20Time!&font=KoHo&language=1&logo=https%3A%2F%2Fraw.githubusercontent.com%2Fpranjal-joshi%2FScreeni-py%2Fnew-features%2Fscreenshots%2FNSE_Logo.svg&owner=1&pattern=Signal&theme=Dark)
 
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/pranjal-joshi/Screeni-py) ![GitHub all releases](https://img.shields.io/github/downloads/pranjal-joshi/Screeni-py/total?color=Green&label=Downloads) ![GitHub](https://img.shields.io/github/license/pranjal-joshi/Screeni-py)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/pranjal-joshi/Screeni-py?style=for-the-badge) ![GitHub all releases](https://img.shields.io/github/downloads/pranjal-joshi/Screeni-py/total?color=Green&label=Downloads&style=for-the-badge) ![GitHub](https://img.shields.io/github/license/pranjal-joshi/Screeni-py?style=for-the-badge) [![CodeFactor](https://www.codefactor.io/repository/github/pranjal-joshi/screeni-py/badge?style=for-the-badge)](https://www.codefactor.io/repository/github/pranjal-joshi/screeni-py) ![MADE-IN-INDIA](https://img.shields.io/badge/MADE%20WITH%20%E2%9D%A4%20IN-INDIA-orange?style=for-the-badge) [![BADGE](https://img.shields.io/badge/PULL%20REQUEST-GUIDELINES-red?style=for-the-badge)](https://github.com/pranjal-joshi/Screeni-py/blob/new-features/CONTRIBUTING.md)
 
-[![Screenipy Test - New Features](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-test.yml/badge.svg?branch=new-features)](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-test.yml) [![Screenipy Build - New Release](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-build-matrix.yml/badge.svg)](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-build-matrix.yml) [![CodeFactor](https://www.codefactor.io/repository/github/pranjal-joshi/screeni-py/badge)](https://www.codefactor.io/repository/github/pranjal-joshi/screeni-py) 
+[![Screenipy Test - New Features](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-test.yml/badge.svg?branch=new-features)](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-test.yml) [![Screenipy Build - New Release](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-build-matrix.yml/badge.svg)](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-build-matrix.yml)
 
 
-## [**Click to Download Now**](https://github.com/pranjal-joshi/Screeni-py/releases/latest)
+## [**Click to Download the Latest Version**](https://github.com/pranjal-joshi/Screeni-py/releases/latest)
 ---
 
 ## What is Screeni-py?
 
 ### A Python-based stock screener for NSE, India.
 
-**Screenipy** is an advanced stock screener to find potential breakout stocks from NSE and tell it's possible breakout values. It also helps to find the stocks which are consolidating and may breakout.
+**Screenipy** is an advanced stock screener to find potential breakout stocks from NSE and tell it's possible breakout values. It also helps to find the stocks which are consolidating and may breakout, or the particular chart patterns that you're looking specifically to make your decisions.
 Screenipy is totally customizable and it can screen stocks with the settings that you have provided.
 
 ## How to use?
@@ -22,7 +22,7 @@ Screenipy is totally customizable and it can screen stocks with the settings tha
 
 ![home](https://user-images.githubusercontent.com/6128978/114149274-5c424f80-9938-11eb-9eda-4f300c0248ee.png)
 
-* **Configure** the parameters as per your requirement using `Option > 5`.
+* **Configure** the parameters as per your requirement using `Option > 8`.
 
 ![config](https://user-images.githubusercontent.com/6128978/114150376-9c560200-9939-11eb-9d46-e7bbd32d6cb1.png)
 
