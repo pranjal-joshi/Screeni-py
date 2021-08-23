@@ -24,13 +24,13 @@ class tools:
         self.volumeRatio = 2
         self.minLTP = 20.0
         self.maxLTP = 50000
-        self.period = '365d'
+        self.period = '300d'
         self.duration = '1d'
         self.daysToLookback = 30
-        self.shuffleEnabled = False
-        self.cacheEnabled = False
+        self.shuffleEnabled = True
+        self.cacheEnabled = True
         self.stageTwo = False
-        self.useEMA = True
+        self.useEMA = False
 
     def deleteStockData(self,excludeFile=None):
         for f in glob.glob('stock_data*.pkl'):
@@ -42,7 +42,7 @@ class tools:
 
     # Handle user input and save config
 
-    def setConfig(self, parser, default=False):
+    def setConfig(self, parser, default=False, showFileCreatedText=True):
         if default:
             parser.add_section('config')
             parser.set('config', 'period', self.period)
@@ -56,19 +56,20 @@ class tools:
             parser.set('config', 'shuffle', 'y')
             parser.set('config', 'cacheStockData', 'y')
             parser.set('config', 'onlyStageTwoStocks', 'y')
-            parser.set('config', 'useEMA', 'y')
+            parser.set('config', 'useEMA', 'n')
             try:
                 fp = open('screenipy.ini', 'w')
                 parser.write(fp)
                 fp.close()
-                print(colorText.BOLD + colorText.GREEN +
-                      '[+] Default configuration generated as user configuration is not found!' + colorText.END)
-                print(colorText.BOLD + colorText.GREEN +
-                      '[+] Use Option > 5 to edit in future.' + colorText.END)
-                print(colorText.BOLD + colorText.GREEN +
-                      '[+] Close and Restart the program now.' + colorText.END)
-                input('')
-                sys.exit(0)
+                if showFileCreatedText:
+                    print(colorText.BOLD + colorText.GREEN +
+                        '[+] Default configuration generated as user configuration is not found!' + colorText.END)
+                    print(colorText.BOLD + colorText.GREEN +
+                        '[+] Use Option > 5 to edit in future.' + colorText.END)
+                    print(colorText.BOLD + colorText.GREEN +
+                        '[+] Close and Restart the program now.' + colorText.END)
+                    input('')
+                    sys.exit(0)
             except IOError:
                 print(colorText.BOLD + colorText.FAIL +
                       '[+] Failed to save user config. Exiting..' + colorText.END)
@@ -179,3 +180,12 @@ class tools:
             print(colorText.BOLD + colorText.WARN +
                   "[+] Configure the limits to continue." + colorText.END)
             self.setConfig(parser)
+
+    # Check if config file exists
+    def checkConfigFile(self):
+        try:
+            f = open('screenipy.ini','r')
+            f.close()
+            return True
+        except FileNotFoundError:
+            return False

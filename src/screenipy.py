@@ -345,6 +345,8 @@ def main(testing=False):
 if __name__ == "__main__":
     Utility.tools.clearScreen()
     isDevVersion = OTAUpdater.checkForUpdate(proxyServer, VERSION)
+    if not configManager.checkConfigFile():
+        configManager.setConfig(ConfigManager.parser, default=True, showFileCreatedText=False)
     try:
         while True:
             main()
