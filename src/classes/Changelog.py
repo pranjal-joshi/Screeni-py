@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.24"
+VERSION = "1.25"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -118,6 +118,11 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 2. Data fetching interval fixed.
 3. Permission bug-fixes for some windows users.
 4. Result table optimized.
+
+[1.25]
+1. Default configuration parameters optimized.
+2. Configuration generation on first time usage don't need restart anymore!
+3. Minor bug-fixes.
 
 --- END ---
 ''' + colorText.END
