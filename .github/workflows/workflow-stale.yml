@@ -1,0 +1,23 @@
+# Project             :   Screenipy
+# Author              :   Pranjal Joshi
+# Created             :   03/09/2021
+# Description         :   Workflow for marking Stale Issues/PRs
+
+
+name: Screenipy Stale - Close Issues & PRs
+
+on:
+  schedule:
+    - cron: '30 12 * * *'
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v4
+        with:
+          stale-issue-message: 'This Issue is marked as Stale due to Inactivity. This Issue will be Closed soon.'
+          stale-pr-message: 'This PR is marked as Stale due to Inactivity.'
+          days-before-stale: 15
+          days-before-close: 5
+          days-before-pr-close: -1
