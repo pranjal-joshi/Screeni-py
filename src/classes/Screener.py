@@ -365,6 +365,20 @@ class tools:
             return True
         return False
 
+    # Find Conflucence
+    def validateConfluence(self, stock, data, screenDict, saveDict, percentage=0.1):
+        recent = data.head(1)
+        if(abs(recent['SMA'][0] - recent['LMA'][0]) <= (recent['SMA'][0] * percentage)):
+            difference = round(abs(recent['SMA'][0] - recent['LMA'][0])/recent['Close'][0] * 100,2)
+            if recent['SMA'][0] >= recent['LMA'][0]:
+                screenDict['MA-Signal'] = colorText.BOLD + colorText.GREEN + f'Confluence ({difference}%)' + colorText.END
+                saveDict['MA-Signal'] = f'Confluence ({difference}%)'
+            else:
+                screenDict['MA-Signal'] = colorText.BOLD + colorText.FAIL + f'Confluence ({difference}%)' + colorText.END
+                saveDict['MA-Signal'] = f'Confluence ({difference}%)'
+            return True
+        return False
+
     '''
     # Find out trend for days to lookback
     def validateVCP(data, screenDict, saveDict, daysToLookback=ConfigManager.daysToLookback, stockName=None):
