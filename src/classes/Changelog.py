@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.25"
+VERSION = "1.26"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -123,6 +123,9 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 1. Default configuration parameters optimized.
 2. Configuration generation on first time usage don't need restart anymore!
 3. Minor bug-fixes.
+
+[1.26]
+1. New Feature: Screen for the MA Confluence pattern Option > 7 > 4.
 
 --- END ---
 ''' + colorText.END
