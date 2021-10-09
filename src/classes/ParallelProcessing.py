@@ -134,15 +134,18 @@ class StockConsumer(multiprocessing.Process):
                     saveDictionary['Trend'] = 'Unknown'
                 isCandlePattern = candlePatterns.findPattern(
                     processedData, screeningDictionary, saveDictionary)
-                isMomentum = screener.validateMomentum(processedData, screeningDictionary, saveDictionary)
                 
+                isConfluence = False
+                isInsideBar = False
+                isIpoBase = False
                 if respChartPattern == 3 and executeOption == 7:
                     isIpoBase = screener.validateIpoBase(stock, fullData, screeningDictionary, saveDictionary)
                 if respChartPattern == 4 and executeOption == 7:
                     isConfluence = screener.validateConfluence(stock, processedData, screeningDictionary, saveDictionary, percentage=insideBarToLookback)
                 else:
                     isInsideBar = screener.validateInsideBar(processedData, screeningDictionary, saveDictionary, chartPattern=respChartPattern, daysToLookback=insideBarToLookback)
-
+                
+                isMomentum = screener.validateMomentum(processedData, screeningDictionary, saveDictionary)
                 if maLength is not None and executeOption == 6:
                     isMaSupport = screener.findReversalMA(fullData, screeningDictionary, saveDictionary, maLength)
 
@@ -178,13 +181,13 @@ class StockConsumer(multiprocessing.Process):
                             self.screenResultsCounter.value += 1
                             return screeningDictionary, saveDictionary
                     if executeOption == 7 and isLtpValid:
+                        if respChartPattern < 3 and isInsideBar:
+                            self.screenResultsCounter.value += 1
+                            return screeningDictionary, saveDictionary
                         if isConfluence:
                             self.screenResultsCounter.value += 1
                             return screeningDictionary, saveDictionary
-                        if respChartPattern != 3 and isInsideBar:
-                            self.screenResultsCounter.value += 1
-                            return screeningDictionary, saveDictionary
-                        elif isIpoBase:
+                        if isIpoBase:
                             self.screenResultsCounter.value += 1
                             return screeningDictionary, saveDictionary
         except KeyboardInterrupt:

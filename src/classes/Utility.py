@@ -202,7 +202,7 @@ class tools:
                 return (resp, 1)
             if resp == 4:
                 percent = int(input(colorText.BOLD + colorText.WARN +
-                                    "\n[+] Enter Percentage within which all MA/EMAs should be (Standard: 10%)? : " + colorText.END))
+                                    "\n[+] Enter Percentage within which all MA/EMAs should be (Ideal: 1-2%)? : " + colorText.END))
                 return (resp, percent/100.0)
             if resp >= 0 and resp <= 4:
                 return resp
