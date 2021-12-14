@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.26"
+VERSION = "1.27"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -126,6 +126,10 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [1.26]
 1. New Feature: Screen for the MA Confluence pattern Option > 7 > 4.
+
+[1.27]
+1. Display more information about an update when it is available.
+2. Minor Fixes (MA Confluence).
 
 --- END ---
 ''' + colorText.END
