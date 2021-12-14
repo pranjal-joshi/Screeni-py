@@ -11,6 +11,7 @@ import os
 import platform
 import sys
 import subprocess
+import requests
 
 class OTAUpdater:
 
@@ -77,6 +78,16 @@ rm updater.sh
         subprocess.Popen('bash updater.sh', shell=True)
         sys.exit(0)
 
+    # Parse changelog from release.md
+    def showWhatsNew():
+        url = "https://raw.githubusercontent.com/pranjal-joshi/Screeni-py/main/src/release.md"
+        md = requests.get(url)
+        txt = md.text
+        txt = txt.split("New?")[1]
+        txt = txt.split("## Downloads")[0]
+        txt = txt.replace('**','').replace('`','').strip()
+        return (txt+"\n")
+
     # Check for update and download if available
     def checkForUpdate(proxyServer, VERSION="1.0"):
         OTAUpdater.checkForUpdate.url = None
@@ -97,6 +108,7 @@ rm updater.sh
                 OTAUpdater.checkForUpdate.url = resp.json()['assets'][0]['browser_download_url']
                 size = int(resp.json()['assets'][0]['size']/(1024*1024))
             if(float(resp.json()['tag_name']) > now):
+                print(colorText.BOLD + colorText.WARN + "[+] What's New in this Update?\n" + OTAUpdater.showWhatsNew() + colorText.END)
                 action = str(input(colorText.BOLD + colorText.WARN + ('\n[+] New Software update (v%s) available. Download Now (Size: %dMB)? [Y/N]: ' % (str(resp.json()['tag_name']),size)))).lower()
                 if(action == 'y'):
                     try:

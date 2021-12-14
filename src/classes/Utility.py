@@ -201,7 +201,7 @@ class tools:
             if resp == 3:
                 return (resp, 1)
             if resp == 4:
-                percent = int(input(colorText.BOLD + colorText.WARN +
+                percent = float(input(colorText.BOLD + colorText.WARN +
                                     "\n[+] Enter Percentage within which all MA/EMAs should be (Ideal: 1-2%)? : " + colorText.END))
                 return (resp, percent/100.0)
             if resp >= 0 and resp <= 4:
