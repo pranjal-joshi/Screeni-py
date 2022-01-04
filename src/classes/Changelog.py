@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.27"
+VERSION = "1.28"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -130,6 +130,9 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 [1.27]
 1. Display more information about an update when it is available.
 2. Minor Fixes (MA Confluence).
+
+[1.28]
+1. Volume Spread Analysis added for Bullish Reversals. Option > 6 > 5
 
 --- END ---
 ''' + colorText.END
