@@ -306,6 +306,35 @@ class tools:
             saveDict['Trend'] = 'Unknown'
         return saveDict['Trend']
 
+    # Find if stock is validating volume spread analysis
+    def validateVolumeSpreadAnalysis(self, data, screenDict, saveDict):
+        try:
+            data = data.head(2)
+            try:
+                # Check for previous RED candles
+                # Current candle = 0th, Previous Candle = 1st for following logic
+                if data.iloc[1]['Open'] >= data.iloc[1]['Close']:
+                    spread1 = abs(data.iloc[1]['Open'] - data.iloc[1]['Close'])
+                    spread0 = abs(data.iloc[0]['Open'] - data.iloc[0]['Close'])
+                    lower_wick_spread0 = max(data.iloc[0]['Open'], data.iloc[0]['Close']) - data.iloc[0]['Low']
+                    vol1 = data.iloc[1]['Volume']
+                    vol0 = data.iloc[0]['Volume']
+                    if spread0 > spread1 and vol0 < vol1 and data.iloc[0]['Volume'] < data.iloc[0]['VolMA'] and data.iloc[0]['Close'] <= data.iloc[1]['Open'] and spread0 < lower_wick_spread0:
+                        screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + 'Supply Drought' + colorText.END
+                        saveDict['Pattern'] = 'Supply Drought'
+                        return True
+                    if spread0 < spread1 and vol0 > vol1 and data.iloc[0]['Volume'] > data.iloc[0]['VolMA'] and data.iloc[0]['Close'] <= data.iloc[1]['Open']:
+                        screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + 'Demand Rise' + colorText.END
+                        saveDict['Pattern'] = 'Demand Rise'
+                        return True
+            except IndexError:
+                pass
+            return False
+        except:
+            import traceback
+            traceback.print_exc()
+            return False
+
     # Find if stock gaining bullish momentum
     def validateMomentum(self, data, screenDict, saveDict):
         try:
