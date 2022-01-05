@@ -102,8 +102,6 @@ class StockConsumer(multiprocessing.Process):
             with self.screenCounter.get_lock():
                 self.screenCounter.value += 1
             if not processedData.empty:
-                # screeningDictionary['Stock'] = colorText.BOLD + \
-                #     colorText.BLUE + stock + colorText.END
                 screeningDictionary['Stock'] = colorText.BOLD + \
                      colorText.BLUE + f'\x1B]8;;https://in.tradingview.com/chart?symbol=NSE%3A{stock}\x1B\\{stock}\x1B]8;;\x1B\\' + colorText.END
                 saveDictionary['Stock'] = stock
@@ -146,6 +144,7 @@ class StockConsumer(multiprocessing.Process):
                     isInsideBar = screener.validateInsideBar(processedData, screeningDictionary, saveDictionary, chartPattern=respChartPattern, daysToLookback=insideBarToLookback)
                 
                 isMomentum = screener.validateMomentum(processedData, screeningDictionary, saveDictionary)
+                isVSA = screener.validateVolumeSpreadAnalysis(processedData, screeningDictionary, saveDictionary)
                 if maLength is not None and executeOption == 6:
                     isMaSupport = screener.findReversalMA(fullData, screeningDictionary, saveDictionary, maLength)
 
@@ -178,6 +177,9 @@ class StockConsumer(multiprocessing.Process):
                             self.screenResultsCounter.value += 1
                             return screeningDictionary, saveDictionary
                         elif reversalOption == 4 and isMaSupport:
+                            self.screenResultsCounter.value += 1
+                            return screeningDictionary, saveDictionary
+                        elif reversalOption == 5 and isVSA and saveDictionary['Pattern'] in CandlePatterns.reversalPatternsBullish:
                             self.screenResultsCounter.value += 1
                             return screeningDictionary, saveDictionary
                     if executeOption == 7 and isLtpValid:

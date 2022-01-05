@@ -169,9 +169,10 @@ class tools:
     2 > Screen for Sell Signal (Bearish Reversal)
     3 > Screen for Momentum Gainers (Rising Bullish Momentum)
     4 > Screen for Reversal at Moving Average (Bullish Reversal)
+    5 > Screen for Volume Spread Analysis (Bullish VSA Reversal)
     0 > Cancel
 [+] Select option: """ + colorText.END))
-            if resp >= 0 and resp <= 4:
+            if resp >= 0 and resp <= 5:
                 if resp == 4:
                     try:
                         maLength = int(input(colorText.BOLD + colorText.WARN +
