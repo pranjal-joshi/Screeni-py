@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-# Pyinstaller compile Windows: pyinstaller --onefile --icon=src\icon.ico src\screenipy.py  --hidden-import cmath --hidden-import talib.stream
-# Pyinstaller compile Linux  : pyinstaller --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream
+# Pyinstaller compile Windows: pyinstaller --onefile --icon=src\icon.ico src\screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas
+# Pyinstaller compile Linux  : pyinstaller --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas
 
 # Keep module imports prior to classes
 import classes.Fetcher as Fetcher
@@ -14,6 +14,7 @@ from classes.CandlePatterns import CandlePatterns
 from classes.ParallelProcessing import StockConsumer
 from classes.Changelog import VERSION
 from alive_progress import alive_bar
+import argparse
 import os
 import platform
 import sys
@@ -25,6 +26,13 @@ from time import sleep
 from tabulate import tabulate
 import multiprocessing
 multiprocessing.freeze_support()
+
+# Argument Parsing for test purpose
+argParser = argparse.ArgumentParser()
+argParser.add_argument('-t','--testbuild',action='store_true',
+                        help='Run in test-build mode',required=False)
+argParser.add_argument('-v',action='store_true')        # Dummy Arg for pytest -v
+args = argParser.parse_args()
 
 # Try Fixing bug with this symbol
 TEST_STKCODE = "SBIN"
@@ -128,7 +136,7 @@ def initExecution():
     return tickerOption, executeOption
 
 # Main function
-def main(testing=False):
+def main(testing=False, testBuild=False):
     global screenCounter, screenResultsCounter, stockDict, loadedStockData, keyboardInterruptEvent, loadCount, maLength
     screenCounter = multiprocessing.Value('i', 1)
     screenResultsCounter = multiprocessing.Value('i', 0)
@@ -150,12 +158,15 @@ def main(testing=False):
     saveResults = pd.DataFrame(columns=[
                                'Stock', 'Consolidating', 'Breaking-Out', 'LTP', 'Volume', 'MA-Signal', 'RSI', 'Trend', 'Pattern'])
 
-    try:
-        tickerOption, executeOption = initExecution()
-    except KeyboardInterrupt:
-        input(colorText.BOLD + colorText.FAIL +
-              "[+] Press any key to Exit!" + colorText.END)
-        sys.exit(0)
+    if not testBuild:
+        try:
+            tickerOption, executeOption = initExecution()
+        except KeyboardInterrupt:
+            input(colorText.BOLD + colorText.FAIL +
+                "[+] Press any key to Exit!" + colorText.END)
+            sys.exit(0)
+    else:
+        tickerOption, executeOption = 1, 0
 
     if executeOption == 4:
         try:
@@ -244,7 +255,7 @@ def main(testing=False):
             worker.daemon = True
             worker.start()
 
-        if testing:
+        if testing or testBuild:
             for item in items:
                 tasks_queue.put(item)
                 result = results_queue.get()
@@ -334,12 +345,13 @@ def main(testing=False):
                 stockDict, configManager, loadCount)
 
         Utility.tools.setLastScreenedResults(screenResults)
-        Utility.tools.promptSaveResults(saveResults)
-        print(colorText.BOLD + colorText.WARN +
-              "[+] Note: Trend calculation is based on number of days recent to screen as per your configuration." + colorText.END)
-        print(colorText.BOLD + colorText.GREEN +
-              "[+] Screening Completed! Press Enter to Continue.." + colorText.END)
-        input('')
+        if not testBuild:
+            Utility.tools.promptSaveResults(saveResults)
+            print(colorText.BOLD + colorText.WARN +
+                "[+] Note: Trend calculation is based on number of days recent to screen as per your configuration." + colorText.END)
+            print(colorText.BOLD + colorText.GREEN +
+                "[+] Screening Completed! Press Enter to Continue.." + colorText.END)
+            input('')
 
 
 if __name__ == "__main__":
@@ -347,12 +359,16 @@ if __name__ == "__main__":
     isDevVersion = OTAUpdater.checkForUpdate(proxyServer, VERSION)
     if not configManager.checkConfigFile():
         configManager.setConfig(ConfigManager.parser, default=True, showFileCreatedText=False)
-    try:
-        while True:
-            main()
-    except Exception as e:
-        if isDevVersion == OTAUpdater.developmentVersion:
-            raise(e)
-        input(colorText.BOLD + colorText.FAIL +
-              "[+] Press any key to Exit!" + colorText.END)
-        sys.exit(0)
+    if args.testbuild:
+        print(colorText.BOLD + colorText.FAIL +"[+] Started in TestBuild mode!" + colorText.END)
+        main(testBuild=True)
+    else:
+        try:
+            while True:
+                main()
+        except Exception as e:
+            if isDevVersion == OTAUpdater.developmentVersion:
+                raise(e)
+            input(colorText.BOLD + colorText.FAIL +
+                "[+] Press any key to Exit!" + colorText.END)
+            sys.exit(0)
