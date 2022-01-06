@@ -176,9 +176,10 @@ class tools:
                 if resp == 4:
                     try:
                         maLength = int(input(colorText.BOLD + colorText.WARN +
-                                             '\n[+] Enter MA Length (E.g. 20/50): ' + colorText.END))
+                                             '\n[+] Enter MA Length (E.g. 50 or 200): ' + colorText.END))
                         return resp, maLength
                     except ValueError:
+                        print(colorText.BOLD + colorText.FAIL + '\n[!] Invalid Input! MA Lenght should be single integer value!\n' + colorText.END)
                         raise ValueError
                 return resp, None
             raise ValueError
