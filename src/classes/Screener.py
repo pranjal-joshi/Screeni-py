@@ -319,7 +319,7 @@ class tools:
                     lower_wick_spread0 = max(data.iloc[0]['Open'], data.iloc[0]['Close']) - data.iloc[0]['Low']
                     vol1 = data.iloc[1]['Volume']
                     vol0 = data.iloc[0]['Volume']
-                    if spread0 > spread1 and vol0 < vol1 and data.iloc[0]['Volume'] < data.iloc[0]['VolMA'] and data.iloc[0]['Close'] <= data.iloc[1]['Open'] and spread0 < lower_wick_spread0:
+                    if spread0 > spread1 and vol0 < vol1 and data.iloc[0]['Volume'] < data.iloc[0]['VolMA'] and data.iloc[0]['Close'] <= data.iloc[1]['Open'] and spread0 < lower_wick_spread0 and data.iloc[0]['Volume'] <= int(data.iloc[1]['Volume']*0.75):
                         screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + 'Supply Drought' + colorText.END
                         saveDict['Pattern'] = 'Supply Drought'
                         return True

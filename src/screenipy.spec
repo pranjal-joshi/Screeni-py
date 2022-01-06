@@ -1,13 +1,14 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+
 block_cipher = None
 
 
-a = Analysis(['src\\screenipy.py'],
-             pathex=['E:\\Screeni-py'],
+a = Analysis(['screenipy.py'],
+             pathex=['/mnt/40FEE0813E8AAC6F/Personal/Screeni-py/src'],
              binaries=[],
              datas=[],
-             hiddenimports=['cmath', 'talib.stream'],
+             hiddenimports=['cmath', 'talib.stream', 'numpy'],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],
@@ -30,4 +31,4 @@ exe = EXE(pyz,
           upx=True,
           upx_exclude=[],
           runtime_tmpdir=None,
-          console=True , icon='src\\icon.ico')
+          console=True , icon='icon.ico')
