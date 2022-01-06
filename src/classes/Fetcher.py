@@ -114,6 +114,7 @@ class tools:
                 interval=duration,
                 proxy=proxyServer,
                 progress=False,
+                timeout=10
             )
         if printCounter:
             sys.stdout.write("\r\033[K")
