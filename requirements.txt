@@ -35,7 +35,7 @@ iniconfig # Installed as dependency for pytest
 lxml # Installed as dependency for yfinance
 msgpack # Installed as dependency for cachecontrol
 multitasking # Installed as dependency for yfinance
-numpy # Installed as dependency for yfinance, scipy, matplotlib, pandas
+numpy==1.21.0 # Installed as dependency for yfinance, scipy, matplotlib, pandas
 packaging # Installed as dependency for pytest
 pandas # Installed as dependency for yfinance
 pefile # Installed as dependency for pyinstaller

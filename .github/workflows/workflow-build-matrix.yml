@@ -24,7 +24,7 @@ jobs:
           - os: windows-latest
             TARGET: Windows
             CMD_BUILD: |
-              pyinstaller --onefile --icon=src\icon.ico src\screenipy.py  --hidden-import cmath --hidden-import talib.stream
+              pyinstaller --onefile --icon=src\icon.ico src\screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas
             DEP_BUILD: |
               python -m pip install --upgrade pip
               echo Installing TA-lib...
@@ -35,13 +35,16 @@ jobs:
               cd ..
               python -m pip install --upgrade pip
               pip install -r requirements.txt
+            TEST_BUILD: |
+              .\dist\screenipy.exe --testbuild
+              exit $?
             OUT_PATH: .\dist\screenipy.exe
             FILE_NAME: screenipy.exe
           
           - os: ubuntu-18.04
             TARGET: Linux
             CMD_BUILD: |
-              pyinstaller --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream
+              pyinstaller --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas
               mv /home/runner/work/Screeni-py/Screeni-py/dist/screenipy /home/runner/work/Screeni-py/Screeni-py/dist/screenipy.bin
               chmod +x /home/runner/work/Screeni-py/Screeni-py/dist/screenipy.bin
             DEP_BUILD: |
@@ -55,18 +58,24 @@ jobs:
               cd /home/runner/work/Screeni-py/Screeni-py/
               python -m pip install --upgrade pip
               pip install -r requirements.txt
+            TEST_BUILD: |
+              /home/runner/work/Screeni-py/Screeni-py/dist/screenipy.bin --testbuild
+              exit $?
             OUT_PATH: /home/runner/work/Screeni-py/Screeni-py/dist/screenipy.bin
             FILE_NAME: screenipy.bin
 
           - os: macos-latest
             TARGET: MacOS
             CMD_BUILD: |
-              pyinstaller --onefile --windowed --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream
+              pyinstaller --onefile --windowed --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas
               mv /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy.run
             DEP_BUILD: |
               brew install ta-lib
               python -m pip install --upgrade pip
               pip install -r requirements.txt
+            TEST_BUILD: |
+              /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy.run --testbuild
+              exit $?
             OUT_PATH: /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy.run
             FILE_NAME: screenipy.run
           
@@ -99,6 +108,10 @@ jobs:
 
       - name: Build for ${{ matrix.TARGET }}
         run: ${{ matrix.CMD_BUILD }}
+
+      - name: Test Built Binary for ${{ matrix.TARGET }}
+        run: ${{ matrix.TEST_BUILD }}
+        continue-on-error: false
 
       - name: Save Binaries as Artifacts
         uses: actions/upload-artifact@v2
