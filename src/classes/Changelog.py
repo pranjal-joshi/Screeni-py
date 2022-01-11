@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.28"
+VERSION = "1.29"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -133,6 +133,11 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [1.28]
 1. Volume Spread Analysis added for Bullish Reversals. Option > 6 > 5
+
+[1.29]
+1. VSA screening optimized.
+2. Error handling and timeout optimized.
+3. Build Test mode added for CI/CD.
 
 --- END ---
 ''' + colorText.END
