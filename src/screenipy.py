@@ -255,7 +255,7 @@ def main(testing=False, testBuild=False):
             worker.daemon = True
             worker.start()
 
-        if testing:
+        if testing or testBuild:
             for item in items:
                 tasks_queue.put(item)
                 result = results_queue.get()
@@ -264,17 +264,7 @@ def main(testing=False, testBuild=False):
                         result[0], ignore_index=True)
                     saveResults = saveResults.append(
                         result[1], ignore_index=True)
-                    break
-        elif testBuild:
-            for item in items:
-                tasks_queue.put(item)
-                result = results_queue.get()
-                if (result is not None and testing) or (len(screenResults) > 2 and testBuild):
-                    screenResults = screenResults.append(
-                        result[0], ignore_index=True)
-                    saveResults = saveResults.append(
-                        result[1], ignore_index=True)
-                    if len(screenResults) > 2:
+                    if testing or (testBuild and len(screenResults) > 2):
                         break
         else:
             for item in items:
