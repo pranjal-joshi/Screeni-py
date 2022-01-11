@@ -37,7 +37,7 @@ jobs:
               pip install -r requirements.txt
             TEST_BUILD: |
               .\dist\screenipy.exe --testbuild
-              exit %ERRORLEVEL%
+              exit $?
             OUT_PATH: .\dist\screenipy.exe
             FILE_NAME: screenipy.exe
           
