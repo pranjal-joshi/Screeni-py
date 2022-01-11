@@ -259,7 +259,7 @@ def main(testing=False, testBuild=False):
             for item in items:
                 tasks_queue.put(item)
                 result = results_queue.get()
-                if (result is not None and testing) or (len(screenResults) > 2 and testBuild):
+                if result is not None:
                     screenResults = screenResults.append(
                         result[0], ignore_index=True)
                     saveResults = saveResults.append(
