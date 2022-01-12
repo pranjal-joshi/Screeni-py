@@ -18,6 +18,10 @@ from classes.SuppressOutput import SuppressOutput
 class StockDataNotAdequate(Exception):
     pass
 
+# Exception for stocks which are not newly listed when screening only for Newly Listed
+class NotNewlyListed(Exception):
+    pass
+
 # This Class contains methods for stock analysis and screening validation
 class tools:
 
@@ -67,9 +71,9 @@ class tools:
         ltp = round(recent['Close'][0],2)
         saveDict['LTP'] = str(ltp)
         verifyStageTwo = True
-        if(self.configManager.stageTwo):
-            yearlyLow = data.head(300).min()['Close']
-            yearlyHigh = data.head(300).max()['Close']
+        if self.configManager.stageTwo and len(data) > 250:
+            yearlyLow = data.head(250).min()['Close']
+            yearlyHigh = data.head(250).max()['Close']
             if ltp < (2 * yearlyLow) or ltp < (0.75 * yearlyHigh):
                 verifyStageTwo = False
         if(ltp >= minLTP and ltp <= maxLTP and verifyStageTwo):
@@ -102,6 +106,9 @@ class tools:
         elif(recent['SMA'][0] < recent['LMA'][0]):
             screenDict['MA-Signal'] = colorText.BOLD + colorText.FAIL + 'Bearish' + colorText.END
             saveDict['MA-Signal'] = 'Bearish'
+        elif(recent['SMA'][0] == 0):
+            screenDict['MA-Signal'] = colorText.BOLD + colorText.WARN + 'Unknown' + colorText.END
+            saveDict['MA-Signal'] = 'Unknown'
         else:
             screenDict['MA-Signal'] = colorText.BOLD + colorText.WARN + 'Neutral' + colorText.END
             saveDict['MA-Signal'] = 'Neutral'
@@ -162,7 +169,9 @@ class tools:
         data = data.replace([np.inf, -np.inf], 0)
         recent = data.head(1)
         if recent['VolMA'][0] == 0: # Handles Divide by 0 warning
-            return False
+            saveDict['Volume'] = "Unknown"
+            screenDict['Volume'] = colorText.BOLD + colorText.WARN + "Unknown" + colorText.END
+            return True
         ratio = round(recent['Volume'][0]/recent['VolMA'][0],2)
         saveDict['Volume'] = str(ratio)+"x"
         if(ratio >= volumeRatio and ratio != np.nan and (not math.isinf(ratio)) and (ratio != 20)):
@@ -180,6 +189,10 @@ class tools:
         hs = round(data.describe()['High']['max'],2)
         hc = round(data.describe()['Close']['max'],2)
         rc = round(recent['Close'][0],2)
+        if np.isnan(hc) or np.isnan(hs):
+            saveDict['Breaking-Out'] = 'BO: Unknown'
+            screenDict['Breaking-Out'] = colorText.BOLD + colorText.WARN + 'BO: Unknown' + colorText.END
+            return False
         if hs > hc:
             if ((hs - hc) <= (hs*2/100)):
                 saveDict['Breaking-Out'] = str(hc)
@@ -284,7 +297,7 @@ class tools:
                 slope,c = 0,0
             angle = np.rad2deg(np.arctan(slope))
             if (angle == 0):
-                screenDict['Trend'] = colorText.BOLD + "Unknown" + colorText.END
+                screenDict['Trend'] = colorText.BOLD + colorText.WARN + "Unknown" + colorText.END
                 saveDict['Trend'] = 'Unknown'
             elif (angle <= 30 and angle >= -30):
                 screenDict['Trend'] = colorText.BOLD + colorText.WARN + "Sideways" + colorText.END
@@ -302,7 +315,7 @@ class tools:
                 screenDict['Trend'] = colorText.BOLD + colorText.FAIL + "Strong Down" + colorText.END
                 saveDict['Trend'] = 'Strong Down'
         except np.linalg.LinAlgError:
-            screenDict['Trend'] = colorText.BOLD + "Unknown" + colorText.END
+            screenDict['Trend'] = colorText.BOLD + colorText.WARN + "Unknown" + colorText.END
             saveDict['Trend'] = 'Unknown'
         return saveDict['Trend']
 
@@ -408,9 +421,20 @@ class tools:
             return True
         return False
 
+    # Find if stock is newly listed
+    def validateNewlyListed(self, data, daysToLookback):
+        daysToLookback = int(daysToLookback[:-1])
+        recent = data.head(1)
+        if len(data) < daysToLookback and (recent['Close'][0] != np.nan and recent['Close'][0] > 0):
+            return True
+        return False
+
     '''
     # Find out trend for days to lookback
     def validateVCP(data, screenDict, saveDict, daysToLookback=ConfigManager.daysToLookback, stockName=None):
+        // De-index date
+        data.reset_index(inplace=True)
+        data.rename(columns={'index':'Date'}, inplace=True)
         data = data.head(daysToLookback)
         data = data[::-1]
         data = data.set_index(np.arange(len(data)))
