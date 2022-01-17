@@ -48,6 +48,7 @@ keyboardInterruptEvent = None
 loadedStockData = False
 loadCount = 0
 maLength = None
+newlyListedOnly = False
 
 configManager = ConfigManager.tools()
 fetcher = Fetcher.tools(configManager)
@@ -64,6 +65,7 @@ except KeyError:
 
 
 def initExecution():
+    global newlyListedOnly
     print(colorText.BOLD + colorText.WARN +
           '[+] Select an Index for Screening: ' + colorText.END)
     print(colorText.BOLD + '''     W > Screen stocks from my own Watchlist
@@ -71,7 +73,7 @@ def initExecution():
      1 > Nifty 50               2 > Nifty Next 50           3 > Nifty 100
      4 > Nifty 200              5 > Nifty 500               6 > Nifty Smallcap 50
      7 > Nifty Smallcap 100     8 > Nifty Smallcap 250      9 > Nifty Midcap 50
-    10 > Nifty Midcap 100      11 > Nifty Midcap 150
+    10 > Nifty Midcap 100      11 > Nifty Midcap 150       13 > Newly Listed (IPOs in last 2 Year)
     Enter > All Stocks (default) ''' + colorText.END
           )
     try:
@@ -80,12 +82,15 @@ def initExecution():
         print(colorText.END, end='')
         if tickerOption == '':
             tickerOption = 12
-        if tickerOption == 'W' or tickerOption == 'w':
+        elif tickerOption == 'W' or tickerOption == 'w':
             tickerOption = tickerOption.upper()
         else:
             tickerOption = int(tickerOption)
-            if(tickerOption < 0 or tickerOption > 12):
+            if(tickerOption < 0 or tickerOption > 13):
                 raise ValueError
+            elif tickerOption == 13:
+                newlyListedOnly = True
+                tickerOption = 12
     except KeyboardInterrupt:
         raise KeyboardInterrupt
     except Exception as e:
@@ -137,7 +142,7 @@ def initExecution():
 
 # Main function
 def main(testing=False, testBuild=False):
-    global screenCounter, screenResultsCounter, stockDict, loadedStockData, keyboardInterruptEvent, loadCount, maLength
+    global screenCounter, screenResultsCounter, stockDict, loadedStockData, keyboardInterruptEvent, loadCount, maLength, newlyListedOnly
     screenCounter = multiprocessing.Value('i', 1)
     screenResultsCounter = multiprocessing.Value('i', 0)
     keyboardInterruptEvent = multiprocessing.Manager().Event()
@@ -211,7 +216,7 @@ def main(testing=False, testBuild=False):
               "[+] Press any key to Exit!" + colorText.END)
         sys.exit(0)
 
-    if tickerOption == 'W' or (tickerOption >= 0 and tickerOption < 13):
+    if tickerOption == 'W' or (tickerOption >= 0 and tickerOption < 14):
         configManager.getConfig(ConfigManager.parser)
         try:
             if tickerOption == 'W':
@@ -237,7 +242,7 @@ def main(testing=False, testBuild=False):
               "[+] Starting Stock Screening.. Press Ctrl+C to stop!\n")
 
         items = [(executeOption, reversalOption, maLength, daysForLowestVolume, minRSI, maxRSI, respChartPattern, insideBarToLookback, len(listStockCodes),
-                  configManager, fetcher, screener, candlePatterns, stock)
+                  configManager, fetcher, screener, candlePatterns, stock, newlyListedOnly)
                  for stock in listStockCodes]
 
         tasks_queue = multiprocessing.JoinableQueue()
@@ -333,7 +338,7 @@ def main(testing=False, testBuild=False):
         saveResults.rename(
             columns={
                 'Trend': f'Trend ({configManager.daysToLookback}Days)',
-                'Breaking-Out': 'Breakout ({configManager.daysToLookback}Days)'
+                'Breaking-Out': f'Breakout ({configManager.daysToLookback}Days)'
             },
             inplace=True
         )
@@ -353,6 +358,7 @@ def main(testing=False, testBuild=False):
             print(colorText.BOLD + colorText.GREEN +
                 "[+] Screening Completed! Press Enter to Continue.." + colorText.END)
             input('')
+        newlyListedOnly = False
 
 
 if __name__ == "__main__":

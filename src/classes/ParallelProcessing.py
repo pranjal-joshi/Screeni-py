@@ -15,6 +15,7 @@ import pytz
 from queue import Empty
 from datetime import datetime
 import classes.Fetcher as Fetcher
+import classes.Screener as Screener
 import classes.Utility as Utility
 from classes.CandlePatterns import CandlePatterns
 from classes.ColorText import colorText
@@ -58,7 +59,7 @@ class StockConsumer(multiprocessing.Process):
             sys.exit(0)
 
     def screenStocks(self, executeOption, reversalOption, maLength, daysForLowestVolume, minRSI, maxRSI, respChartPattern, insideBarToLookback, totalSymbols,
-                     configManager, fetcher, screener, candlePatterns, stock, printCounter=False):
+                     configManager, fetcher, screener, candlePatterns, stock, newlyListedOnly, printCounter=False):
         screenResults = pd.DataFrame(columns=[
             'Stock', 'Consolidating', 'Breaking-Out', 'MA-Signal', 'Volume', 'LTP', 'RSI', 'Trend', 'Pattern'])
         screeningDictionary = {'Stock': "", 'Consolidating': "",  'Breaking-Out': "",
@@ -68,11 +69,15 @@ class StockConsumer(multiprocessing.Process):
 
         try:
             period = configManager.period
-            # Data download adjustment for IPO Base feature
-            if executeOption == 7 and respChartPattern == 3:
-                period = 'max'
 
-            if (self.stockDict.get(stock) is None) or (respChartPattern == 3) or (configManager.cacheEnabled is False) or self.isTradingTime:
+            # Data download adjustment for Newly Listed only feature
+            if newlyListedOnly:
+                if int(configManager.period[:-1]) > 250:
+                    period = '250d'
+                else:
+                    period = configManager.period
+
+            if (self.stockDict.get(stock) is None) or (configManager.cacheEnabled is False) or self.isTradingTime:
                 data = fetcher.fetchStockData(stock,
                                               period,
                                               configManager.duration,
@@ -98,6 +103,10 @@ class StockConsumer(multiprocessing.Process):
 
             fullData, processedData = screener.preprocessData(
                 data, daysToLookback=configManager.daysToLookback)
+
+            if newlyListedOnly:
+                if not screener.validateNewlyListed(fullData, period):
+                    raise Screener.NotNewlyListed
 
             with self.screenCounter.get_lock():
                 self.screenCounter.value += 1
@@ -135,10 +144,8 @@ class StockConsumer(multiprocessing.Process):
                 
                 isConfluence = False
                 isInsideBar = False
-                isIpoBase = False
+                isIpoBase = screener.validateIpoBase(stock, fullData, screeningDictionary, saveDictionary)
                 if respChartPattern == 3 and executeOption == 7:
-                    isIpoBase = screener.validateIpoBase(stock, fullData, screeningDictionary, saveDictionary)
-                if respChartPattern == 4 and executeOption == 7:
                     isConfluence = screener.validateConfluence(stock, processedData, screeningDictionary, saveDictionary, percentage=insideBarToLookback)
                 else:
                     isInsideBar = screener.validateInsideBar(processedData, screeningDictionary, saveDictionary, chartPattern=respChartPattern, daysToLookback=insideBarToLookback)
@@ -196,6 +203,8 @@ class StockConsumer(multiprocessing.Process):
             # Capturing Ctr+C Here isn't a great idea
             pass
         except Fetcher.StockDataEmptyException:
+            pass
+        except Screener.NotNewlyListed:
             pass
         except KeyError:
             pass
