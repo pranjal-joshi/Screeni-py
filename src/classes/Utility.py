@@ -192,8 +192,7 @@ class tools:
             resp = int(input(colorText.BOLD + colorText.WARN + """\n[+] Select Option:
     1 > Screen for Bullish Inside Bar (Flag) Pattern
     2 > Screen for Bearish Inside Bar (Flag) Pattern
-    3 > Screen for IPO Base Breakout Pattern
-    4 > Screen for the Confluence (50 & 200 MA/EMA)
+    3 > Screen for the Confluence (50 & 200 MA/EMA)
     0 > Cancel
 [+] Select option: """ + colorText.END))
             if resp == 1 or resp == 2:
@@ -201,12 +200,10 @@ class tools:
                                     "\n[+] How many candles (TimeFrame) to look back Inside Bar formation? : " + colorText.END))
                 return (resp, candles)
             if resp == 3:
-                return (resp, 1)
-            if resp == 4:
                 percent = float(input(colorText.BOLD + colorText.WARN +
                                     "\n[+] Enter Percentage within which all MA/EMAs should be (Ideal: 1-2%)? : " + colorText.END))
                 return (resp, percent/100.0)
-            if resp >= 0 and resp <= 4:
+            if resp >= 0 and resp <= 3:
                 return resp
             raise ValueError
         except ValueError:
