@@ -70,10 +70,6 @@ class StockConsumer(multiprocessing.Process):
         try:
             period = configManager.period
 
-            # Data download adjustment for IPO Base feature
-            if executeOption == 7 and respChartPattern == 3:
-                period = 'max'
-
             # Data download adjustment for Newly Listed only feature
             if newlyListedOnly:
                 if int(configManager.period[:-1]) > 250:
@@ -81,7 +77,7 @@ class StockConsumer(multiprocessing.Process):
                 else:
                     period = configManager.period
 
-            if (self.stockDict.get(stock) is None) or (respChartPattern == 3) or (configManager.cacheEnabled is False) or self.isTradingTime:
+            if (self.stockDict.get(stock) is None) or (configManager.cacheEnabled is False) or self.isTradingTime:
                 data = fetcher.fetchStockData(stock,
                                               period,
                                               configManager.duration,
@@ -148,10 +144,8 @@ class StockConsumer(multiprocessing.Process):
                 
                 isConfluence = False
                 isInsideBar = False
-                isIpoBase = False
+                isIpoBase = screener.validateIpoBase(stock, fullData, screeningDictionary, saveDictionary)
                 if respChartPattern == 3 and executeOption == 7:
-                    isIpoBase = screener.validateIpoBase(stock, fullData, screeningDictionary, saveDictionary)
-                if respChartPattern == 4 and executeOption == 7:
                     isConfluence = screener.validateConfluence(stock, processedData, screeningDictionary, saveDictionary, percentage=insideBarToLookback)
                 else:
                     isInsideBar = screener.validateInsideBar(processedData, screeningDictionary, saveDictionary, chartPattern=respChartPattern, daysToLookback=insideBarToLookback)
