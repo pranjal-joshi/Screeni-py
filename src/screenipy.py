@@ -344,6 +344,8 @@ def main(testing=False, testBuild=False):
         )
         print(tabulate(screenResults, headers='keys', tablefmt='psql'))
 
+        print(colorText.BOLD + colorText.GREEN +
+                  f"[+] Found {len(screenResults)} Stocks." + colorText.END)
         if configManager.cacheEnabled and not Utility.tools.isTradingTime() and not testing:
             print(colorText.BOLD + colorText.GREEN +
                   "[+] Caching Stock Data for future use, Please Wait... " + colorText.END, end='')
