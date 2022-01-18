@@ -5,8 +5,13 @@
 [![Screenipy Test - New Features](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-test.yml/badge.svg?branch=new-features)](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-test.yml) [![Screenipy Build - New Release](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-build-matrix.yml/badge.svg)](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-build-matrix.yml)
 
 
+| **Download** | **Discussion** | **Bugs/Issues** | **Documentation** |
+| :---: | :---: | :---: | :---: |
+| [![cloud-computing (1)](https://user-images.githubusercontent.com/6128978/149935359-ca0a7155-d1e3-4e47-98e8-67f879e707e7.png)](https://github.com/pranjal-joshi/Screeni-py/releases/latest) | [![meeting](https://user-images.githubusercontent.com/6128978/149935812-31266023-cc5b-4c98-a416-1d4cf8800c0c.png)](https://github.com/pranjal-joshi/Screeni-py/discussions) | [![warning](https://user-images.githubusercontent.com/6128978/149936142-04d7cf1c-5bc5-45c1-a8e4-015454a2de48.png)](https://github.com/pranjal-joshi/Screeni-py/issues?q=is%3Aissue) | [![help](https://user-images.githubusercontent.com/6128978/149937331-5ee5c00a-748d-4fbf-a9f9-e2273480d8a2.png)](https://github.com/pranjal-joshi/Screeni-py/blob/main/README.md#what-is-screeni-py) |
+| Download the Latest Version | Join/Read the Community Discussion | Raise an Issue about a Problem | Get Help about Usage |
 
-## [**Click to Download the Latest Version**](https://github.com/pranjal-joshi/Screeni-py/releases/latest)
+<!-- ## [**Click to Download the Latest Version**](https://github.com/pranjal-joshi/Screeni-py/releases/latest) -->
+
 ---
 
 ## What is Screeni-py?
