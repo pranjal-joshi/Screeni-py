@@ -18,6 +18,10 @@ from classes.SuppressOutput import SuppressOutput
 class StockDataNotAdequate(Exception):
     pass
 
+# Exception for only downloading stock data and not screening
+class DownloadDataOnly(Exception):
+    pass
+
 # Exception for stocks which are not newly listed when screening only for Newly Listed
 class NotNewlyListed(Exception):
     pass

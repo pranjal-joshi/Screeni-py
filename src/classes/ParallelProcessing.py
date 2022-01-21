@@ -59,7 +59,7 @@ class StockConsumer(multiprocessing.Process):
             sys.exit(0)
 
     def screenStocks(self, executeOption, reversalOption, maLength, daysForLowestVolume, minRSI, maxRSI, respChartPattern, insideBarToLookback, totalSymbols,
-                     configManager, fetcher, screener, candlePatterns, stock, newlyListedOnly, printCounter=False):
+                     configManager, fetcher, screener, candlePatterns, stock, newlyListedOnly, downloadOnly, printCounter=False):
         screenResults = pd.DataFrame(columns=[
             'Stock', 'Consolidating', 'Breaking-Out', 'MA-Signal', 'Volume', 'LTP', 'RSI', 'Trend', 'Pattern'])
         screeningDictionary = {'Stock': "", 'Consolidating': "",  'Breaking-Out': "",
@@ -77,7 +77,7 @@ class StockConsumer(multiprocessing.Process):
                 else:
                     period = configManager.period
 
-            if (self.stockDict.get(stock) is None) or (configManager.cacheEnabled is False) or self.isTradingTime:
+            if (self.stockDict.get(stock) is None) or (configManager.cacheEnabled is False) or self.isTradingTime or downloadOnly:
                 data = fetcher.fetchStockData(stock,
                                               period,
                                               configManager.duration,
@@ -85,8 +85,10 @@ class StockConsumer(multiprocessing.Process):
                                               self.screenResultsCounter,
                                               self.screenCounter,
                                               totalSymbols)
-                if configManager.cacheEnabled is True and not self.isTradingTime and (self.stockDict.get(stock) is None):
+                if configManager.cacheEnabled is True and not self.isTradingTime and (self.stockDict.get(stock) is None) or downloadOnly:
                     self.stockDict[stock] = data.to_dict('split')
+                    if downloadOnly:
+                        raise Screener.DownloadDataOnly
             else:
                 if printCounter:
                     try:
@@ -124,8 +126,10 @@ class StockConsumer(multiprocessing.Process):
                     processedData, screeningDictionary, saveDictionary, daysToLookback=configManager.daysToLookback)
                 isLtpValid = screener.validateLTP(
                     fullData, screeningDictionary, saveDictionary, minLTP=configManager.minLTP, maxLTP=configManager.maxLTP)
-                isLowestVolume = screener.validateLowestVolume(
-                    processedData, daysForLowestVolume)
+                if executeOption == 4:
+                    isLowestVolume = screener.validateLowestVolume(processedData, daysForLowestVolume)
+                else:
+                    isLowestVolume = False
                 isValidRsi = screener.validateRSI(
                     processedData, screeningDictionary, saveDictionary, minRSI, maxRSI)
                 try:
@@ -218,6 +222,8 @@ class StockConsumer(multiprocessing.Process):
         except Fetcher.StockDataEmptyException:
             pass
         except Screener.NotNewlyListed:
+            pass
+        except Screener.DownloadDataOnly:
             pass
         except KeyError:
             pass
