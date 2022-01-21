@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.31"
+VERSION = "1.32"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -149,6 +149,11 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 1. BugFixes for false detection of patterns - IPO Base, Inside Bar.
 2. New Application Icon.
 3. Experimental - VCP Detection : Option > 7 > 4
+
+[1.32]
+1. Performance Optimization.
+2. Minor Improvements.
+3. Argument added for Data download only : run screenipy.exe -d
 
 --- END ---
 ''' + colorText.END

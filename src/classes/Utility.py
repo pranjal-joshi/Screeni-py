@@ -52,11 +52,13 @@ class tools:
               "\n[+] Developer: Pranjal Joshi." + colorText.END)
         print(colorText.BOLD + colorText.WARN +
               ("[+] Version: %s" % VERSION) + colorText.END)
-        print(colorText.BOLD + colorText.WARN +
-              "[+] More: https://github.com/pranjal-joshi/Screeni-py" + colorText.END)
-        print(colorText.BOLD + colorText.WARN +
-              "[+] Post Feedback/Issues here: https://github.com/pranjal-joshi/Screeni-py/issues" + colorText.END)
-        print(colorText.BOLD + colorText.WARN +
+        print(colorText.BOLD +
+              "[+] Home Page: https://github.com/pranjal-joshi/Screeni-py" + colorText.END)
+        print(colorText.BOLD + colorText.FAIL +
+              "[+] Read/Post Issues here: https://github.com/pranjal-joshi/Screeni-py/issues" + colorText.END)
+        print(colorText.BOLD + colorText.GREEN +
+              "[+] Join Community Discussions: https://github.com/pranjal-joshi/Screeni-py/discussions" + colorText.END)
+        print(colorText.BOLD + colorText.BLUE +
               "[+] Download latest software from https://github.com/pranjal-joshi/Screeni-py/releases/latest" + colorText.END)
         input('')
 

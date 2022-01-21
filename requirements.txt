@@ -37,7 +37,7 @@ msgpack # Installed as dependency for cachecontrol
 multitasking # Installed as dependency for yfinance
 numpy==1.21.0 # Installed as dependency for yfinance, scipy, matplotlib, pandas
 packaging # Installed as dependency for pytest
-pandas # Installed as dependency for yfinance
+pandas==1.3.5 # Installed as dependency for yfinance
 pefile # Installed as dependency for pyinstaller
 pluggy # Installed as dependency for pytest
 py # Installed as dependency for pytest
