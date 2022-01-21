@@ -1,4 +1,4 @@
-![MADE-IN-INDIA](https://img.shields.io/badge/MADE%20WITH%20%E2%9D%A4%20IN-INDIA-orange?style=for-the-badge) ![GitHub release (latest by date)](https://img.shields.io/github/v/release/pranjal-joshi/Screeni-py?style=for-the-badge) ![GitHub all releases](https://img.shields.io/github/downloads/pranjal-joshi/Screeni-py/total?color=Green&label=Downloads&style=for-the-badge) ![MADE_WITH](https://img.shields.io/badge/BUILT%20USING-PYTHON-yellow?style=for-the-badge&logo=python&logoColor=yellow)
+[![MADE-IN-INDIA](https://img.shields.io/badge/MADE%20WITH%20%E2%9D%A4%20IN-INDIA-orange?style=for-the-badge)](https://en.wikipedia.org/wiki/India) [![GitHub release (latest by date)](https://img.shields.io/github/v/release/pranjal-joshi/Screeni-py?style=for-the-badge)](#) [![GitHub all releases](https://img.shields.io/github/downloads/pranjal-joshi/Screeni-py/total?color=Green&label=Downloads&style=for-the-badge)](#) [![MADE_WITH](https://img.shields.io/badge/BUILT%20USING-PYTHON-yellow?style=for-the-badge&logo=python&logoColor=yellow)](https://www.python.org/)
 ## What's New?
 
 Celebrating more than 1,000 Downloads - Thank You for your support <3
@@ -7,12 +7,12 @@ Celebrating more than 1,000 Downloads - Thank You for your support <3
 2. **Experimental** Feature - **VCP** Detection - Try `Option > 7 > 4`
 3. **New Tickers Group** - Screen only for **Newly Listed IPOs** (Last 1 Yr)
 4. **Volume Spread Analysis** : BugFixes for catching Bullish Reversals - Try `Option > 6 > 5`
-5. Screening optimized for New Listings & other bug-fixes.
+5. Screening Algorithm & Performance Upgrades!
 
 ## Downloads
-* For :desktop_computer: **Windows** users, download **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.31/screenipy.exe)**
-* For :penguin: **Linux** users, download **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.31/screenipy.bin)**
-* For :apple: **MacOS** users, download **[screenipy.run](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.31/screenipy.run)** ([Read Installation Guide](https://github.com/pranjal-joshi/Screeni-py/blob/main/INSTALLATION.md#for-macos))
+* For :desktop_computer: **Windows** users, download **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.32/screenipy.exe)**
+* For :penguin: **Linux** users, download **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.32/screenipy.bin)**
+* For :apple: **MacOS** users, download **[screenipy.run](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.32/screenipy.run)** ([Read Installation Guide](https://github.com/pranjal-joshi/Screeni-py/blob/main/INSTALLATION.md#for-macos))
 
 ## How to use?
 

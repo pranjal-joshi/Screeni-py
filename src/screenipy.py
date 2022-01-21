@@ -115,7 +115,7 @@ def initExecution():
     8 > Edit user configuration
     9 > Show user configuration
     10 > Show Last Screened Results
-    11 > About Developer
+    11 > Help / About Developer
     12 > Exit''' + colorText.END
             )
     try:

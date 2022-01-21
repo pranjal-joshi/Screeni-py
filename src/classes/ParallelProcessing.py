@@ -124,8 +124,10 @@ class StockConsumer(multiprocessing.Process):
                     processedData, screeningDictionary, saveDictionary, daysToLookback=configManager.daysToLookback)
                 isLtpValid = screener.validateLTP(
                     fullData, screeningDictionary, saveDictionary, minLTP=configManager.minLTP, maxLTP=configManager.maxLTP)
-                isLowestVolume = screener.validateLowestVolume(
-                    processedData, daysForLowestVolume)
+                if executeOption == 4:
+                    isLowestVolume = screener.validateLowestVolume(processedData, daysForLowestVolume)
+                else:
+                    isLowestVolume = False
                 isValidRsi = screener.validateRSI(
                     processedData, screeningDictionary, saveDictionary, minRSI, maxRSI)
                 try:
