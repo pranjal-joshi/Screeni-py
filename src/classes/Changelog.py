@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.30"
+VERSION = "1.31"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -140,10 +140,15 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 3. Build Test mode added for CI/CD.
 
 [1.30]
-1. New Tickers Group - Screen only for Newly Listed IPOs (Last 2 Yrs)
+1. New Tickers Group - Screen only for Newly Listed IPOs (Last 1 Yr)
 2. Major bug fix - stage 2 criteria won't be applied for new listings.
 3. Validation Fixed for Volume & MA Signal (Optimized for new listings)
 4. Excel save header name bug fixed.
+
+[1.31]
+1. BugFixes for false detection of patterns - IPO Base, Inside Bar.
+2. New Application Icon.
+3. Experimental - VCP Detection : Option > 7 > 4
 
 --- END ---
 ''' + colorText.END

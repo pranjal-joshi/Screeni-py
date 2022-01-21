@@ -144,16 +144,26 @@ class StockConsumer(multiprocessing.Process):
                 
                 isConfluence = False
                 isInsideBar = False
-                isIpoBase = screener.validateIpoBase(stock, fullData, screeningDictionary, saveDictionary)
+                isIpoBase = False
+                if newlyListedOnly:
+                    isIpoBase = screener.validateIpoBase(stock, fullData, screeningDictionary, saveDictionary)
                 if respChartPattern == 3 and executeOption == 7:
                     isConfluence = screener.validateConfluence(stock, processedData, screeningDictionary, saveDictionary, percentage=insideBarToLookback)
                 else:
                     isInsideBar = screener.validateInsideBar(processedData, screeningDictionary, saveDictionary, chartPattern=respChartPattern, daysToLookback=insideBarToLookback)
                 
                 isMomentum = screener.validateMomentum(processedData, screeningDictionary, saveDictionary)
-                isVSA = screener.validateVolumeSpreadAnalysis(processedData, screeningDictionary, saveDictionary)
+                
+                isVSA = False
+                if not (executeOption == 7 and respChartPattern < 3):
+                    isVSA = screener.validateVolumeSpreadAnalysis(processedData, screeningDictionary, saveDictionary)
                 if maLength is not None and executeOption == 6:
                     isMaSupport = screener.findReversalMA(fullData, screeningDictionary, saveDictionary, maLength)
+
+                isVCP = False
+                if respChartPattern == 4:
+                    with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
+                        isVCP = screener.validateVCP(fullData, screeningDictionary, saveDictionary)
 
                 with self.screenResultsCounter.get_lock():
                     if executeOption == 0:
@@ -196,7 +206,10 @@ class StockConsumer(multiprocessing.Process):
                         if isConfluence:
                             self.screenResultsCounter.value += 1
                             return screeningDictionary, saveDictionary
-                        if isIpoBase:
+                        if isIpoBase and newlyListedOnly and not respChartPattern < 3:
+                            self.screenResultsCounter.value += 1
+                            return screeningDictionary, saveDictionary
+                        if isVCP:
                             self.screenResultsCounter.value += 1
                             return screeningDictionary, saveDictionary
         except KeyboardInterrupt:

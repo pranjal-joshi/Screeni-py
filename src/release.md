@@ -3,20 +3,24 @@
 
 Celebrating more than 1,000 Downloads - Thank You for your support <3
 
-1. **New Tickers Group** - Screen only for **Newly Listed IPOs** (Last 2 Yrs)
-2. **Volume Spread Analysis** : BugFixes for catching Bullish Reversals - Try `Option > 6 > 5`
-3. New **Chart Pattern** Added! **MA Confluence** of 2 MA Signals for high probability trades - Try `Option > 7 > 4`
-4. Now, Open TradingView chart directly by clicking on the stock symbol! :tada: (Windows users should download and run the Application through  the **Windows Terminal** from the Microsoft Store.)
+1. Major BugFixes for **Pattern Detection** - IPO Base Breakout.
+2. **Experimental** Feature - **VCP** Detection - Try `Option > 7 > 4`
+3. **New Tickers Group** - Screen only for **Newly Listed IPOs** (Last 1 Yr)
+4. **Volume Spread Analysis** : BugFixes for catching Bullish Reversals - Try `Option > 6 > 5`
 5. Screening optimized for New Listings & other bug-fixes.
 
 ## Downloads
-* For :desktop_computer: **Windows** users, download **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.30/screenipy.exe)**
-* For :penguin: **Linux** users, download **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.30/screenipy.bin)**
-* For :apple: **MacOS** users, download **[screenipy.run](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.30/screenipy.run)** ([Read Installation Guide](https://github.com/pranjal-joshi/Screeni-py/blob/main/INSTALLATION.md#for-macos))
+* For :desktop_computer: **Windows** users, download **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.31/screenipy.exe)**
+* For :penguin: **Linux** users, download **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.31/screenipy.bin)**
+* For :apple: **MacOS** users, download **[screenipy.run](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.31/screenipy.run)** ([Read Installation Guide](https://github.com/pranjal-joshi/Screeni-py/blob/main/INSTALLATION.md#for-macos))
 
 ## How to use?
 
 [**Click Here**](https://github.com/pranjal-joshi/Screeni-py) to read the documentation.
+
+## Join our Community Discussion
+
+[**Click Here**](https://github.com/pranjal-joshi/Screeni-py/discussions) to join the community discussion and see what other users are doing!
 
 ## Facing an Issue? Found a Bug?
 

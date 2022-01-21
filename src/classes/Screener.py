@@ -429,6 +429,44 @@ class tools:
             return True
         return False
 
+    # Validate VPC
+    def validateVCP(self, data, screenDict, saveDict, stockName=None, window=3, percentageFromTop=3):
+        try:
+            percentageFromTop /= 100
+            data.reset_index(inplace=True)
+            data.rename(columns={'index':'Date'}, inplace=True)
+            data['tops'] = data['High'].iloc[list(argrelextrema(np.array(data['High']), np.greater_equal, order=window)[0])].head(4)
+            data['bots'] = data['Low'].iloc[list(argrelextrema(np.array(data['Low']), np.less_equal, order=window)[0])].head(4)
+            data = data.fillna(0)
+            data = data.replace([np.inf, -np.inf], 0)
+            tops = data[data.tops > 0]
+            bots = data[data.bots > 0]
+            highestTop = round(tops.describe()['High']['max'],1)
+            filteredTops = tops[tops.tops > (highestTop-(highestTop*percentageFromTop))]
+            # print(tops)
+            # print(filteredTops)
+            # print(tops.sort_values(by=['tops'], ascending=False))
+            # print(tops.describe())
+            # print(f"Till {highestTop-(highestTop*percentageFromTop)}")
+            if(filteredTops.equals(tops)):      # Tops are in the range
+                lowPoints = []
+                for i in range(len(tops)-1):
+                    endDate = tops.iloc[i]['Date']
+                    startDate = tops.iloc[i+1]['Date']
+                    lowPoints.append(data[(data.Date >= startDate) & (data.Date <= endDate)].describe()['Low']['min'])
+                lowPointsOrg = lowPoints
+                lowPoints.sort(reverse=True)
+                lowPointsSorted = lowPoints
+                ltp = data.head(1)['Close'][0]
+                if lowPointsOrg == lowPointsSorted and  ltp < highestTop and ltp > lowPoints[0]:
+                    screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + f'VCP (BO: {highestTop})' + colorText.END
+                    saveDict['Pattern'] = f'VCP (BO: {highestTop})'
+                    return True
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+        return False
+
     '''
     # Find out trend for days to lookback
     def validateVCP(data, screenDict, saveDict, daysToLookback=ConfigManager.daysToLookback, stockName=None):

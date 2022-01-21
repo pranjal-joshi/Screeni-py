@@ -193,6 +193,7 @@ class tools:
     1 > Screen for Bullish Inside Bar (Flag) Pattern
     2 > Screen for Bearish Inside Bar (Flag) Pattern
     3 > Screen for the Confluence (50 & 200 MA/EMA)
+    4 > Screen for VCP (Experimental)
     0 > Cancel
 [+] Select option: """ + colorText.END))
             if resp == 1 or resp == 2:
@@ -203,8 +204,8 @@ class tools:
                 percent = float(input(colorText.BOLD + colorText.WARN +
                                     "\n[+] Enter Percentage within which all MA/EMAs should be (Ideal: 1-2%)? : " + colorText.END))
                 return (resp, percent/100.0)
-            if resp >= 0 and resp <= 3:
-                return resp
+            if resp >= 0 and resp <= 4:
+                return resp, 0
             raise ValueError
         except ValueError:
             input(colorText.BOLD + colorText.FAIL +
