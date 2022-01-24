@@ -58,3 +58,4 @@ jobs:
         git checkout actions-data-download
         git commit -a -m "GitHub Action Workflow - Market Data Download (Default Config)"
         git push
+        
