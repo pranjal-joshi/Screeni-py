@@ -374,7 +374,7 @@ if __name__ == "__main__":
     if args.testbuild:
         print(colorText.BOLD + colorText.FAIL +"[+] Started in TestBuild mode!" + colorText.END)
         main(testBuild=True)
-    if args.download:
+    elif args.download:
         print(colorText.BOLD + colorText.FAIL +"[+] Download ONLY mode! Stocks will not be screened!" + colorText.END)
         main(downloadOnly=True)
     else:
