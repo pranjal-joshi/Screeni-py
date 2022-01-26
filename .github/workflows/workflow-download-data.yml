@@ -4,7 +4,6 @@
 # Description         :   Workflow for downloading pickled stock data to cloud [Use this when yfinance causing an issue]
 
 name: Screenipy Data - Download After-Market Closing Data
-
 on:
   workflow_dispatch:
     inputs:
