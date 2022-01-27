@@ -11,10 +11,12 @@ import platform
 import datetime
 import pytz
 import pickle
+import requests
 import pandas as pd
 from tabulate import tabulate
 from classes.ColorText import colorText
 from classes.Changelog import VERSION, changelog
+import classes.ConfigManager as ConfigManager
 
 art = colorText.GREEN + '''
      .d8888b.                                             d8b                   
@@ -115,7 +117,7 @@ class tools:
             print(colorText.BOLD + colorText.GREEN +
                   "=> Already Cached." + colorText.END)
 
-    def loadStockData(stockDict):
+    def loadStockData(stockDict, configManager):
         today_date = datetime.date.today().strftime("%d%m%y")
         cache_file = "stock_data_" + str(today_date) + ".pkl"
         weekday = datetime.date.today().weekday()
@@ -137,8 +139,23 @@ class tools:
                 except EOFError:
                     print(colorText.BOLD + colorText.FAIL +
                           "[+] Stock Cache Corrupted." + colorText.END)
-    # Save screened results to excel
+        elif ConfigManager.default_period == configManager.period and ConfigManager.default_duration == configManager.duration:
+            cache_url = "https://raw.github.com/pranjal-joshi/Screeni-py/actions-data-download/actions-data-download/" + cache_file
+            resp = requests.get(cache_url, stream=True)
+            if resp.status_code == 200:
+                print(colorText.BOLD + colorText.FAIL +"[+] After-Market Stock Data is not cached.." + colorText.END)
+                print(colorText.BOLD + colorText.GREEN +"[+] Downloading cache from Screenipy server for faster processing, This may take a while.." + colorText.END)
+                try:
+                    f = open(cache_file, 'wb')
+                    f.write(resp.content)
+                    f.close()
+                except Exception as e:
+                    print("[!] Download Error - " + str(e))
+                tools.loadStockData(stockDict, configManager)
+            else:
+                print(colorText.BOLD + colorText.FAIL +"[+] Cache unavailable on Screenipy server, Continuing.." + colorText.END)
 
+    # Save screened results to excel
     def promptSaveResults(df):
         try:
             response = str(input(colorText.BOLD + colorText.WARN +
