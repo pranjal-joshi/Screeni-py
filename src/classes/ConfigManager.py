@@ -14,9 +14,11 @@ from classes.ColorText import colorText
 
 parser = configparser.ConfigParser(strict=False)
 
+# Default attributes for Downloading Cache from Git repo
+default_period = '300d'
+default_duration = '1d'
+
 # This Class manages read/write of user configuration
-
-
 class tools:
 
     def __init__(self):

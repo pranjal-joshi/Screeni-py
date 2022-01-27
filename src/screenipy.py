@@ -237,7 +237,7 @@ def main(testing=False, testBuild=False, downloadOnly=False):
             sys.exit(0)
 
         if not Utility.tools.isTradingTime() and configManager.cacheEnabled and not loadedStockData and not testing:
-            Utility.tools.loadStockData(stockDict)
+            Utility.tools.loadStockData(stockDict, configManager)
             loadedStockData = True
         loadCount = len(stockDict)
 
@@ -382,6 +382,7 @@ if __name__ == "__main__":
             while True:
                 main()
         except Exception as e:
+            raise e
             if isDevVersion == OTAUpdater.developmentVersion:
                 raise(e)
             input(colorText.BOLD + colorText.FAIL +

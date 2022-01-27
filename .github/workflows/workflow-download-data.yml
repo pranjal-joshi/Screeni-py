@@ -21,6 +21,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        ref: actions-data-download
 
     - name: Set up Python 3.9.4
       uses: actions/setup-python@v2
@@ -52,14 +54,13 @@ jobs:
         rmdir /s /q actions-data-download
         mkdir actions-data-download
         python src/screenipy.py -d
-        copy "stock_data_*.pkl" "actions-data-download"
+        copy "stock_data_*.pkl" "actions-data-download"     
 
     - name: Push Pickle Data
       run: |
         git config user.name github-actions
         git config user.email github-actions@github.com
         git checkout actions-data-download
-        git add actions-data-download --force
         git add actions-data-download/stock_data_*.pkl --force
         git commit -m "GitHub Action Workflow - Market Data Download (Default Config)"
         git push
