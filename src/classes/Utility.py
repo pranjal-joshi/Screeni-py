@@ -189,9 +189,10 @@ class tools:
     3 > Screen for Momentum Gainers (Rising Bullish Momentum)
     4 > Screen for Reversal at Moving Average (Bullish Reversal)
     5 > Screen for Volume Spread Analysis (Bullish VSA Reversal)
+    6 > Screen for Narrow Range (NRx) Reversal
     0 > Cancel
 [+] Select option: """ + colorText.END))
-            if resp >= 0 and resp <= 5:
+            if resp >= 0 and resp <= 6:
                 if resp == 4:
                     try:
                         maLength = int(input(colorText.BOLD + colorText.WARN +
@@ -199,6 +200,14 @@ class tools:
                         return resp, maLength
                     except ValueError:
                         print(colorText.BOLD + colorText.FAIL + '\n[!] Invalid Input! MA Lenght should be single integer value!\n' + colorText.END)
+                        raise ValueError
+                elif resp == 6:
+                    try:
+                        maLength = int(input(colorText.BOLD + colorText.WARN +
+                                             '\n[+] Enter NR timeframe [Integer Number] (E.g. 4, 7, etc.): ' + colorText.END))
+                        return resp, maLength
+                    except ValueError:
+                        print(colorText.BOLD + colorText.FAIL + '\n[!] Invalid Input! NR timeframe should be single integer value!\n' + colorText.END)
                         raise ValueError
                 return resp, None
             raise ValueError
