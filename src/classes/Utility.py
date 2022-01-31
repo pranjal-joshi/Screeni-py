@@ -118,8 +118,6 @@ class tools:
                   "=> Already Cached." + colorText.END)
 
     def loadStockData(stockDict, configManager):
-        curr = datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
-        openTime = curr.replace(hour=9, minute=15)
         today_date = datetime.date.today().strftime("%d%m%y")
         cache_file = "stock_data_" + str(today_date) + ".pkl"
         weekday = datetime.date.today().weekday()
@@ -127,7 +125,7 @@ class tools:
             last_friday = datetime.datetime.today() - datetime.timedelta(days=weekday - 4)
             last_friday = last_friday.strftime("%d%m%y")
             cache_file = "stock_data_" + str(last_friday) + ".pkl"
-        if weekday == 0 and curr < openTime:  # for monday before 9:15
+        if weekday == 0:  # for monday before 9:15
             last_friday = datetime.datetime.today() - datetime.timedelta(3)
             last_friday = last_friday.strftime("%d%m%y")
             cache_file = "stock_data_" + str(last_friday) + ".pkl"
