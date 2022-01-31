@@ -118,11 +118,17 @@ class tools:
                   "=> Already Cached." + colorText.END)
 
     def loadStockData(stockDict, configManager):
+        curr = datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
+        openTime = curr.replace(hour=9, minute=15)
         today_date = datetime.date.today().strftime("%d%m%y")
         cache_file = "stock_data_" + str(today_date) + ".pkl"
         weekday = datetime.date.today().weekday()
         if weekday == 5 or weekday == 6:
             last_friday = datetime.datetime.today() - datetime.timedelta(days=weekday - 4)
+            last_friday = last_friday.strftime("%d%m%y")
+            cache_file = "stock_data_" + str(last_friday) + ".pkl"
+        if weekday == 0 and curr < openTime:  # for monday before 9:15
+            last_friday = datetime.datetime.today() - datetime.timedelta(3)
             last_friday = last_friday.strftime("%d%m%y")
             cache_file = "stock_data_" + str(last_friday) + ".pkl"
         if os.path.exists(cache_file):
@@ -143,8 +149,10 @@ class tools:
             cache_url = "https://raw.github.com/pranjal-joshi/Screeni-py/actions-data-download/actions-data-download/" + cache_file
             resp = requests.get(cache_url, stream=True)
             if resp.status_code == 200:
-                print(colorText.BOLD + colorText.FAIL +"[+] After-Market Stock Data is not cached.." + colorText.END)
-                print(colorText.BOLD + colorText.GREEN +"[+] Downloading cache from Screenipy server for faster processing, This may take a while.." + colorText.END)
+                print(colorText.BOLD + colorText.FAIL +
+                      "[+] After-Market Stock Data is not cached.." + colorText.END)
+                print(colorText.BOLD + colorText.GREEN +
+                      "[+] Downloading cache from Screenipy server for faster processing, This may take a while.." + colorText.END)
                 try:
                     f = open(cache_file, 'wb')
                     f.write(resp.content)
@@ -153,7 +161,8 @@ class tools:
                     print("[!] Download Error - " + str(e))
                 tools.loadStockData(stockDict, configManager)
             else:
-                print(colorText.BOLD + colorText.FAIL +"[+] Cache unavailable on Screenipy server, Continuing.." + colorText.END)
+                print(colorText.BOLD + colorText.FAIL +
+                      "[+] Cache unavailable on Screenipy server, Continuing.." + colorText.END)
 
     # Save screened results to excel
     def promptSaveResults(df):
@@ -199,7 +208,8 @@ class tools:
                                              '\n[+] Enter MA Length (E.g. 50 or 200): ' + colorText.END))
                         return resp, maLength
                     except ValueError:
-                        print(colorText.BOLD + colorText.FAIL + '\n[!] Invalid Input! MA Lenght should be single integer value!\n' + colorText.END)
+                        print(colorText.BOLD + colorText.FAIL +
+                              '\n[!] Invalid Input! MA Lenght should be single integer value!\n' + colorText.END)
                         raise ValueError
                 elif resp == 6:
                     try:
@@ -230,7 +240,7 @@ class tools:
                 return (resp, candles)
             if resp == 3:
                 percent = float(input(colorText.BOLD + colorText.WARN +
-                                    "\n[+] Enter Percentage within which all MA/EMAs should be (Ideal: 1-2%)? : " + colorText.END))
+                                      "\n[+] Enter Percentage within which all MA/EMAs should be (Ideal: 1-2%)? : " + colorText.END))
                 return (resp, percent/100.0)
             if resp >= 0 and resp <= 4:
                 return resp, 0
