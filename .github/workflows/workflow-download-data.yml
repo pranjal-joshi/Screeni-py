@@ -1,0 +1,66 @@
+# Project             :   Screenipy
+# Author              :   Pranjal Joshi
+# Created             :   24/01/2022
+# Description         :   Workflow for downloading pickled stock data to cloud [Use this when yfinance causing an issue]
+
+name: Screenipy Data - Download After-Market Closing Data
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Run Details'
+        required: false
+        default: 'Screenipy - Data Download'
+  schedule:
+  - cron: '02 10 * * 1-5'
+
+jobs:
+  Download_Stock_Data:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: actions-data-download
+
+    - name: Set up Python 3.9.4
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9.4
+
+    - name: Restore Dependencies from Cache
+      uses: actions/cache@v2
+      with:
+        path: ~\AppData\Local\pip\Cache
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install TA-Lib
+      run: |
+        python -m pip install --upgrade pip
+        cd .github/dependencies/
+        echo %cd%
+        pip install TA_Lib-0.4.19-cp39-cp39-win_amd64.whl
+
+    - name: Install Python Dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Download Stock Data
+      shell: cmd
+      run: |
+        rmdir /s /q actions-data-download
+        mkdir actions-data-download
+        python src/screenipy.py -d
+        copy "stock_data_*.pkl" "actions-data-download"     
+
+    - name: Push Pickle Data
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git checkout actions-data-download
+        git add actions-data-download/stock_data_*.pkl --force
+        git commit -m "GitHub Action Workflow - Market Data Download (Default Config)"
+        git push

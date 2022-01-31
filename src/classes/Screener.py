@@ -18,6 +18,10 @@ from classes.SuppressOutput import SuppressOutput
 class StockDataNotAdequate(Exception):
     pass
 
+# Exception for only downloading stock data and not screening
+class DownloadDataOnly(Exception):
+    pass
+
 # Exception for stocks which are not newly listed when screening only for Newly Listed
 class NotNewlyListed(Exception):
     pass
@@ -427,6 +431,23 @@ class tools:
         recent = data.head(1)
         if len(data) < daysToLookback and (recent['Close'][0] != np.nan and recent['Close'][0] > 0):
             return True
+        return False
+
+    # Find NRx range for Reversal
+    def validateNarrowRange(self, data, screenDict, saveDict, nr=4):
+        rangeData = data.head(nr+1)[1:]
+        now_candle = data.head(1)
+        rangeData['Range'] = abs(rangeData['Close'] - rangeData['Open'])
+        recent = rangeData.head(1)
+        if recent['Range'][0] == rangeData.describe()['Range']['min']:
+            if self.getCandleType(recent) and now_candle['Close'][0] >= recent['Close'][0]:
+                screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + f'Buy-NR{nr}' + colorText.END
+                saveDict['Pattern'] = f'Buy-NR{nr}'
+                return True
+            elif not self.getCandleType(recent) and now_candle['Close'][0] <= recent['Close'][0]:
+                screenDict['Pattern'] = colorText.BOLD + colorText.FAIL + f'Sell-NR{nr}' + colorText.END
+                saveDict['Pattern'] = f'Sell-NR{nr}'
+                return True
         return False
 
     # Validate VPC

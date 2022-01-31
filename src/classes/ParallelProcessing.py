@@ -59,7 +59,7 @@ class StockConsumer(multiprocessing.Process):
             sys.exit(0)
 
     def screenStocks(self, executeOption, reversalOption, maLength, daysForLowestVolume, minRSI, maxRSI, respChartPattern, insideBarToLookback, totalSymbols,
-                     configManager, fetcher, screener, candlePatterns, stock, newlyListedOnly, printCounter=False):
+                     configManager, fetcher, screener, candlePatterns, stock, newlyListedOnly, downloadOnly, printCounter=False):
         screenResults = pd.DataFrame(columns=[
             'Stock', 'Consolidating', 'Breaking-Out', 'MA-Signal', 'Volume', 'LTP', 'RSI', 'Trend', 'Pattern'])
         screeningDictionary = {'Stock': "", 'Consolidating': "",  'Breaking-Out': "",
@@ -77,7 +77,7 @@ class StockConsumer(multiprocessing.Process):
                 else:
                     period = configManager.period
 
-            if (self.stockDict.get(stock) is None) or (configManager.cacheEnabled is False) or self.isTradingTime:
+            if (self.stockDict.get(stock) is None) or (configManager.cacheEnabled is False) or self.isTradingTime or downloadOnly:
                 data = fetcher.fetchStockData(stock,
                                               period,
                                               configManager.duration,
@@ -85,8 +85,10 @@ class StockConsumer(multiprocessing.Process):
                                               self.screenResultsCounter,
                                               self.screenCounter,
                                               totalSymbols)
-                if configManager.cacheEnabled is True and not self.isTradingTime and (self.stockDict.get(stock) is None):
+                if configManager.cacheEnabled is True and not self.isTradingTime and (self.stockDict.get(stock) is None) or downloadOnly:
                     self.stockDict[stock] = data.to_dict('split')
+                    if downloadOnly:
+                        raise Screener.DownloadDataOnly
             else:
                 if printCounter:
                     try:
@@ -159,8 +161,14 @@ class StockConsumer(multiprocessing.Process):
                 isVSA = False
                 if not (executeOption == 7 and respChartPattern < 3):
                     isVSA = screener.validateVolumeSpreadAnalysis(processedData, screeningDictionary, saveDictionary)
-                if maLength is not None and executeOption == 6:
+                if maLength is not None and executeOption == 6 and reversalOption == 4:
                     isMaSupport = screener.findReversalMA(fullData, screeningDictionary, saveDictionary, maLength)
+
+                with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
+                    if maLength is not None and executeOption == 6 and reversalOption == 6:
+                        isNR = screener.validateNarrowRange(processedData, screeningDictionary, saveDictionary, nr=maLength)
+                    else:
+                        isNR = screener.validateNarrowRange(processedData, screeningDictionary, saveDictionary)
 
                 isVCP = False
                 if respChartPattern == 4:
@@ -201,6 +209,9 @@ class StockConsumer(multiprocessing.Process):
                         elif reversalOption == 5 and isVSA and saveDictionary['Pattern'] in CandlePatterns.reversalPatternsBullish:
                             self.screenResultsCounter.value += 1
                             return screeningDictionary, saveDictionary
+                        elif reversalOption == 6 and isNR:
+                            self.screenResultsCounter.value += 1
+                            return screeningDictionary, saveDictionary
                     if executeOption == 7 and isLtpValid:
                         if respChartPattern < 3 and isInsideBar:
                             self.screenResultsCounter.value += 1
@@ -220,6 +231,8 @@ class StockConsumer(multiprocessing.Process):
         except Fetcher.StockDataEmptyException:
             pass
         except Screener.NotNewlyListed:
+            pass
+        except Screener.DownloadDataOnly:
             pass
         except KeyError:
             pass

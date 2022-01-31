@@ -29,9 +29,9 @@ multiprocessing.freeze_support()
 
 # Argument Parsing for test purpose
 argParser = argparse.ArgumentParser()
-argParser.add_argument('-t','--testbuild',action='store_true',
-                        help='Run in test-build mode',required=False)
-argParser.add_argument('-v',action='store_true')        # Dummy Arg for pytest -v
+argParser.add_argument('-t', '--testbuild', action='store_true', help='Run in test-build mode', required=False)
+argParser.add_argument('-d', '--download', action='store_true', help='Only Download Stock data in .pkl file', required=False)
+argParser.add_argument('-v', action='store_true')        # Dummy Arg for pytest -v
 args = argParser.parse_args()
 
 # Try Fixing bug with this symbol
@@ -141,7 +141,7 @@ def initExecution():
     return tickerOption, executeOption
 
 # Main function
-def main(testing=False, testBuild=False):
+def main(testing=False, testBuild=False, downloadOnly=False):
     global screenCounter, screenResultsCounter, stockDict, loadedStockData, keyboardInterruptEvent, loadCount, maLength, newlyListedOnly
     screenCounter = multiprocessing.Value('i', 1)
     screenResultsCounter = multiprocessing.Value('i', 0)
@@ -163,15 +163,18 @@ def main(testing=False, testBuild=False):
     saveResults = pd.DataFrame(columns=[
                                'Stock', 'Consolidating', 'Breaking-Out', 'LTP', 'Volume', 'MA-Signal', 'RSI', 'Trend', 'Pattern'])
 
-    if not testBuild:
+    
+    if testBuild:
+        tickerOption, executeOption = 1, 0
+    elif downloadOnly:
+        tickerOption, executeOption = 12, 2
+    else:
         try:
             tickerOption, executeOption = initExecution()
         except KeyboardInterrupt:
             input(colorText.BOLD + colorText.FAIL +
                 "[+] Press any key to Exit!" + colorText.END)
             sys.exit(0)
-    else:
-        tickerOption, executeOption = 1, 0
 
     if executeOption == 4:
         try:
@@ -234,7 +237,7 @@ def main(testing=False, testBuild=False):
             sys.exit(0)
 
         if not Utility.tools.isTradingTime() and configManager.cacheEnabled and not loadedStockData and not testing:
-            Utility.tools.loadStockData(stockDict)
+            Utility.tools.loadStockData(stockDict, configManager)
             loadedStockData = True
         loadCount = len(stockDict)
 
@@ -242,7 +245,7 @@ def main(testing=False, testBuild=False):
               "[+] Starting Stock Screening.. Press Ctrl+C to stop!\n")
 
         items = [(executeOption, reversalOption, maLength, daysForLowestVolume, minRSI, maxRSI, respChartPattern, insideBarToLookback, len(listStockCodes),
-                  configManager, fetcher, screener, candlePatterns, stock, newlyListedOnly)
+                  configManager, fetcher, screener, candlePatterns, stock, newlyListedOnly, downloadOnly)
                  for stock in listStockCodes]
 
         tasks_queue = multiprocessing.JoinableQueue()
@@ -353,7 +356,7 @@ def main(testing=False, testBuild=False):
                 stockDict, configManager, loadCount)
 
         Utility.tools.setLastScreenedResults(screenResults)
-        if not testBuild:
+        if not testBuild and not downloadOnly:
             Utility.tools.promptSaveResults(saveResults)
             print(colorText.BOLD + colorText.WARN +
                 "[+] Note: Trend calculation is based on number of days recent to screen as per your configuration." + colorText.END)
@@ -371,11 +374,15 @@ if __name__ == "__main__":
     if args.testbuild:
         print(colorText.BOLD + colorText.FAIL +"[+] Started in TestBuild mode!" + colorText.END)
         main(testBuild=True)
+    elif args.download:
+        print(colorText.BOLD + colorText.FAIL +"[+] Download ONLY mode! Stocks will not be screened!" + colorText.END)
+        main(downloadOnly=True)
     else:
         try:
             while True:
                 main()
         except Exception as e:
+            raise e
             if isDevVersion == OTAUpdater.developmentVersion:
                 raise(e)
             input(colorText.BOLD + colorText.FAIL +

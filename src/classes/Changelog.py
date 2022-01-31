@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.32"
+VERSION = "1.34"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -153,6 +153,13 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 [1.32]
 1. Performance Optimization.
 2. Minor Improvements.
+3. Argument added for Data download only : run screenipy.exe -d
 
+[1.33]
+1. Alternate Data source added.
+2. Workflow added to create cache data on cloud.
+
+[1.34]
+1. New Reversal - Narrow Range : Try Option 6 > 6
 --- END ---
 ''' + colorText.END
