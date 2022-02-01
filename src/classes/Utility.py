@@ -95,13 +95,18 @@ class tools:
         return ((openTime <= curr <= closeTime) and (0 <= curr.weekday() <= 4))
 
     def saveStockData(stockDict, configManager, loadCount):
-        today_date = datetime.date.today().strftime("%d%m%y")
-        cache_file = "stock_data_" + str(today_date) + ".pkl"
+        curr = datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
+        openTime = curr.replace(hour=9, minute=15)
+        cache_date = datetime.date.today()  # for monday to friday
         weekday = datetime.date.today().weekday()
-        if weekday == 5 or weekday == 6:
-            last_friday = datetime.datetime.today() - datetime.timedelta(days=weekday - 4)
-            last_friday = last_friday.strftime("%d%m%y")
-            cache_file = "stock_data_" + str(last_friday) + ".pkl"
+        if curr < openTime:  # for monday to friday before 9:15
+            cache_date = datetime.datetime.today() - datetime.timedelta(1)
+        if weekday == 0 and curr < openTime:  # for monday before 9:15
+            cache_date = datetime.datetime.today() - datetime.timedelta(3)
+        if weekday == 5 or weekday == 6:  # for saturday and sunday
+            cache_date = datetime.datetime.today() - datetime.timedelta(days=weekday - 4)
+        cache_date = cache_date.strftime("%d%m%y")
+        cache_file = "stock_data_" + str(cache_date) + ".pkl"
         configManager.deleteStockData(excludeFile=cache_file)
 
         if not os.path.exists(cache_file) or len(stockDict) > (loadCount+1):
@@ -120,17 +125,16 @@ class tools:
     def loadStockData(stockDict, configManager):
         curr = datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
         openTime = curr.replace(hour=9, minute=15)
-        today_date = datetime.date.today().strftime("%d%m%y")
-        cache_file = "stock_data_" + str(today_date) + ".pkl"
+        last_cached_date = datetime.date.today()  # for monday to friday after 3:30
         weekday = datetime.date.today().weekday()
-        if weekday == 5 or weekday == 6:
-            last_friday = datetime.datetime.today() - datetime.timedelta(days=weekday - 4)
-            last_friday = last_friday.strftime("%d%m%y")
-            cache_file = "stock_data_" + str(last_friday) + ".pkl"
+        if curr < openTime:  # for monday to friday before 9:15
+            last_cached_date = datetime.datetime.today() - datetime.timedelta(1)
+        if weekday == 5 or weekday == 6:  # for saturday and sunday
+            last_cached_date = datetime.datetime.today() - datetime.timedelta(days=weekday - 4)
         if weekday == 0 and curr < openTime:  # for monday before 9:15
-            last_friday = datetime.datetime.today() - datetime.timedelta(3)
-            last_friday = last_friday.strftime("%d%m%y")
-            cache_file = "stock_data_" + str(last_friday) + ".pkl"
+            last_cached_date = datetime.datetime.today() - datetime.timedelta(3)
+        last_cached_date = last_cached_date.strftime("%d%m%y")
+        cache_file = "stock_data_" + str(last_cached_date) + ".pkl"
         if os.path.exists(cache_file):
             with open(cache_file, 'rb') as f:
                 try:
