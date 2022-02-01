@@ -3,16 +3,17 @@
 
 Celebrating more than 1,000 Downloads - Thank You for your support <3
 
-1. Alternate Data Source added over Cloud for faster After-Market Analysis!
-2. Major BugFixes for **Pattern Detection** - IPO Base Breakout.
+1. New Reversal Dection added - **Narrow Range** - Try `Option 6 > 6`
+2. Alternate Data Source for faster After-Market Analysis - Optimizations and  Cosmetic Updates!
 3. **Experimental** Feature - **VCP** Detection - Try `Option > 7 > 4`
 4. **New Tickers Group** - Screen only for **Newly Listed IPOs** (Last 1 Yr)
 5. **Volume Spread Analysis** : BugFixes for catching Bullish Reversals - Try `Option > 6 > 5`
+6. BugFixes for Stock Data caching with [@swarpatel23](https://github.com/swarpatel23)
 
 ## Downloads
-* For :desktop_computer: **Windows** users, download **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.33/screenipy.exe)**
-* For :penguin: **Linux** users, download **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.33/screenipy.bin)**
-* For :apple: **MacOS** users, download **[screenipy.run](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.33/screenipy.run)** ([Read Installation Guide](https://github.com/pranjal-joshi/Screeni-py/blob/main/INSTALLATION.md#for-macos))
+* For :desktop_computer: **Windows** users, download **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.34/screenipy.exe)**
+* For :penguin: **Linux** users, download **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.34/screenipy.bin)**
+* For :apple: **MacOS** users, download **[screenipy.run](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.34/screenipy.run)** ([Read Installation Guide](https://github.com/pranjal-joshi/Screeni-py/blob/main/INSTALLATION.md#for-macos))
 
 ## How to use?
 

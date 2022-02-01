@@ -161,8 +161,14 @@ class StockConsumer(multiprocessing.Process):
                 isVSA = False
                 if not (executeOption == 7 and respChartPattern < 3):
                     isVSA = screener.validateVolumeSpreadAnalysis(processedData, screeningDictionary, saveDictionary)
-                if maLength is not None and executeOption == 6:
+                if maLength is not None and executeOption == 6 and reversalOption == 4:
                     isMaSupport = screener.findReversalMA(fullData, screeningDictionary, saveDictionary, maLength)
+
+                with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
+                    if maLength is not None and executeOption == 6 and reversalOption == 6:
+                        isNR = screener.validateNarrowRange(processedData, screeningDictionary, saveDictionary, nr=maLength)
+                    else:
+                        isNR = screener.validateNarrowRange(processedData, screeningDictionary, saveDictionary)
 
                 isVCP = False
                 if respChartPattern == 4:
@@ -201,6 +207,9 @@ class StockConsumer(multiprocessing.Process):
                             self.screenResultsCounter.value += 1
                             return screeningDictionary, saveDictionary
                         elif reversalOption == 5 and isVSA and saveDictionary['Pattern'] in CandlePatterns.reversalPatternsBullish:
+                            self.screenResultsCounter.value += 1
+                            return screeningDictionary, saveDictionary
+                        elif reversalOption == 6 and isNR:
                             self.screenResultsCounter.value += 1
                             return screeningDictionary, saveDictionary
                     if executeOption == 7 and isLtpValid:
