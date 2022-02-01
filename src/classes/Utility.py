@@ -13,6 +13,7 @@ import pytz
 import pickle
 import requests
 import pandas as pd
+from alive_progress import alive_bar
 from tabulate import tabulate
 from classes.ColorText import colorText
 from classes.Changelog import VERSION, changelog
@@ -156,13 +157,24 @@ class tools:
                 print(colorText.BOLD + colorText.FAIL +
                       "[+] After-Market Stock Data is not cached.." + colorText.END)
                 print(colorText.BOLD + colorText.GREEN +
-                      "[+] Downloading cache from Screenipy server for faster processing, This may take a while.." + colorText.END)
+                      "[+] Downloading cache from Screenipy server for faster processing, Please Wait.." + colorText.END)
                 try:
+                    chunksize = 1024*1024*1
+                    filesize = int(int(resp.headers.get('content-length'))/chunksize)
+                    bar, spinner = tools.getProgressbarStyle()
                     f = open(cache_file, 'wb')
-                    f.write(resp.content)
+                    dl = 0
+                    with alive_bar(filesize, bar=bar, spinner=spinner, manual=True) as progressbar:
+                        for data in resp.iter_content(chunk_size=chunksize):
+                            dl += 1
+                            f.write(data)
+                            progressbar(dl/filesize)
+                            if dl >= filesize:
+                                progressbar(1.0)
                     f.close()
                 except Exception as e:
                     print("[!] Download Error - " + str(e))
+                print("")
                 tools.loadStockData(stockDict, configManager)
             else:
                 print(colorText.BOLD + colorText.FAIL +
@@ -253,3 +265,11 @@ class tools:
             input(colorText.BOLD + colorText.FAIL +
                   "\n[+] Invalid Option Selected. Press Any Key to Continue..." + colorText.END)
             return (None, None)
+
+    def getProgressbarStyle():
+        bar = 'smooth'
+        spinner = 'waves'
+        if 'Windows' in platform.platform():
+            bar = 'classic2'
+            spinner = 'dots_recur'
+        return bar, spinner
