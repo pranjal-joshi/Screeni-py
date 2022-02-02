@@ -283,11 +283,7 @@ def main(testing=False, testBuild=False, downloadOnly=False):
             try:
                 numStocks = len(listStockCodes)
                 print(colorText.END+colorText.BOLD)
-                bar = 'smooth'
-                spinner = 'waves'
-                if 'Windows' in platform.platform():
-                    bar = 'classic2'
-                    spinner = 'dots_recur'
+                bar, spinner = Utility.tools.getProgressbarStyle()
                 with alive_bar(numStocks, bar=bar, spinner=spinner) as progressbar:
                     while numStocks:
                         result = results_queue.get()

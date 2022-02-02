@@ -13,6 +13,7 @@ import pytz
 import pickle
 import requests
 import pandas as pd
+from alive_progress import alive_bar
 from tabulate import tabulate
 from classes.ColorText import colorText
 from classes.Changelog import VERSION, changelog
@@ -95,13 +96,18 @@ class tools:
         return ((openTime <= curr <= closeTime) and (0 <= curr.weekday() <= 4))
 
     def saveStockData(stockDict, configManager, loadCount):
-        today_date = datetime.date.today().strftime("%d%m%y")
-        cache_file = "stock_data_" + str(today_date) + ".pkl"
+        curr = datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
+        openTime = curr.replace(hour=9, minute=15)
+        cache_date = datetime.date.today()  # for monday to friday
         weekday = datetime.date.today().weekday()
-        if weekday == 5 or weekday == 6:
-            last_friday = datetime.datetime.today() - datetime.timedelta(days=weekday - 4)
-            last_friday = last_friday.strftime("%d%m%y")
-            cache_file = "stock_data_" + str(last_friday) + ".pkl"
+        if curr < openTime:  # for monday to friday before 9:15
+            cache_date = datetime.datetime.today() - datetime.timedelta(1)
+        if weekday == 0 and curr < openTime:  # for monday before 9:15
+            cache_date = datetime.datetime.today() - datetime.timedelta(3)
+        if weekday == 5 or weekday == 6:  # for saturday and sunday
+            cache_date = datetime.datetime.today() - datetime.timedelta(days=weekday - 4)
+        cache_date = cache_date.strftime("%d%m%y")
+        cache_file = "stock_data_" + str(cache_date) + ".pkl"
         configManager.deleteStockData(excludeFile=cache_file)
 
         if not os.path.exists(cache_file) or len(stockDict) > (loadCount+1):
@@ -118,13 +124,18 @@ class tools:
                   "=> Already Cached." + colorText.END)
 
     def loadStockData(stockDict, configManager):
-        today_date = datetime.date.today().strftime("%d%m%y")
-        cache_file = "stock_data_" + str(today_date) + ".pkl"
+        curr = datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
+        openTime = curr.replace(hour=9, minute=15)
+        last_cached_date = datetime.date.today()  # for monday to friday after 3:30
         weekday = datetime.date.today().weekday()
-        if weekday == 5 or weekday == 6:
-            last_friday = datetime.datetime.today() - datetime.timedelta(days=weekday - 4)
-            last_friday = last_friday.strftime("%d%m%y")
-            cache_file = "stock_data_" + str(last_friday) + ".pkl"
+        if curr < openTime:  # for monday to friday before 9:15
+            last_cached_date = datetime.datetime.today() - datetime.timedelta(1)
+        if weekday == 5 or weekday == 6:  # for saturday and sunday
+            last_cached_date = datetime.datetime.today() - datetime.timedelta(days=weekday - 4)
+        if weekday == 0 and curr < openTime:  # for monday before 9:15
+            last_cached_date = datetime.datetime.today() - datetime.timedelta(3)
+        last_cached_date = last_cached_date.strftime("%d%m%y")
+        cache_file = "stock_data_" + str(last_cached_date) + ".pkl"
         if os.path.exists(cache_file):
             with open(cache_file, 'rb') as f:
                 try:
@@ -143,17 +154,31 @@ class tools:
             cache_url = "https://raw.github.com/pranjal-joshi/Screeni-py/actions-data-download/actions-data-download/" + cache_file
             resp = requests.get(cache_url, stream=True)
             if resp.status_code == 200:
-                print(colorText.BOLD + colorText.FAIL +"[+] After-Market Stock Data is not cached.." + colorText.END)
-                print(colorText.BOLD + colorText.GREEN +"[+] Downloading cache from Screenipy server for faster processing, This may take a while.." + colorText.END)
+                print(colorText.BOLD + colorText.FAIL +
+                      "[+] After-Market Stock Data is not cached.." + colorText.END)
+                print(colorText.BOLD + colorText.GREEN +
+                      "[+] Downloading cache from Screenipy server for faster processing, Please Wait.." + colorText.END)
                 try:
+                    chunksize = 1024*1024*1
+                    filesize = int(int(resp.headers.get('content-length'))/chunksize)
+                    bar, spinner = tools.getProgressbarStyle()
                     f = open(cache_file, 'wb')
-                    f.write(resp.content)
+                    dl = 0
+                    with alive_bar(filesize, bar=bar, spinner=spinner, manual=True) as progressbar:
+                        for data in resp.iter_content(chunk_size=chunksize):
+                            dl += 1
+                            f.write(data)
+                            progressbar(dl/filesize)
+                            if dl >= filesize:
+                                progressbar(1.0)
                     f.close()
                 except Exception as e:
                     print("[!] Download Error - " + str(e))
+                print("")
                 tools.loadStockData(stockDict, configManager)
             else:
-                print(colorText.BOLD + colorText.FAIL +"[+] Cache unavailable on Screenipy server, Continuing.." + colorText.END)
+                print(colorText.BOLD + colorText.FAIL +
+                      "[+] Cache unavailable on Screenipy server, Continuing.." + colorText.END)
 
     # Save screened results to excel
     def promptSaveResults(df):
@@ -199,7 +224,8 @@ class tools:
                                              '\n[+] Enter MA Length (E.g. 50 or 200): ' + colorText.END))
                         return resp, maLength
                     except ValueError:
-                        print(colorText.BOLD + colorText.FAIL + '\n[!] Invalid Input! MA Lenght should be single integer value!\n' + colorText.END)
+                        print(colorText.BOLD + colorText.FAIL +
+                              '\n[!] Invalid Input! MA Lenght should be single integer value!\n' + colorText.END)
                         raise ValueError
                 elif resp == 6:
                     try:
@@ -230,7 +256,7 @@ class tools:
                 return (resp, candles)
             if resp == 3:
                 percent = float(input(colorText.BOLD + colorText.WARN +
-                                    "\n[+] Enter Percentage within which all MA/EMAs should be (Ideal: 1-2%)? : " + colorText.END))
+                                      "\n[+] Enter Percentage within which all MA/EMAs should be (Ideal: 1-2%)? : " + colorText.END))
                 return (resp, percent/100.0)
             if resp >= 0 and resp <= 4:
                 return resp, 0
@@ -239,3 +265,11 @@ class tools:
             input(colorText.BOLD + colorText.FAIL +
                   "\n[+] Invalid Option Selected. Press Any Key to Continue..." + colorText.END)
             return (None, None)
+
+    def getProgressbarStyle():
+        bar = 'smooth'
+        spinner = 'waves'
+        if 'Windows' in platform.platform():
+            bar = 'classic2'
+            spinner = 'dots_recur'
+        return bar, spinner

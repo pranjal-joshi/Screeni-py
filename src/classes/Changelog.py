@@ -161,5 +161,8 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [1.34]
 1. New Reversal - Narrow Range : Try Option 6 > 6
+2. Cache loading fixes for Pre-Market timings. Refer PR #103
+3. Progressbar added for Alternate Source Cache Download.
+
 --- END ---
 ''' + colorText.END
