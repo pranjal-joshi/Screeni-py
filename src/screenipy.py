@@ -237,7 +237,7 @@ def main(testing=False, testBuild=False, downloadOnly=False):
             sys.exit(0)
 
         if not Utility.tools.isTradingTime() and configManager.cacheEnabled and not loadedStockData and not testing:
-            Utility.tools.loadStockData(stockDict, configManager)
+            Utility.tools.loadStockData(stockDict, configManager, proxyServer)
             loadedStockData = True
         loadCount = len(stockDict)
 

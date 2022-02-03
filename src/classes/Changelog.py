@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.34"
+VERSION = "1.35"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -163,6 +163,10 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 1. New Reversal - Narrow Range : Try Option 6 > 6
 2. Cache loading fixes for Pre-Market timings. Refer PR #103
 3. Progressbar added for Alternate Source Cache Download.
+
+[1.35]
+1. Separate Algorithms for NR depending on Live/After-Market hours.
+2. NRx results fixed in Momentum Gainer Screening.
 
 --- END ---
 ''' + colorText.END
