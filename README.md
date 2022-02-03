@@ -26,7 +26,7 @@ Screenipy is totally customizable and it can screen stocks with the settings tha
 * Linux & Mac users should make sure that the `screenipy.bin or screenipy.run` is having `execute` permission.
 * **Run** the file. Following window will appear after a brief delay.
 
-![home](https://raw.githubusercontent.com/pranjal-joshi/Screeni-py/new-features/screenshots/home.png)
+![home](https://raw.githubusercontent.com/pranjal-joshi/Screeni-py/new-features/screenshots/screenipy_demo.gif)
 
 * **Configure** the parameters as per your requirement using `Option > 8`.
 
