@@ -123,7 +123,7 @@ class tools:
             print(colorText.BOLD + colorText.GREEN +
                   "=> Already Cached." + colorText.END)
 
-    def loadStockData(stockDict, configManager):
+    def loadStockData(stockDict, configManager, proxyServer=None):
         curr = datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
         openTime = curr.replace(hour=9, minute=15)
         last_cached_date = datetime.date.today()  # for monday to friday after 3:30
@@ -152,7 +152,10 @@ class tools:
                           "[+] Stock Cache Corrupted." + colorText.END)
         elif ConfigManager.default_period == configManager.period and ConfigManager.default_duration == configManager.duration:
             cache_url = "https://raw.github.com/pranjal-joshi/Screeni-py/actions-data-download/actions-data-download/" + cache_file
-            resp = requests.get(cache_url, stream=True)
+            if proxyServer is not None:
+                resp = requests.get(cache_url, stream=True, proxies={'https':proxyServer})
+            else:
+                resp = requests.get(cache_url, stream=True)
             if resp.status_code == 200:
                 print(colorText.BOLD + colorText.FAIL +
                       "[+] After-Market Stock Data is not cached.." + colorText.END)
@@ -175,7 +178,7 @@ class tools:
                 except Exception as e:
                     print("[!] Download Error - " + str(e))
                 print("")
-                tools.loadStockData(stockDict, configManager)
+                tools.loadStockData(stockDict, configManager, proxyServer)
             else:
                 print(colorText.BOLD + colorText.FAIL +
                       "[+] Cache unavailable on Screenipy server, Continuing.." + colorText.END)
