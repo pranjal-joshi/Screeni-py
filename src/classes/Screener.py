@@ -10,6 +10,7 @@ import math
 import numpy as np
 import pandas as pd
 import talib
+import classes.Utility as Utility
 from scipy.signal import argrelextrema
 from classes.ColorText import colorText
 from classes.SuppressOutput import SuppressOutput
@@ -435,20 +436,30 @@ class tools:
 
     # Find NRx range for Reversal
     def validateNarrowRange(self, data, screenDict, saveDict, nr=4):
-        rangeData = data.head(nr+1)[1:]
-        now_candle = data.head(1)
-        rangeData['Range'] = abs(rangeData['Close'] - rangeData['Open'])
-        recent = rangeData.head(1)
-        if recent['Range'][0] == rangeData.describe()['Range']['min']:
-            if self.getCandleType(recent) and now_candle['Close'][0] >= recent['Close'][0]:
-                screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + f'Buy-NR{nr}' + colorText.END
-                saveDict['Pattern'] = f'Buy-NR{nr}'
+        if Utility.tools.isTradingTime():
+            rangeData = data.head(nr+1)[1:]
+            now_candle = data.head(1)
+            rangeData['Range'] = abs(rangeData['Close'] - rangeData['Open'])
+            recent = rangeData.head(1)
+            if recent['Range'][0] == rangeData.describe()['Range']['min']:
+                if self.getCandleType(recent) and now_candle['Close'][0] >= recent['Close'][0]:
+                    screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + f'Buy-NR{nr}' + colorText.END
+                    saveDict['Pattern'] = f'Buy-NR{nr}'
+                    return True
+                elif not self.getCandleType(recent) and now_candle['Close'][0] <= recent['Close'][0]:
+                    screenDict['Pattern'] = colorText.BOLD + colorText.FAIL + f'Sell-NR{nr}' + colorText.END
+                    saveDict['Pattern'] = f'Sell-NR{nr}'
+                    return True
+            return False
+        else:
+            rangeData = data.head(nr)
+            rangeData['Range'] = abs(rangeData['Close'] - rangeData['Open'])
+            recent = rangeData.head(1)
+            if recent['Range'][0] == rangeData.describe()['Range']['min']:
+                screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + f'NR{nr}' + colorText.END
+                saveDict['Pattern'] = f'NR{nr}'
                 return True
-            elif not self.getCandleType(recent) and now_candle['Close'][0] <= recent['Close'][0]:
-                screenDict['Pattern'] = colorText.BOLD + colorText.FAIL + f'Sell-NR{nr}' + colorText.END
-                saveDict['Pattern'] = f'Sell-NR{nr}'
-                return True
-        return False
+            return False
 
     # Validate VPC
     def validateVCP(self, data, screenDict, saveDict, stockName=None, window=3, percentageFromTop=3):

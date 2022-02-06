@@ -16,7 +16,7 @@ pyinstaller
 pytest-mock
 pytoml
 retrying
-scipy
+scipy==1.7.3
 ta-lib
 tabulate
 yfinance

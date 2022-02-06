@@ -156,6 +156,12 @@ class StockConsumer(multiprocessing.Process):
                 else:
                     isInsideBar = screener.validateInsideBar(processedData, screeningDictionary, saveDictionary, chartPattern=respChartPattern, daysToLookback=insideBarToLookback)
                 
+                with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
+                    if maLength is not None and executeOption == 6 and reversalOption == 6:
+                        isNR = screener.validateNarrowRange(processedData, screeningDictionary, saveDictionary, nr=maLength)
+                    else:
+                        isNR = screener.validateNarrowRange(processedData, screeningDictionary, saveDictionary)
+                
                 isMomentum = screener.validateMomentum(processedData, screeningDictionary, saveDictionary)
                 
                 isVSA = False
@@ -163,12 +169,6 @@ class StockConsumer(multiprocessing.Process):
                     isVSA = screener.validateVolumeSpreadAnalysis(processedData, screeningDictionary, saveDictionary)
                 if maLength is not None and executeOption == 6 and reversalOption == 4:
                     isMaSupport = screener.findReversalMA(fullData, screeningDictionary, saveDictionary, maLength)
-
-                with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
-                    if maLength is not None and executeOption == 6 and reversalOption == 6:
-                        isNR = screener.validateNarrowRange(processedData, screeningDictionary, saveDictionary, nr=maLength)
-                    else:
-                        isNR = screener.validateNarrowRange(processedData, screeningDictionary, saveDictionary)
 
                 isVCP = False
                 if respChartPattern == 4:
