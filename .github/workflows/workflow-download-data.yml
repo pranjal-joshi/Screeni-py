@@ -3,7 +3,7 @@
 # Created             :   24/01/2022
 # Description         :   Workflow for downloading pickled stock data to cloud [Use this when yfinance causing an issue]
 
-name: Screenipy Data - Download After-Market Closing Data
+name: Screenipy Data - After-Market Data Gen
 on:
   workflow_dispatch:
     inputs:
@@ -15,6 +15,7 @@ on:
   - cron: '02 10 * * 1-5'
 
 jobs:
+
   Download_Stock_Data:
 
     runs-on: windows-latest
@@ -64,3 +65,11 @@ jobs:
         git add actions-data-download/stock_data_*.pkl --force
         git commit -m "GitHub Action Workflow - Market Data Download (Default Config)"
         git push
+
+    - name: Squash Commits (Python)
+      shell: cmd
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git checkout actions-data-download
+        python .github/workflows/squash.py
