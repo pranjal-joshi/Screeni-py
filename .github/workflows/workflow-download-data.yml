@@ -55,7 +55,7 @@ jobs:
         rmdir /s /q actions-data-download
         mkdir actions-data-download
         python src/screenipy.py -d
-        copy "stock_data_*.pkl" "actions-data-download"     
+        copy "stock_data_*.pkl" "actions-data-download"
 
     - name: Push Pickle Data
       run: |
