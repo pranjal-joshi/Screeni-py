@@ -19,6 +19,7 @@ for l in lines:
         cnt += 1
     else:
         hash = l.split(" ")[0]
+        cnt -= 1
         break
 
 
@@ -27,10 +28,10 @@ print(f"[+] Reset hash = {hash}")
 print(f"git reset --soft {hash}")
 print(f"git commit -m '{c_msg}'")
 
-if cnt == 0:
+if cnt < 1:
     print("[+] No Need to Squash! Skipping...")
 else:
-    os.system(f"git reset --soft {hash}")
+    os.system(f"git reset --soft HEAD~{cnt}")
     os.system(f"git commit -m '{c_msg}'")
     os.system(f"git push")
 
