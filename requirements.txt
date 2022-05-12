@@ -21,6 +21,7 @@ ta-lib
 tabulate
 yfinance
 alive-progress==1.6.2
+Pillow
 altgraph # Installed as dependency for pyinstaller
 atomicwrites # Installed as dependency for pytest
 attrs # Installed as dependency for pytest
