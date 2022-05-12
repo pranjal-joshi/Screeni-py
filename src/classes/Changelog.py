@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.35"
+VERSION = "1.36"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -167,6 +167,9 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 [1.35]
 1. Separate Algorithms for NR depending on Live/After-Market hours.
 2. NRx results fixed in Momentum Gainer Screening.
+
+[1.36]
+1. Updated CSV URLs to New NSE Site. (#113)
 
 --- END ---
 ''' + colorText.END
