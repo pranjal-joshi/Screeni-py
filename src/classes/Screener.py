@@ -12,6 +12,7 @@ import pandas as pd
 import talib
 import classes.Utility as Utility
 from scipy.signal import argrelextrema
+from scipy.stats import linregress
 from classes.ColorText import colorText
 from classes.SuppressOutput import SuppressOutput
 
@@ -433,6 +434,62 @@ class tools:
         if len(data) < daysToLookback and (recent['Close'][0] != np.nan and recent['Close'][0] > 0):
             return True
         return False
+
+    # Find stocks approching to long term trendlines
+    def findTrendlines(self, data, screenDict, saveDict, percentage = 0.05):
+        period = int(''.join(c for c in self.configManager.period if c.isdigit()))
+        if len(data) < period:
+            return False
+
+        data = data[::-1]
+        data['Number'] = np.arange(len(data))+1
+        data_high = data.copy()
+        data_low = data.copy()
+        points = 30
+
+        ''' Ignoring the Resitance for long-term purpose
+        while len(data_high) > points:
+            slope, intercept, r_value, p_value, std_err = linregress(x=data_high['Number'], y=data_high['High'])
+            data_high = data_high.loc[data_high['High'] > slope * data_high['Number'] + intercept]
+        slope, intercept, r_value, p_value, std_err = linregress(x=data_high['Number'], y=data_high['Close'])
+        data['Resistance'] = slope * data['Number'] + intercept
+        '''
+
+        while len(data_low) > points:
+            slope, intercept, r_value, p_value, std_err = linregress(x=data_low['Number'], y=data_low['Low'])
+            data_low = data_low.loc[data_low['Low'] < slope * data_low['Number'] + intercept]
+        
+        slope, intercept, r_value, p_value, std_err = linregress(x=data_low['Number'], y=data_low['Close'])
+        data['Support'] = slope * data['Number'] + intercept
+        now = data.tail(1)
+
+        limit_upper = now['Support'][0].item() + (now['Support'][0].item() * percentage)
+        limit_lower = now['Support'][0].item() - (now['Support'][0].item() * percentage)
+
+        if limit_lower < now['Close'][0].item() < limit_upper and slope > 0.15:
+            screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + 'Trendline-Support' + colorText.END
+            saveDict['Pattern'] = 'Trendline-Support'
+            return True
+
+        ''' Plots for debugging
+        import matplotlib.pyplot as plt
+        fig, ax1 = plt.subplots(figsize=(15,10))
+        color = 'tab:green'
+        xdate = [x.date() for x in data.index]
+        ax1.set_xlabel('Date', color=color)
+        ax1.plot(xdate, data.Close, label="close", color=color)
+        ax1.tick_params(axis='x', labelcolor=color)
+
+        ax2 = ax1.twiny() # ax2 and ax1 will have common y axis and different x axis, twiny
+        ax2.plot(data.Number, data.Resistance, label="Res")
+        ax2.plot(data.Number, data.Support, label="Sup")
+
+        plt.legend()
+        plt.grid()
+        plt.show()
+        '''
+        return False
+
 
     # Find NRx range for Reversal
     def validateNarrowRange(self, data, screenDict, saveDict, nr=4):
