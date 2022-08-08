@@ -6,3 +6,5 @@ __pycache__/
 .vscode/
 *.xlsx
 *.pkl
+*.spec
+.DS_Store

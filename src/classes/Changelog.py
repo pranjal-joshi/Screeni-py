@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.36"
+VERSION = "1.37"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -170,6 +170,9 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [1.36]
 1. Updated CSV URLs to New NSE Site. (#113)
+
+[1.37]
+1. New Chart Pattern -> Buy at Trendline : Try Option 7 > 5
 
 --- END ---
 ''' + colorText.END

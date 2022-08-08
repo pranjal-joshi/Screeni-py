@@ -175,6 +175,11 @@ class StockConsumer(multiprocessing.Process):
                     with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
                         isVCP = screener.validateVCP(fullData, screeningDictionary, saveDictionary)
 
+                isBuyingTrendline = False
+                if executeOption == 7 and respChartPattern == 5:
+                    with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
+                        isBuyingTrendline = screener.findTrendlines(fullData, screeningDictionary, saveDictionary)
+
                 with self.screenResultsCounter.get_lock():
                     if executeOption == 0:
                         self.screenResultsCounter.value += 1
@@ -223,6 +228,9 @@ class StockConsumer(multiprocessing.Process):
                             self.screenResultsCounter.value += 1
                             return screeningDictionary, saveDictionary
                         if isVCP:
+                            self.screenResultsCounter.value += 1
+                            return screeningDictionary, saveDictionary
+                        if isBuyingTrendline:
                             self.screenResultsCounter.value += 1
                             return screeningDictionary, saveDictionary
         except KeyboardInterrupt:
