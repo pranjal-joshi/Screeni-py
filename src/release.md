@@ -3,6 +3,7 @@
 
 Celebrating more than 1,000 Downloads - Thank You for your support <3
 
+1. **Artificial Intelligence for Nifty 50 Prediction** - Try `Select Index for Screening > N`
 1. New Screener **Buy at Trendline** added for Swing/Mid/Long term traders - Try `Option > 7 > 5`.
 2. **Narrow Range** Algorithm chages dynamically with Live/Post-Market Analysis - Try `Option 6 > 6`
 3. Alternate Data Source for faster After-Market Analysis - Optimizations and  Cosmetic Updates!
@@ -12,9 +13,9 @@ Celebrating more than 1,000 Downloads - Thank You for your support <3
 ## Downloads
 | Operating System | Executable File |
 | :-: | --- |
- | ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white) | **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.37/screenipy.exe)** |
-| ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) | **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.37/screenipy.bin)** |
-| ![Mac OS](https://img.shields.io/badge/mac%20os-D3D3D3?style=for-the-badge&logo=apple&logoColor=000000) | **[screenipy.run](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.37/screenipy.run)** ([Read Installation Guide](https://github.com/pranjal-joshi/Screeni-py/blob/main/INSTALLATION.md#for-macos)) |
+ | ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white) | **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.38/screenipy.exe)** |
+| ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) | **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.38/screenipy.bin)** |
+| ![Mac OS](https://img.shields.io/badge/mac%20os-D3D3D3?style=for-the-badge&logo=apple&logoColor=000000) | **[screenipy.run](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.38/screenipy.run)** ([Read Installation Guide](https://github.com/pranjal-joshi/Screeni-py/blob/main/INSTALLATION.md#for-macos)) |
 
 ## How to use?
 

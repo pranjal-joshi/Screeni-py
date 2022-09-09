@@ -58,6 +58,7 @@ jobs:
               cd /home/runner/work/Screeni-py/Screeni-py/
               python -m pip install --upgrade pip
               pip install -r requirements.txt
+              pip install ta-lib==0.4.24
             TEST_BUILD: |
               /home/runner/work/Screeni-py/Screeni-py/dist/screenipy.bin --testbuild
               exit $?
@@ -73,6 +74,7 @@ jobs:
               brew install ta-lib
               python -m pip install --upgrade pip
               pip install -r requirements.txt
+              pip install ta-lib==0.4.24
             TEST_BUILD: |
               /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy.run --testbuild
               exit $?

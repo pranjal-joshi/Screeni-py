@@ -10,11 +10,15 @@ import math
 import numpy as np
 import pandas as pd
 import talib
+import joblib
+import keras
 import classes.Utility as Utility
+from sklearn.preprocessing import StandardScaler
 from scipy.signal import argrelextrema
 from scipy.stats import linregress
 from classes.ColorText import colorText
 from classes.SuppressOutput import SuppressOutput
+
 
 # Exception for newly listed stocks with candle nos < daysToLookback
 class StockDataNotAdequate(Exception):
@@ -555,6 +559,25 @@ class tools:
             import traceback
             print(traceback.format_exc())
         return False
+
+    def getNiftyPrediction(self, data, proxyServer):
+        import warnings 
+        warnings.filterwarnings("ignore")
+        model, pkl = Utility.tools.getNiftyModel(proxyServer=proxyServer)
+        with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
+            data = data[pkl['columns']]
+            data = pkl['scaler'].transform([data])
+            pred = model.predict(data)[0]
+        if pred > 0.5:
+            out = colorText.BOLD + colorText.FAIL + "BEARISH" + colorText.END + colorText.BOLD
+            sug = "Hold your Shorts!"
+        else:
+            out = colorText.BOLD + colorText.GREEN + "BULLISH" + colorText.END + colorText.BOLD
+            sug = "Stay Long!"
+        if not Utility.tools.isClosingHour():
+            print(colorText.BOLD + colorText.WARN + "Note: The AI prediction should be executed After 3 PM or Near to Closing time as the Prediction Accuracy is based on the Closing price!" + colorText.END)
+        print(colorText.BOLD + colorText.BLUE + "\n" + "[+] Nifty AI Prediction -> " + colorText.END + colorText.BOLD + "Market may Close {} next day! {}".format(out, sug) + colorText.END)
+        return pred
 
     '''
     # Find out trend for days to lookback

@@ -133,6 +133,18 @@ class tools:
                   colorText.END, end='\r', flush=True)
         return data
 
+    # Get Daily Nifty 50 Index:
+    def fetchLatestNiftyDaily(self):
+        data = yf.download(
+                tickers="^NSEI",
+                period='1d',
+                interval='1d',
+                progress=False,
+                timeout=10
+            )
+        data = data.iloc[-1]
+        return data
+
     # Load stockCodes from the watchlist.xlsx
     def fetchWatchlist(self):
         createTemplate = False
