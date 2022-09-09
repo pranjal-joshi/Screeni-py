@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.37"
+VERSION = "1.38"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -173,6 +173,9 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [1.37]
 1. New Chart Pattern -> Buy at Trendline : Try Option 7 > 5
+
+[1.38]
+1. Added AI based predictions for Nifty closing on next day : Select Index for Screening > N
 
 --- END ---
 ''' + colorText.END
