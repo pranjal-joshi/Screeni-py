@@ -69,6 +69,7 @@ def initExecution():
     print(colorText.BOLD + colorText.WARN +
           '[+] Select an Index for Screening: ' + colorText.END)
     print(colorText.BOLD + '''     W > Screen stocks from my own Watchlist
+     N > Nifty Prediction using Artifical Intelligence
      0 > Screen stocks by the stock names (NSE Stock Code)
      1 > Nifty 50               2 > Nifty Next 50           3 > Nifty 100
      4 > Nifty 200              5 > Nifty 500               6 > Nifty Smallcap 50
@@ -82,7 +83,7 @@ def initExecution():
         print(colorText.END, end='')
         if tickerOption == '':
             tickerOption = 12
-        elif tickerOption == 'W' or tickerOption == 'w':
+        elif tickerOption == 'W' or tickerOption == 'w' or tickerOption == 'N' or tickerOption == 'n':
             tickerOption = tickerOption.upper()
         else:
             tickerOption = int(tickerOption)
@@ -99,6 +100,9 @@ def initExecution():
         sleep(2)
         Utility.tools.clearScreen()
         return initExecution()
+
+    if tickerOption == 'N':
+        return tickerOption, 0
 
     if tickerOption and tickerOption != 'W':
         print(colorText.BOLD + colorText.WARN +
@@ -219,7 +223,7 @@ def main(testing=False, testBuild=False, downloadOnly=False):
               "[+] Press any key to Exit!" + colorText.END)
         sys.exit(0)
 
-    if tickerOption == 'W' or (tickerOption >= 0 and tickerOption < 14):
+    if tickerOption == 'W' or tickerOption == 'N' or (tickerOption >= 0 and tickerOption < 14):
         configManager.getConfig(ConfigManager.parser)
         try:
             if tickerOption == 'W':
@@ -228,6 +232,14 @@ def main(testing=False, testBuild=False, downloadOnly=False):
                     input(colorText.BOLD + colorText.FAIL +
                           f'[+] Create the watchlist.xlsx file in {os.getcwd()} and Restart the Program!' + colorText.END)
                     sys.exit(0)
+            elif tickerOption == 'N':
+                os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+                prediction = screener.getNiftyPrediction(
+                    data=fetcher.fetchLatestNiftyDaily(), 
+                    proxyServer=proxyServer
+                )
+                input('\nPress any key to Continue...\n')
+                return
             else:
                 listStockCodes = fetcher.fetchStockCodes(tickerOption, proxyServer=proxyServer)
         except urllib.error.URLError:
