@@ -5,6 +5,7 @@
  *  Description         :   Class for managing misc and utility methods
 '''
 
+from genericpath import isfile
 import os
 import sys
 import platform
@@ -12,6 +13,8 @@ import datetime
 import pytz
 import pickle
 import requests
+import time
+import joblib
 import pandas as pd
 from alive_progress import alive_bar
 from tabulate import tabulate
@@ -92,6 +95,12 @@ class tools:
     def isTradingTime():
         curr = datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
         openTime = curr.replace(hour=9, minute=15)
+        closeTime = curr.replace(hour=15, minute=30)
+        return ((openTime <= curr <= closeTime) and (0 <= curr.weekday() <= 4))
+
+    def isClosingHour():
+        curr = datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
+        openTime = curr.replace(hour=15, minute=00)
         closeTime = curr.replace(hour=15, minute=30)
         return ((openTime <= curr <= closeTime) and (0 <= curr.weekday() <= 4))
 
@@ -277,3 +286,41 @@ class tools:
             bar = 'classic2'
             spinner = 'dots_recur'
         return bar, spinner
+
+    def getNiftyModel(proxyServer=None):
+        if os.path.isfile('nifty_model.pkl'):
+            file_age = (time.time() - os.path.getmtime('nifty_model.pkl'))/604800
+            if file_age > 1:
+                download = True
+                os.remove('nifty_model.pkl')
+            else:
+                download = False
+        else:
+            download = True
+        if download:
+            file_url = "https://raw.github.com/pranjal-joshi/Screeni-py/new-features/src/ml/nifty_model.pkl"
+            if proxyServer is not None:
+                resp = requests.get(file_url, stream=True, proxies={'https':proxyServer})
+            else:
+                resp = requests.get(file_url, stream=True)
+            if resp.status_code == 200:
+                print(colorText.BOLD + colorText.GREEN +
+                        "[+] Downloading AI model for Nifty predictions, Please Wait.." + colorText.END)
+                try:
+                    chunksize = 1024*1024*1
+                    filesize = int(int(resp.headers.get('content-length'))/chunksize)
+                    bar, spinner = tools.getProgressbarStyle()
+                    f = open('nifty_model.pkl', 'wb')
+                    dl = 0
+                    with alive_bar(filesize, bar=bar, spinner=spinner, manual=True) as progressbar:
+                        for data in resp.iter_content(chunk_size=chunksize):
+                            dl += 1
+                            f.write(data)
+                            progressbar(dl/filesize)
+                            if dl >= filesize:
+                                progressbar(1.0)
+                    f.close()
+                except Exception as e:
+                    print("[!] Download Error - " + str(e))
+        pkl = joblib.load('nifty_model.pkl')
+        return pkl
