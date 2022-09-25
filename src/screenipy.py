@@ -4,6 +4,10 @@
 # Pyinstaller compile Linux  : pyinstaller --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas --hidden-import alive-progress
 
 # Keep module imports prior to classes
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+import platform
+import sys
 import classes.Fetcher as Fetcher
 import classes.ConfigManager as ConfigManager
 import classes.Screener as Screener
@@ -15,9 +19,6 @@ from classes.ParallelProcessing import StockConsumer
 from classes.Changelog import VERSION
 from alive_progress import alive_bar
 import argparse
-import os
-import platform
-import sys
 import urllib
 import numpy as np
 import pandas as pd
