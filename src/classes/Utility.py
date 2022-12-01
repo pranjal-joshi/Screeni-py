@@ -20,6 +20,7 @@ import keras
 import pandas as pd
 from alive_progress import alive_bar
 from tabulate import tabulate
+from time import sleep
 from classes.ColorText import colorText
 from classes.Changelog import VERSION, changelog
 import classes.ConfigManager as ConfigManager
@@ -335,3 +336,8 @@ class tools:
         model = keras.models.load_model(files[0])
         pkl = joblib.load(files[1])
         return model, pkl
+
+    def alertSound(beeps=3, delay=0.2):
+        for i in range(beeps):
+            print('\a')
+            sleep(delay)
