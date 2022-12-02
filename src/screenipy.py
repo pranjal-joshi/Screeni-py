@@ -69,8 +69,11 @@ def initExecution():
     global newlyListedOnly
     print(colorText.BOLD + colorText.WARN +
           '[+] Select an Index for Screening: ' + colorText.END)
-    print(colorText.BOLD + '''     W > Screen stocks from my own Watchlist
+    print(colorText.BOLD + '''
+     W > Screen stocks from my own Watchlist
      N > Nifty Prediction using Artifical Intelligence
+     E > Live Index Scan : 5 EMA for Intraday
+
      0 > Screen stocks by the stock names (NSE Stock Code)
      1 > Nifty 50               2 > Nifty Next 50           3 > Nifty 100
      4 > Nifty 200              5 > Nifty 500               6 > Nifty Smallcap 50
@@ -84,7 +87,7 @@ def initExecution():
         print(colorText.END, end='')
         if tickerOption == '':
             tickerOption = 12
-        elif tickerOption == 'W' or tickerOption == 'w' or tickerOption == 'N' or tickerOption == 'n':
+        elif tickerOption == 'W' or tickerOption == 'w' or tickerOption == 'N' or tickerOption == 'n' or tickerOption == 'E' or tickerOption == 'e':
             tickerOption = tickerOption.upper()
         else:
             tickerOption = int(tickerOption)
@@ -102,7 +105,7 @@ def initExecution():
         Utility.tools.clearScreen()
         return initExecution()
 
-    if tickerOption == 'N':
+    if tickerOption == 'N' or tickerOption == 'E':
         return tickerOption, 0
 
     if tickerOption and tickerOption != 'W':
@@ -224,7 +227,7 @@ def main(testing=False, testBuild=False, downloadOnly=False):
               "[+] Press any key to Exit!" + colorText.END)
         sys.exit(0)
 
-    if tickerOption == 'W' or tickerOption == 'N' or (tickerOption >= 0 and tickerOption < 14):
+    if tickerOption == 'W' or tickerOption == 'N' or tickerOption == 'E' or (tickerOption >= 0 and tickerOption < 14):
         configManager.getConfig(ConfigManager.parser)
         try:
             if tickerOption == 'W':
@@ -236,11 +239,41 @@ def main(testing=False, testBuild=False, downloadOnly=False):
             elif tickerOption == 'N':
                 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
                 prediction = screener.getNiftyPrediction(
-                    data=fetcher.fetchLatestNiftyDaily(), 
+                    data=fetcher.fetchLatestNiftyDaily(proxyServer=proxyServer), 
                     proxyServer=proxyServer
                 )
                 input('\nPress any key to Continue...\n')
                 return
+            elif tickerOption == 'E':
+                result_df = pd.DataFrame(columns=['Time','Stock/Index','Action','SL','Target','R:R'])
+                last_signal = {}
+                first_scan = True
+                result_df = screener.monitorFiveEma(        # Dummy scan to avoid blank table on 1st scan
+                        proxyServer=proxyServer,
+                        fetcher=fetcher,
+                        result_df=result_df,
+                        last_signal=last_signal
+                    )
+                try:
+                    while True:
+                        Utility.tools.clearScreen()
+                        last_result_len = len(result_df)
+                        result_df = screener.monitorFiveEma(
+                            proxyServer=proxyServer,
+                            fetcher=fetcher,
+                            result_df=result_df,
+                            last_signal=last_signal
+                        )
+                        print(colorText.BOLD + colorText.WARN + '[+] 5-EMA : Live Intraday Scanner \t' + colorText.END + colorText.FAIL + f'Last Scanned: {datetime.now().strftime("%H:%M:%S")}\n' + colorText.END)
+                        print(tabulate(result_df, headers='keys', tablefmt='psql'))
+                        print('\nPress Ctrl+C to exit.')
+                        if len(result_df) != last_result_len and not first_scan:
+                            Utility.tools.alertSound(beeps=5)
+                        sleep(60)
+                        first_scan = False
+                except KeyboardInterrupt:
+                    input('\nPress any key to Continue...\n')
+                    return
             else:
                 listStockCodes = fetcher.fetchStockCodes(tickerOption, proxyServer=proxyServer)
         except urllib.error.URLError:

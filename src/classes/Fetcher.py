@@ -134,16 +134,53 @@ class tools:
         return data
 
     # Get Daily Nifty 50 Index:
-    def fetchLatestNiftyDaily(self):
+    def fetchLatestNiftyDaily(self, proxyServer=None):
         data = yf.download(
                 tickers="^NSEI",
                 period='1d',
                 interval='1d',
+                proxy=proxyServer,
                 progress=False,
                 timeout=10
             )
         data = data.iloc[-1]
         return data
+
+    # Get Data for Five EMA strategy
+    def fetchFiveEmaData(self, proxyServer=None):
+        nifty_sell = yf.download(
+                tickers="^NSEI",
+                period='5d',
+                interval='5m',
+                proxy=proxyServer,
+                progress=False,
+                timeout=10
+            )
+        banknifty_sell = yf.download(
+                tickers="^NSEBANK",
+                period='5d',
+                interval='5m',
+                proxy=proxyServer,
+                progress=False,
+                timeout=10
+            )
+        nifty_buy = yf.download(
+                tickers="^NSEI",
+                period='5d',
+                interval='15m',
+                proxy=proxyServer,
+                progress=False,
+                timeout=10
+            )
+        banknifty_buy = yf.download(
+                tickers="^NSEBANK",
+                period='5d',
+                interval='15m',
+                proxy=proxyServer,
+                progress=False,
+                timeout=10
+            )
+        return nifty_buy, banknifty_buy, nifty_sell, banknifty_sell
 
     # Load stockCodes from the watchlist.xlsx
     def fetchWatchlist(self):

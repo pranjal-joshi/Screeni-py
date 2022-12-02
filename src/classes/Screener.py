@@ -579,6 +579,79 @@ class tools:
         print(colorText.BOLD + colorText.BLUE + "\n" + "[+] Nifty AI Prediction -> " + colorText.END + colorText.BOLD + "Market may Close {} next day! {}".format(out, sug) + colorText.END)
         return pred
 
+    def monitorFiveEma(self, proxyServer, fetcher, result_df, last_signal, risk_reward = 3):
+        col_names = ['High', 'Low', 'Close', '5EMA']
+        data_list = ['nifty_buy', 'banknifty_buy', 'nifty_sell', 'banknifty_sell']
+
+        data_tuple = fetcher.fetchFiveEmaData()
+        for cnt in range(len(data_tuple)):
+            d = data_tuple[cnt]
+            d['5EMA'] = talib.EMA(d['Close'],timeperiod=5)
+            d = d[col_names]
+            d = d.dropna().round(2)
+
+            with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
+                if 'sell' in data_list[cnt]:
+                    streched = d[(d.Low > d['5EMA']) & (d.Low - d['5EMA'] > 0.5)]
+                    streched['SL'] = streched.High
+                    validate = d[(d.Low.shift(1) > d['5EMA'].shift(1)) & (d.Low.shift(1) - d['5EMA'].shift(1) > 0.5)]
+                    old_index = validate.index
+                else:
+                    mask = (d.High < d['5EMA']) & (d['5EMA'] - d.High > 0.5)  # Buy
+                    streched = d[mask]
+                    streched['SL'] = streched.Low
+                    validate = d.loc[mask.shift(1).fillna(False)]
+                    old_index = validate.index
+            tgt = pd.DataFrame((validate.Close.reset_index(drop=True) - ((streched.SL.reset_index(drop=True) - validate.Close.reset_index(drop=True)) * risk_reward)),columns=['Target'])
+            validate = pd.concat([
+                            validate.reset_index(drop=True),
+                            streched['SL'].reset_index(drop=True),
+                            tgt,
+                            ],
+                        axis=1
+                        )
+            validate = validate.tail(len(old_index))
+            validate = validate.set_index(old_index)
+            if 'sell' in data_list[cnt]:
+                final = validate[validate.Close < validate['5EMA']].tail(1)
+            else:
+                final = validate[validate.Close > validate['5EMA']].tail(1)
+
+
+            if data_list[cnt] not in last_signal:
+                last_signal[data_list[cnt]] = final
+            elif data_list[cnt] in last_signal:
+                try:
+                    condition = last_signal[data_list[cnt]][0]['SL'][0]
+                except KeyError:
+                    condition = last_signal[data_list[cnt]]['SL'][0]
+                # if last_signal[data_list[cnt]] is not final:          # Debug - Shows all conditions
+                if condition != final['SL'][0]:
+                    # Do something with results
+                    try:
+                        result_df = pd.concat([
+                            result_df, 
+                            pd.DataFrame([
+                                    [
+                                        colorText.BLUE + str(final.index[0]) + colorText.END,
+                                        colorText.BOLD + colorText.WARN + data_list[cnt].split('_')[0].upper() + colorText.END,
+                                        (colorText.BOLD + colorText.FAIL + data_list[cnt].split('_')[1].upper() + colorText.END) if 'sell' in data_list[cnt] else (colorText.BOLD + colorText.GREEN + data_list[cnt].split('_')[1].upper() + colorText.END),
+                                        colorText.FAIL + str(final.SL[0]) + colorText.END,
+                                        colorText.GREEN + str(final.Target[0]) + colorText.END,
+                                        f'1:{risk_reward}'
+                                    ]
+                                ], columns=result_df.columns)
+                            ], axis=0)
+                        result_df.reset_index(drop=True, inplace=True)
+                    except Exception as e:
+                        pass
+                    # Then update
+                    last_signal[data_list[cnt]] = [final]
+        result_df.drop_duplicates(keep='last', inplace=True)
+        result_df.sort_values(by='Time', inplace=True)
+        return result_df[::-1]
+            
+
     '''
     # Find out trend for days to lookback
     def validateVCP(data, screenDict, saveDict, daysToLookback=ConfigManager.daysToLookback, stockName=None):
