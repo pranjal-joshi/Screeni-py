@@ -291,10 +291,10 @@ class tools:
         return bar, spinner
 
     def getNiftyModel(proxyServer=None):
-        files = ['nifty_model.h5', 'nifty_model.pkl']
+        files = ['nifty_model_v2.h5', 'nifty_model_v2.pkl']
         urls = [
-            "https://raw.github.com/pranjal-joshi/Screeni-py/new-features/src/ml/nifty_model.h5",
-            "https://raw.github.com/pranjal-joshi/Screeni-py/new-features/src/ml/nifty_model.pkl"
+            "https://raw.github.com/pranjal-joshi/Screeni-py/new-features/src/ml/nifty_model_v2.h5",
+            "https://raw.github.com/pranjal-joshi/Screeni-py/new-features/src/ml/nifty_model_v2.pkl"
         ]
         if os.path.isfile(files[0]) and os.path.isfile(files[1]):
             file_age = (time.time() - os.path.getmtime(files[0]))/604800
@@ -314,7 +314,7 @@ class tools:
                     resp = requests.get(file_url, stream=True)
                 if resp.status_code == 200:
                     print(colorText.BOLD + colorText.GREEN +
-                            "[+] Downloading AI model for Nifty predictions, Please Wait.." + colorText.END)
+                            "[+] Downloading AI model (v2) for Nifty predictions, Please Wait.." + colorText.END)
                     try:
                         chunksize = 1024*1024*1
                         filesize = int(int(resp.headers.get('content-length'))/chunksize)
@@ -336,6 +336,16 @@ class tools:
         model = keras.models.load_model(files[0])
         pkl = joblib.load(files[1])
         return model, pkl
+
+    def getSigmoidConfidence(x):
+        out_min, out_max = 0, 100
+        if x > 0.5:
+            in_min = 0.50001
+            in_max = 1
+        else:
+            in_min = 0
+            in_max = 0.5
+        return round(((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min),3)
 
     def alertSound(beeps=3, delay=0.2):
         for i in range(beeps):

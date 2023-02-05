@@ -69,7 +69,7 @@ jobs:
   # Job to create PR
   Create-Pull-Request:
 
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     needs: [Test-Source]
 
     steps:
