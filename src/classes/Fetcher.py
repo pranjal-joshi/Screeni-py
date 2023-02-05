@@ -137,13 +137,12 @@ class tools:
     def fetchLatestNiftyDaily(self, proxyServer=None):
         data = yf.download(
                 tickers="^NSEI",
-                period='1d',
+                period='5d',
                 interval='1d',
                 proxy=proxyServer,
                 progress=False,
                 timeout=10
             )
-        data = data.iloc[-1]
         return data
 
     # Get Data for Five EMA strategy

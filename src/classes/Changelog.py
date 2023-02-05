@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.39"
+VERSION = "1.40"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -179,6 +179,9 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [1.39]
 1. Intraday Live Scanner - 5 EMA for Indices : Try Option `E`
+
+[1.40]
+1. Nifty AI Prediction - Model Accuracy Enhanced by new preprocessing - Better Gap predictions
 
 --- END ---
 ''' + colorText.END
