@@ -566,17 +566,25 @@ class tools:
         model, pkl = Utility.tools.getNiftyModel(proxyServer=proxyServer)
         with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
             data = data[pkl['columns']]
+            ### v2 Preprocessing
+            data['High'] = data['High'].pct_change() * 100
+            data['Low'] = data['Low'].pct_change() * 100
+            data['Open'] = data['Open'].pct_change() * 100
+            data['Close'] = data['Close'].pct_change() * 100
+            data = data.iloc[-1] 
+            ###
             data = pkl['scaler'].transform([data])
             pred = model.predict(data)[0]
         if pred > 0.5:
             out = colorText.BOLD + colorText.FAIL + "BEARISH" + colorText.END + colorText.BOLD
-            sug = "Hold your Shorts!"
+            sug = "Hold your Short position!"
         else:
             out = colorText.BOLD + colorText.GREEN + "BULLISH" + colorText.END + colorText.BOLD
-            sug = "Stay Long!"
+            sug = "Stay Bullish!"
         if not Utility.tools.isClosingHour():
             print(colorText.BOLD + colorText.WARN + "Note: The AI prediction should be executed After 3 PM or Near to Closing time as the Prediction Accuracy is based on the Closing price!" + colorText.END)
-        print(colorText.BOLD + colorText.BLUE + "\n" + "[+] Nifty AI Prediction -> " + colorText.END + colorText.BOLD + "Market may Close {} next day! {}".format(out, sug) + colorText.END)
+        print(colorText.BOLD + colorText.BLUE + "\n" + "[+] Nifty AI Prediction -> " + colorText.END + colorText.BOLD + "Market may Open {} next day! {}".format(out, sug) + colorText.END)
+        print(colorText.BOLD + colorText.BLUE + "\n" + "[+] Nifty AI Prediction -> " + colorText.END + "Probability/Strength of Prediction = {}%".format(Utility.tools.getSigmoidConfidence(pred[0])))
         return pred
 
     def monitorFiveEma(self, proxyServer, fetcher, result_df, last_signal, risk_reward = 3):
