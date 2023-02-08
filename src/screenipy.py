@@ -71,7 +71,7 @@ def initExecution():
           '[+] Select an Index for Screening: ' + colorText.END)
     print(colorText.BOLD + '''
      W > Screen stocks from my own Watchlist
-     N > Nifty Prediction using Artifical Intelligence
+     N > Nifty Prediction using Artifical Intelligence (Use for Gap-Up/Gap-Down/BTST/STBT)
      E > Live Index Scan : 5 EMA for Intraday
 
      0 > Screen stocks by the stock names (NSE Stock Code)
