@@ -3,17 +3,18 @@
 
 Celebrating more than 4,000 Downloads - Thank You for your support <3
 
-1. **Artificial Intelligence v2 for Nifty 50 Prediction** - Predict Next day Gap-up/down - Try `Select Index for Screening > N`
-2. **Live Intraday Scanner - 5 EMA** - Try `Select Index for Screening > E` - Get live trade entries for Nifty and BankNifty with notifications!
-3. New Screener **Buy at Trendline** added for Swing/Mid/Long term traders - Try `Option > 7 > 5`.
-4. Alternate Data Source for faster After-Market Analysis - Optimizations and  Cosmetic Updates!
+1. Fixed NSE stock code source after NSE website migration in April 2023.
+2. **Artificial Intelligence v2 for Nifty 50 Prediction** - Predict Next day Gap-up/down - Try `Select Index for Screening > N`
+3. **Live Intraday Scanner - 5 EMA** - Try `Select Index for Screening > E` - Get live trade entries for Nifty and BankNifty with notifications!
+4. New Screener **Buy at Trendline** added for Swing/Mid/Long term traders - Try `Option > 7 > 5`.
+5. Alternate Data Source for faster After-Market Analysis - Optimizations and  Cosmetic Updates!
 
 ## Downloads
 | Operating System | Executable File |
 | :-: | --- |
- | ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white) | **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.40/screenipy.exe)** |
-| ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) | **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.40/screenipy.bin)** |
-| ![Mac OS](https://img.shields.io/badge/mac%20os-D3D3D3?style=for-the-badge&logo=apple&logoColor=000000) | **[screenipy.run](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.40/screenipy.run)** ([Read Installation Guide](https://github.com/pranjal-joshi/Screeni-py/blob/main/INSTALLATION.md#for-macos)) |
+ | ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white) | **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.41/screenipy.exe)** |
+| ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) | **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.41/screenipy.bin)** |
+| ![Mac OS](https://img.shields.io/badge/mac%20os-D3D3D3?style=for-the-badge&logo=apple&logoColor=000000) | **[screenipy.run](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.41/screenipy.run)** ([Read Installation Guide](https://github.com/pranjal-joshi/Screeni-py/blob/main/INSTALLATION.md#for-macos)) |
 
 ## How to use?
 

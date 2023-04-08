@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.40"
+VERSION = "1.41"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -182,6 +182,9 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [1.40]
 1. Nifty AI Prediction - Model Accuracy Enhanced by new preprocessing - Better Gap predictions
+
+[1.41]
+1. Fetching of Stock Codes list fixed after NSE migration to newer website - Not using `nsetools` anymore
 
 --- END ---
 ''' + colorText.END

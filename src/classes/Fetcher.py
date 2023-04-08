@@ -37,7 +37,8 @@ class tools:
     def fetchCodes(self, tickerOption,proxyServer=None):
         listStockCodes = []
         if tickerOption == 12:
-            return list(nse.get_stock_codes(cached=False))[1:]
+            url = "https://archives.nseindia.com/content/equities/EQUITY_L.csv"
+            return list(pd.read_csv(url)['SYMBOL'].values)
         tickerMapping = {
             1: "https://archives.nseindia.com/content/indices/ind_nifty50list.csv",
             2: "https://archives.nseindia.com/content/indices/ind_niftynext50list.csv",
