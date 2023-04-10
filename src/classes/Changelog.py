@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.33"
+VERSION = "1.41"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -158,6 +158,33 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 [1.33]
 1. Alternate Data source added.
 2. Workflow added to create cache data on cloud.
+
+[1.34]
+1. New Reversal - Narrow Range : Try Option 6 > 6
+2. Cache loading fixes for Pre-Market timings. Refer PR #103
+3. Progressbar added for Alternate Source Cache Download.
+
+[1.35]
+1. Separate Algorithms for NR depending on Live/After-Market hours.
+2. NRx results fixed in Momentum Gainer Screening.
+
+[1.36]
+1. Updated CSV URLs to New NSE Site. (#113)
+
+[1.37]
+1. New Chart Pattern -> Buy at Trendline : Try Option 7 > 5
+
+[1.38]
+1. Added AI based predictions for Nifty closing on next day : Select Index for Screening > N
+
+[1.39]
+1. Intraday Live Scanner - 5 EMA for Indices : Try Option `E`
+
+[1.40]
+1. Nifty AI Prediction - Model Accuracy Enhanced by new preprocessing - Better Gap predictions
+
+[1.41]
+1. Fetching of Stock Codes list fixed after NSE migration to newer website - Not using `nsetools` anymore
 
 --- END ---
 ''' + colorText.END

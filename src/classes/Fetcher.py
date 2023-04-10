@@ -37,19 +37,21 @@ class tools:
     def fetchCodes(self, tickerOption,proxyServer=None):
         listStockCodes = []
         if tickerOption == 12:
-            return list(nse.get_stock_codes(cached=False))[1:]
+            url = "https://archives.nseindia.com/content/equities/EQUITY_L.csv"
+            return list(pd.read_csv(url)['SYMBOL'].values)
         tickerMapping = {
-            1: "https://www1.nseindia.com/content/indices/ind_nifty50list.csv",
-            2: "https://www1.nseindia.com/content/indices/ind_niftynext50list.csv",
-            3: "https://www1.nseindia.com/content/indices/ind_nifty100list.csv",
-            4: "https://www1.nseindia.com/content/indices/ind_nifty200list.csv",
-            5: "https://www1.nseindia.com/content/indices/ind_nifty500list.csv",
-            6: "https://www1.nseindia.com/content/indices/ind_niftysmallcap50list.csv",
-            7: "https://www1.nseindia.com/content/indices/ind_niftysmallcap100list.csv",
-            8: "https://www1.nseindia.com/content/indices/ind_niftysmallcap250list.csv",
-            9: "https://www1.nseindia.com/content/indices/ind_niftymidcap50list.csv",
-            10: "https://www1.nseindia.com/content/indices/ind_niftymidcap100list.csv",
-            11: "https://www1.nseindia.com/content/indices/ind_niftymidcap150list.csv"}
+            1: "https://archives.nseindia.com/content/indices/ind_nifty50list.csv",
+            2: "https://archives.nseindia.com/content/indices/ind_niftynext50list.csv",
+            3: "https://archives.nseindia.com/content/indices/ind_nifty100list.csv",
+            4: "https://archives.nseindia.com/content/indices/ind_nifty200list.csv",
+            5: "https://archives.nseindia.com/content/indices/ind_nifty500list.csv",
+            6: "https://archives.nseindia.com/content/indices/ind_niftysmallcap50list.csv",
+            7: "https://archives.nseindia.com/content/indices/ind_niftysmallcap100list.csv",
+            8: "https://archives.nseindia.com/content/indices/ind_niftysmallcap250list.csv",
+            9: "https://archives.nseindia.com/content/indices/ind_niftymidcap50list.csv",
+            10: "https://archives.nseindia.com/content/indices/ind_niftymidcap100list.csv",
+            11: "https://archives.nseindia.com/content/indices/ind_niftymidcap150list.csv"
+        }
 
         url = tickerMapping.get(tickerOption)
 
@@ -131,6 +133,54 @@ class tools:
             print(colorText.BOLD + colorText.GREEN + "=> Done!" +
                   colorText.END, end='\r', flush=True)
         return data
+
+    # Get Daily Nifty 50 Index:
+    def fetchLatestNiftyDaily(self, proxyServer=None):
+        data = yf.download(
+                tickers="^NSEI",
+                period='5d',
+                interval='1d',
+                proxy=proxyServer,
+                progress=False,
+                timeout=10
+            )
+        return data
+
+    # Get Data for Five EMA strategy
+    def fetchFiveEmaData(self, proxyServer=None):
+        nifty_sell = yf.download(
+                tickers="^NSEI",
+                period='5d',
+                interval='5m',
+                proxy=proxyServer,
+                progress=False,
+                timeout=10
+            )
+        banknifty_sell = yf.download(
+                tickers="^NSEBANK",
+                period='5d',
+                interval='5m',
+                proxy=proxyServer,
+                progress=False,
+                timeout=10
+            )
+        nifty_buy = yf.download(
+                tickers="^NSEI",
+                period='5d',
+                interval='15m',
+                proxy=proxyServer,
+                progress=False,
+                timeout=10
+            )
+        banknifty_buy = yf.download(
+                tickers="^NSEBANK",
+                period='5d',
+                interval='15m',
+                proxy=proxyServer,
+                progress=False,
+                timeout=10
+            )
+        return nifty_buy, banknifty_buy, nifty_sell, banknifty_sell
 
     # Load stockCodes from the watchlist.xlsx
     def fetchWatchlist(self):

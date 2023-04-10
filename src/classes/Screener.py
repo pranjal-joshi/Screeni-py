@@ -10,9 +10,15 @@ import math
 import numpy as np
 import pandas as pd
 import talib
+import joblib
+import keras
+import classes.Utility as Utility
+from sklearn.preprocessing import StandardScaler
 from scipy.signal import argrelextrema
+from scipy.stats import linregress
 from classes.ColorText import colorText
 from classes.SuppressOutput import SuppressOutput
+
 
 # Exception for newly listed stocks with candle nos < daysToLookback
 class StockDataNotAdequate(Exception):
@@ -433,6 +439,89 @@ class tools:
             return True
         return False
 
+    # Find stocks approching to long term trendlines
+    def findTrendlines(self, data, screenDict, saveDict, percentage = 0.05):
+        period = int(''.join(c for c in self.configManager.period if c.isdigit()))
+        if len(data) < period:
+            return False
+
+        data = data[::-1]
+        data['Number'] = np.arange(len(data))+1
+        data_high = data.copy()
+        data_low = data.copy()
+        points = 30
+
+        ''' Ignoring the Resitance for long-term purpose
+        while len(data_high) > points:
+            slope, intercept, r_value, p_value, std_err = linregress(x=data_high['Number'], y=data_high['High'])
+            data_high = data_high.loc[data_high['High'] > slope * data_high['Number'] + intercept]
+        slope, intercept, r_value, p_value, std_err = linregress(x=data_high['Number'], y=data_high['Close'])
+        data['Resistance'] = slope * data['Number'] + intercept
+        '''
+
+        while len(data_low) > points:
+            slope, intercept, r_value, p_value, std_err = linregress(x=data_low['Number'], y=data_low['Low'])
+            data_low = data_low.loc[data_low['Low'] < slope * data_low['Number'] + intercept]
+        
+        slope, intercept, r_value, p_value, std_err = linregress(x=data_low['Number'], y=data_low['Close'])
+        data['Support'] = slope * data['Number'] + intercept
+        now = data.tail(1)
+
+        limit_upper = now['Support'][0].item() + (now['Support'][0].item() * percentage)
+        limit_lower = now['Support'][0].item() - (now['Support'][0].item() * percentage)
+
+        if limit_lower < now['Close'][0].item() < limit_upper and slope > 0.15:
+            screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + 'Trendline-Support' + colorText.END
+            saveDict['Pattern'] = 'Trendline-Support'
+            return True
+
+        ''' Plots for debugging
+        import matplotlib.pyplot as plt
+        fig, ax1 = plt.subplots(figsize=(15,10))
+        color = 'tab:green'
+        xdate = [x.date() for x in data.index]
+        ax1.set_xlabel('Date', color=color)
+        ax1.plot(xdate, data.Close, label="close", color=color)
+        ax1.tick_params(axis='x', labelcolor=color)
+
+        ax2 = ax1.twiny() # ax2 and ax1 will have common y axis and different x axis, twiny
+        ax2.plot(data.Number, data.Resistance, label="Res")
+        ax2.plot(data.Number, data.Support, label="Sup")
+
+        plt.legend()
+        plt.grid()
+        plt.show()
+        '''
+        return False
+
+
+    # Find NRx range for Reversal
+    def validateNarrowRange(self, data, screenDict, saveDict, nr=4):
+        if Utility.tools.isTradingTime():
+            rangeData = data.head(nr+1)[1:]
+            now_candle = data.head(1)
+            rangeData['Range'] = abs(rangeData['Close'] - rangeData['Open'])
+            recent = rangeData.head(1)
+            if recent['Range'][0] == rangeData.describe()['Range']['min']:
+                if self.getCandleType(recent) and now_candle['Close'][0] >= recent['Close'][0]:
+                    screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + f'Buy-NR{nr}' + colorText.END
+                    saveDict['Pattern'] = f'Buy-NR{nr}'
+                    return True
+                elif not self.getCandleType(recent) and now_candle['Close'][0] <= recent['Close'][0]:
+                    screenDict['Pattern'] = colorText.BOLD + colorText.FAIL + f'Sell-NR{nr}' + colorText.END
+                    saveDict['Pattern'] = f'Sell-NR{nr}'
+                    return True
+            return False
+        else:
+            rangeData = data.head(nr)
+            rangeData['Range'] = abs(rangeData['Close'] - rangeData['Open'])
+            recent = rangeData.head(1)
+            if recent['Range'][0] == rangeData.describe()['Range']['min']:
+                screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + f'NR{nr}' + colorText.END
+                saveDict['Pattern'] = f'NR{nr}'
+                return True
+            return False
+
     # Validate VPC
     def validateVCP(self, data, screenDict, saveDict, stockName=None, window=3, percentageFromTop=3):
         try:
@@ -470,6 +559,106 @@ class tools:
             import traceback
             print(traceback.format_exc())
         return False
+
+    def getNiftyPrediction(self, data, proxyServer):
+        import warnings 
+        warnings.filterwarnings("ignore")
+        model, pkl = Utility.tools.getNiftyModel(proxyServer=proxyServer)
+        with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
+            data = data[pkl['columns']]
+            ### v2 Preprocessing
+            data['High'] = data['High'].pct_change() * 100
+            data['Low'] = data['Low'].pct_change() * 100
+            data['Open'] = data['Open'].pct_change() * 100
+            data['Close'] = data['Close'].pct_change() * 100
+            data = data.iloc[-1] 
+            ###
+            data = pkl['scaler'].transform([data])
+            pred = model.predict(data)[0]
+        if pred > 0.5:
+            out = colorText.BOLD + colorText.FAIL + "BEARISH" + colorText.END + colorText.BOLD
+            sug = "Hold your Short position!"
+        else:
+            out = colorText.BOLD + colorText.GREEN + "BULLISH" + colorText.END + colorText.BOLD
+            sug = "Stay Bullish!"
+        if not Utility.tools.isClosingHour():
+            print(colorText.BOLD + colorText.WARN + "Note: The AI prediction should be executed After 3 PM or Near to Closing time as the Prediction Accuracy is based on the Closing price!" + colorText.END)
+        print(colorText.BOLD + colorText.BLUE + "\n" + "[+] Nifty AI Prediction -> " + colorText.END + colorText.BOLD + "Market may Open {} next day! {}".format(out, sug) + colorText.END)
+        print(colorText.BOLD + colorText.BLUE + "\n" + "[+] Nifty AI Prediction -> " + colorText.END + "Probability/Strength of Prediction = {}%".format(Utility.tools.getSigmoidConfidence(pred[0])))
+        return pred
+
+    def monitorFiveEma(self, proxyServer, fetcher, result_df, last_signal, risk_reward = 3):
+        col_names = ['High', 'Low', 'Close', '5EMA']
+        data_list = ['nifty_buy', 'banknifty_buy', 'nifty_sell', 'banknifty_sell']
+
+        data_tuple = fetcher.fetchFiveEmaData()
+        for cnt in range(len(data_tuple)):
+            d = data_tuple[cnt]
+            d['5EMA'] = talib.EMA(d['Close'],timeperiod=5)
+            d = d[col_names]
+            d = d.dropna().round(2)
+
+            with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
+                if 'sell' in data_list[cnt]:
+                    streched = d[(d.Low > d['5EMA']) & (d.Low - d['5EMA'] > 0.5)]
+                    streched['SL'] = streched.High
+                    validate = d[(d.Low.shift(1) > d['5EMA'].shift(1)) & (d.Low.shift(1) - d['5EMA'].shift(1) > 0.5)]
+                    old_index = validate.index
+                else:
+                    mask = (d.High < d['5EMA']) & (d['5EMA'] - d.High > 0.5)  # Buy
+                    streched = d[mask]
+                    streched['SL'] = streched.Low
+                    validate = d.loc[mask.shift(1).fillna(False)]
+                    old_index = validate.index
+            tgt = pd.DataFrame((validate.Close.reset_index(drop=True) - ((streched.SL.reset_index(drop=True) - validate.Close.reset_index(drop=True)) * risk_reward)),columns=['Target'])
+            validate = pd.concat([
+                            validate.reset_index(drop=True),
+                            streched['SL'].reset_index(drop=True),
+                            tgt,
+                            ],
+                        axis=1
+                        )
+            validate = validate.tail(len(old_index))
+            validate = validate.set_index(old_index)
+            if 'sell' in data_list[cnt]:
+                final = validate[validate.Close < validate['5EMA']].tail(1)
+            else:
+                final = validate[validate.Close > validate['5EMA']].tail(1)
+
+
+            if data_list[cnt] not in last_signal:
+                last_signal[data_list[cnt]] = final
+            elif data_list[cnt] in last_signal:
+                try:
+                    condition = last_signal[data_list[cnt]][0]['SL'][0]
+                except KeyError:
+                    condition = last_signal[data_list[cnt]]['SL'][0]
+                # if last_signal[data_list[cnt]] is not final:          # Debug - Shows all conditions
+                if condition != final['SL'][0]:
+                    # Do something with results
+                    try:
+                        result_df = pd.concat([
+                            result_df, 
+                            pd.DataFrame([
+                                    [
+                                        colorText.BLUE + str(final.index[0]) + colorText.END,
+                                        colorText.BOLD + colorText.WARN + data_list[cnt].split('_')[0].upper() + colorText.END,
+                                        (colorText.BOLD + colorText.FAIL + data_list[cnt].split('_')[1].upper() + colorText.END) if 'sell' in data_list[cnt] else (colorText.BOLD + colorText.GREEN + data_list[cnt].split('_')[1].upper() + colorText.END),
+                                        colorText.FAIL + str(final.SL[0]) + colorText.END,
+                                        colorText.GREEN + str(final.Target[0]) + colorText.END,
+                                        f'1:{risk_reward}'
+                                    ]
+                                ], columns=result_df.columns)
+                            ], axis=0)
+                        result_df.reset_index(drop=True, inplace=True)
+                    except Exception as e:
+                        pass
+                    # Then update
+                    last_signal[data_list[cnt]] = [final]
+        result_df.drop_duplicates(keep='last', inplace=True)
+        result_df.sort_values(by='Time', inplace=True)
+        return result_df[::-1]
+            
 
     '''
     # Find out trend for days to lookback

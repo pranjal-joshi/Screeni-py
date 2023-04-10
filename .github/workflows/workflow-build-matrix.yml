@@ -41,7 +41,7 @@ jobs:
             OUT_PATH: .\dist\screenipy.exe
             FILE_NAME: screenipy.exe
           
-          - os: ubuntu-18.04
+          - os: ubuntu-20.04
             TARGET: Linux
             CMD_BUILD: |
               pyinstaller --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas --hidden-import alive-progress --hidden-import alive_progress
@@ -58,6 +58,7 @@ jobs:
               cd /home/runner/work/Screeni-py/Screeni-py/
               python -m pip install --upgrade pip
               pip install -r requirements.txt
+              pip install ta-lib==0.4.24
             TEST_BUILD: |
               /home/runner/work/Screeni-py/Screeni-py/dist/screenipy.bin --testbuild
               exit $?
@@ -73,6 +74,7 @@ jobs:
               brew install ta-lib
               python -m pip install --upgrade pip
               pip install -r requirements.txt
+              pip install ta-lib==0.4.24
             TEST_BUILD: |
               /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy.run --testbuild
               exit $?

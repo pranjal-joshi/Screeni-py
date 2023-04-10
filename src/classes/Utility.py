@@ -5,6 +5,8 @@
  *  Description         :   Class for managing misc and utility methods
 '''
 
+from decimal import DivisionByZero
+from genericpath import isfile
 import os
 import sys
 import platform
@@ -12,8 +14,13 @@ import datetime
 import pytz
 import pickle
 import requests
+import time
+import joblib
+import keras
 import pandas as pd
+from alive_progress import alive_bar
 from tabulate import tabulate
+from time import sleep
 from classes.ColorText import colorText
 from classes.Changelog import VERSION, changelog
 import classes.ConfigManager as ConfigManager
@@ -94,14 +101,25 @@ class tools:
         closeTime = curr.replace(hour=15, minute=30)
         return ((openTime <= curr <= closeTime) and (0 <= curr.weekday() <= 4))
 
+    def isClosingHour():
+        curr = datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
+        openTime = curr.replace(hour=15, minute=00)
+        closeTime = curr.replace(hour=15, minute=30)
+        return ((openTime <= curr <= closeTime) and (0 <= curr.weekday() <= 4))
+
     def saveStockData(stockDict, configManager, loadCount):
-        today_date = datetime.date.today().strftime("%d%m%y")
-        cache_file = "stock_data_" + str(today_date) + ".pkl"
+        curr = datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
+        openTime = curr.replace(hour=9, minute=15)
+        cache_date = datetime.date.today()  # for monday to friday
         weekday = datetime.date.today().weekday()
-        if weekday == 5 or weekday == 6:
-            last_friday = datetime.datetime.today() - datetime.timedelta(days=weekday - 4)
-            last_friday = last_friday.strftime("%d%m%y")
-            cache_file = "stock_data_" + str(last_friday) + ".pkl"
+        if curr < openTime:  # for monday to friday before 9:15
+            cache_date = datetime.datetime.today() - datetime.timedelta(1)
+        if weekday == 0 and curr < openTime:  # for monday before 9:15
+            cache_date = datetime.datetime.today() - datetime.timedelta(3)
+        if weekday == 5 or weekday == 6:  # for saturday and sunday
+            cache_date = datetime.datetime.today() - datetime.timedelta(days=weekday - 4)
+        cache_date = cache_date.strftime("%d%m%y")
+        cache_file = "stock_data_" + str(cache_date) + ".pkl"
         configManager.deleteStockData(excludeFile=cache_file)
 
         if not os.path.exists(cache_file) or len(stockDict) > (loadCount+1):
@@ -117,14 +135,19 @@ class tools:
             print(colorText.BOLD + colorText.GREEN +
                   "=> Already Cached." + colorText.END)
 
-    def loadStockData(stockDict, configManager):
-        today_date = datetime.date.today().strftime("%d%m%y")
-        cache_file = "stock_data_" + str(today_date) + ".pkl"
+    def loadStockData(stockDict, configManager, proxyServer=None):
+        curr = datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
+        openTime = curr.replace(hour=9, minute=15)
+        last_cached_date = datetime.date.today()  # for monday to friday after 3:30
         weekday = datetime.date.today().weekday()
-        if weekday == 5 or weekday == 6:
-            last_friday = datetime.datetime.today() - datetime.timedelta(days=weekday - 4)
-            last_friday = last_friday.strftime("%d%m%y")
-            cache_file = "stock_data_" + str(last_friday) + ".pkl"
+        if curr < openTime:  # for monday to friday before 9:15
+            last_cached_date = datetime.datetime.today() - datetime.timedelta(1)
+        if weekday == 5 or weekday == 6:  # for saturday and sunday
+            last_cached_date = datetime.datetime.today() - datetime.timedelta(days=weekday - 4)
+        if weekday == 0 and curr < openTime:  # for monday before 9:15
+            last_cached_date = datetime.datetime.today() - datetime.timedelta(3)
+        last_cached_date = last_cached_date.strftime("%d%m%y")
+        cache_file = "stock_data_" + str(last_cached_date) + ".pkl"
         if os.path.exists(cache_file):
             with open(cache_file, 'rb') as f:
                 try:
@@ -141,19 +164,36 @@ class tools:
                           "[+] Stock Cache Corrupted." + colorText.END)
         elif ConfigManager.default_period == configManager.period and ConfigManager.default_duration == configManager.duration:
             cache_url = "https://raw.github.com/pranjal-joshi/Screeni-py/actions-data-download/actions-data-download/" + cache_file
-            resp = requests.get(cache_url, stream=True)
+            if proxyServer is not None:
+                resp = requests.get(cache_url, stream=True, proxies={'https':proxyServer})
+            else:
+                resp = requests.get(cache_url, stream=True)
             if resp.status_code == 200:
-                print(colorText.BOLD + colorText.FAIL +"[+] After-Market Stock Data is not cached.." + colorText.END)
-                print(colorText.BOLD + colorText.GREEN +"[+] Downloading cache from Screenipy server for faster processing, This may take a while.." + colorText.END)
+                print(colorText.BOLD + colorText.FAIL +
+                      "[+] After-Market Stock Data is not cached.." + colorText.END)
+                print(colorText.BOLD + colorText.GREEN +
+                      "[+] Downloading cache from Screenipy server for faster processing, Please Wait.." + colorText.END)
                 try:
+                    chunksize = 1024*1024*1
+                    filesize = int(int(resp.headers.get('content-length'))/chunksize)
+                    bar, spinner = tools.getProgressbarStyle()
                     f = open(cache_file, 'wb')
-                    f.write(resp.content)
+                    dl = 0
+                    with alive_bar(filesize, bar=bar, spinner=spinner, manual=True) as progressbar:
+                        for data in resp.iter_content(chunk_size=chunksize):
+                            dl += 1
+                            f.write(data)
+                            progressbar(dl/filesize)
+                            if dl >= filesize:
+                                progressbar(1.0)
                     f.close()
                 except Exception as e:
                     print("[!] Download Error - " + str(e))
-                tools.loadStockData(stockDict, configManager)
+                print("")
+                tools.loadStockData(stockDict, configManager, proxyServer)
             else:
-                print(colorText.BOLD + colorText.FAIL +"[+] Cache unavailable on Screenipy server, Continuing.." + colorText.END)
+                print(colorText.BOLD + colorText.FAIL +
+                      "[+] Cache unavailable on Screenipy server, Continuing.." + colorText.END)
 
     # Save screened results to excel
     def promptSaveResults(df):
@@ -189,16 +229,26 @@ class tools:
     3 > Screen for Momentum Gainers (Rising Bullish Momentum)
     4 > Screen for Reversal at Moving Average (Bullish Reversal)
     5 > Screen for Volume Spread Analysis (Bullish VSA Reversal)
+    6 > Screen for Narrow Range (NRx) Reversal
     0 > Cancel
 [+] Select option: """ + colorText.END))
-            if resp >= 0 and resp <= 5:
+            if resp >= 0 and resp <= 6:
                 if resp == 4:
                     try:
                         maLength = int(input(colorText.BOLD + colorText.WARN +
                                              '\n[+] Enter MA Length (E.g. 50 or 200): ' + colorText.END))
                         return resp, maLength
                     except ValueError:
-                        print(colorText.BOLD + colorText.FAIL + '\n[!] Invalid Input! MA Lenght should be single integer value!\n' + colorText.END)
+                        print(colorText.BOLD + colorText.FAIL +
+                              '\n[!] Invalid Input! MA Lenght should be single integer value!\n' + colorText.END)
+                        raise ValueError
+                elif resp == 6:
+                    try:
+                        maLength = int(input(colorText.BOLD + colorText.WARN +
+                                             '\n[+] Enter NR timeframe [Integer Number] (E.g. 4, 7, etc.): ' + colorText.END))
+                        return resp, maLength
+                    except ValueError:
+                        print(colorText.BOLD + colorText.FAIL + '\n[!] Invalid Input! NR timeframe should be single integer value!\n' + colorText.END)
                         raise ValueError
                 return resp, None
             raise ValueError
@@ -213,6 +263,7 @@ class tools:
     2 > Screen for Bearish Inside Bar (Flag) Pattern
     3 > Screen for the Confluence (50 & 200 MA/EMA)
     4 > Screen for VCP (Experimental)
+    5 > Screen for Buying at Trendline (Ideal for Swing/Mid/Long term)
     0 > Cancel
 [+] Select option: """ + colorText.END))
             if resp == 1 or resp == 2:
@@ -221,12 +272,82 @@ class tools:
                 return (resp, candles)
             if resp == 3:
                 percent = float(input(colorText.BOLD + colorText.WARN +
-                                    "\n[+] Enter Percentage within which all MA/EMAs should be (Ideal: 1-2%)? : " + colorText.END))
+                                      "\n[+] Enter Percentage within which all MA/EMAs should be (Ideal: 1-2%)? : " + colorText.END))
                 return (resp, percent/100.0)
-            if resp >= 0 and resp <= 4:
+            if resp >= 0 and resp <= 5:
                 return resp, 0
             raise ValueError
         except ValueError:
             input(colorText.BOLD + colorText.FAIL +
                   "\n[+] Invalid Option Selected. Press Any Key to Continue..." + colorText.END)
             return (None, None)
+
+    def getProgressbarStyle():
+        bar = 'smooth'
+        spinner = 'waves'
+        if 'Windows' in platform.platform():
+            bar = 'classic2'
+            spinner = 'dots_recur'
+        return bar, spinner
+
+    def getNiftyModel(proxyServer=None):
+        files = ['nifty_model_v2.h5', 'nifty_model_v2.pkl']
+        urls = [
+            "https://raw.github.com/pranjal-joshi/Screeni-py/new-features/src/ml/nifty_model_v2.h5",
+            "https://raw.github.com/pranjal-joshi/Screeni-py/new-features/src/ml/nifty_model_v2.pkl"
+        ]
+        if os.path.isfile(files[0]) and os.path.isfile(files[1]):
+            file_age = (time.time() - os.path.getmtime(files[0]))/604800
+            if file_age > 1:
+                download = True
+                os.remove(files[0])
+                os.remove(files[1])
+            else:
+                download = False
+        else:
+            download = True
+        if download:
+            for file_url in urls:
+                if proxyServer is not None:
+                    resp = requests.get(file_url, stream=True, proxies={'https':proxyServer})
+                else:
+                    resp = requests.get(file_url, stream=True)
+                if resp.status_code == 200:
+                    print(colorText.BOLD + colorText.GREEN +
+                            "[+] Downloading AI model (v2) for Nifty predictions, Please Wait.." + colorText.END)
+                    try:
+                        chunksize = 1024*1024*1
+                        filesize = int(int(resp.headers.get('content-length'))/chunksize)
+                        filesize = 1 if not filesize else filesize
+                        bar, spinner = tools.getProgressbarStyle()
+                        f = open(file_url.split('/')[-1], 'wb')
+                        dl = 0
+                        with alive_bar(filesize, bar=bar, spinner=spinner, manual=True) as progressbar:
+                            for data in resp.iter_content(chunk_size=chunksize):
+                                dl += 1
+                                f.write(data)
+                                progressbar(dl/filesize)
+                                if dl >= filesize:
+                                    progressbar(1.0)
+                        f.close()
+                    except Exception as e:
+                        print("[!] Download Error - " + str(e))
+            time.sleep(3)
+        model = keras.models.load_model(files[0])
+        pkl = joblib.load(files[1])
+        return model, pkl
+
+    def getSigmoidConfidence(x):
+        out_min, out_max = 0, 100
+        if x > 0.5:
+            in_min = 0.50001
+            in_max = 1
+        else:
+            in_min = 0
+            in_max = 0.5
+        return round(((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min),3)
+
+    def alertSound(beeps=3, delay=0.2):
+        for i in range(beeps):
+            print('\a')
+            sleep(delay)
