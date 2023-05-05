@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.41"
+VERSION = "1.42"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -185,6 +185,10 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [1.41]
 1. Fetching of Stock Codes list fixed after NSE migration to newer website - Not using `nsetools` anymore
+
+[1.42]
+1. Down trend detection bug fixed
+2. % Change added with LTP
 
 --- END ---
 ''' + colorText.END

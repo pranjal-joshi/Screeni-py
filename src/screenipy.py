@@ -376,14 +376,15 @@ def main(testing=False, testBuild=False, downloadOnly=False):
         screenResults.rename(
             columns={
                 'Trend': f'Trend ({configManager.daysToLookback}Days)',
-                'Breaking-Out': f'Breakout ({configManager.daysToLookback}Days)'
+                'Breaking-Out': f'Breakout ({configManager.daysToLookback}Days)',
+                'LTP': 'LTP (%% Chng)'
             },
             inplace=True
         )
         saveResults.rename(
             columns={
                 'Trend': f'Trend ({configManager.daysToLookback}Days)',
-                'Breaking-Out': f'Breakout ({configManager.daysToLookback}Days)'
+                'Breaking-Out': f'Breakout ({configManager.daysToLookback}Days)',
             },
             inplace=True
         )

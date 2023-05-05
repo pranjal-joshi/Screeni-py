@@ -78,6 +78,15 @@ class tools:
         data = data.fillna(0)
         data = data.replace([np.inf, -np.inf], 0)
         recent = data.head(1)
+
+        pct_change = (data[::-1]['Close'].pct_change() * 100).iloc[-1]
+        if pct_change > 0.2:
+            pct_change = colorText.GREEN + (" (%.1f%%)" % pct_change) + colorText.END
+        elif pct_change < -0.2:
+            pct_change = colorText.FAIL + (" (%.1f%%)" % pct_change) + colorText.END
+        else:
+            pct_change = colorText.WARN + (" (%.1f%%)" % pct_change) + colorText.END
+            
         ltp = round(recent['Close'][0],2)
         saveDict['LTP'] = str(ltp)
         verifyStageTwo = True
@@ -87,9 +96,9 @@ class tools:
             if ltp < (2 * yearlyLow) or ltp < (0.75 * yearlyHigh):
                 verifyStageTwo = False
         if(ltp >= minLTP and ltp <= maxLTP and verifyStageTwo):
-            screenDict['LTP'] = colorText.GREEN + ("%.2f" % ltp) + colorText.END
+            screenDict['LTP'] = colorText.GREEN + ("%.2f" % ltp) + pct_change + colorText.END
             return True
-        screenDict['LTP'] = colorText.FAIL + ("%.2f" % ltp) + colorText.END
+        screenDict['LTP'] = colorText.FAIL + ("%.2f" % ltp) + pct_change + colorText.END
         return False
 
     # Validate if share prices are consolidating
@@ -99,11 +108,11 @@ class tools:
         hc = data.describe()['Close']['max']
         lc = data.describe()['Close']['min']
         if ((hc - lc) <= (hc*percentage/100) and (hc - lc != 0)):
-            screenDict['Consolidating'] = colorText.BOLD + colorText.GREEN + "Range = " + str(round((abs((hc-lc)/hc)*100),2))+"%" + colorText.END
+            screenDict['Consolidating'] = colorText.BOLD + colorText.GREEN + "Range = " + str(round((abs((hc-lc)/hc)*100),1))+"%" + colorText.END
         else:
-            screenDict['Consolidating'] = colorText.BOLD + colorText.FAIL + "Range = " + str(round((abs((hc-lc)/hc)*100),2)) + "%" + colorText.END
-        saveDict['Consolidating'] = str(round((abs((hc-lc)/hc)*100),2))+"%"
-        return round((abs((hc-lc)/hc)*100),2)
+            screenDict['Consolidating'] = colorText.BOLD + colorText.FAIL + "Range = " + str(round((abs((hc-lc)/hc)*100),1)) + "%" + colorText.END
+        saveDict['Consolidating'] = str(round((abs((hc-lc)/hc)*100),1))+"%"
+        return round((abs((hc-lc)/hc)*100),1)
 
     # Validate Moving averages and look for buy/sell signals
     def validateMovingAverages(self, data, screenDict, saveDict, maRange=2.5):
@@ -318,7 +327,7 @@ class tools:
             elif angle >= 60:
                 screenDict['Trend'] = colorText.BOLD + colorText.GREEN + "Strong Up" + colorText.END
                 saveDict['Trend'] = 'Strong Up'
-            elif (angle >= -30 and angle < -61):
+            elif (angle <= -30 and angle > -61):
                 screenDict['Trend'] = colorText.BOLD + colorText.FAIL + "Weak Down" + colorText.END
                 saveDict['Trend'] = 'Weak Down'
             elif angle <= -60:
