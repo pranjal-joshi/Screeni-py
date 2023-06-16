@@ -153,6 +153,14 @@ def test_option_12(mocker, capsys):
     except StopIteration:
         pass
 
+def test_option_14(mocker):
+    try:
+        mocker.patch('builtins.input', side_effect=['14', '0', 'y'])
+        main(testing=True)
+        assert len(screenResults) > 0
+    except StopIteration:
+        pass
+
 
 def test_ota_updater():
     try:
