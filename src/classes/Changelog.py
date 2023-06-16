@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.42"
+VERSION = "1.43"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -189,6 +189,9 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 [1.42]
 1. Down trend detection bug fixed
 2. % Change added with LTP
+
+[1.43]
+1. New Index added - F&O Only stocks
 
 --- END ---
 ''' + colorText.END
