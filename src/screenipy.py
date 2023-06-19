@@ -282,7 +282,6 @@ def main(testing=False, testBuild=False, downloadOnly=False):
                     configManager.minLTP = 0.1
                     configManager.maxLTP = 999999999
                 listStockCodes = fetcher.fetchStockCodes(tickerOption, proxyServer=proxyServer)
-                print(listStockCodes)
         except urllib.error.URLError:
             print(colorText.BOLD + colorText.FAIL +
                   "\n\n[+] Oops! It looks like you don't have an Internet connectivity at the moment! Press any key to exit!" + colorText.END)
