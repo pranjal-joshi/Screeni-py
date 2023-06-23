@@ -8,8 +8,6 @@ st.set_page_config(layout="wide")
 
 st.title('Screeni-py: UI Development')
 
-df = pd.read_pickle('last_screened_results.pkl')
-
 ticker_tape_url = '''
 <!-- TradingView Widget BEGIN -->
 <div class="tradingview-widget-container">
@@ -72,4 +70,8 @@ ticker_tape_url = '''
 components.html(ticker_tape_url)
 
 with st.container():
-    st.markdown(tabulate(df, headers='keys', tablefmt='github'))
+    try:
+      df = pd.read_pickle('last_screened_results.pkl')
+      st.markdown(tabulate(df, headers='keys', tablefmt='github'))
+    except:
+      st.error('No Dataframe found for last_screened_results.pkl')
