@@ -40,7 +40,7 @@ except ImportError:
     subprocess.check_call([sys.executable, "-m", "pip", "install", "--global-option=build_ext", "--global-option=-L/home/appuser/lib/", "--global-option=-I/home/appuser/include/", "ta-lib==0.4.24"])
 finally:
     import talib
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "protobuf==3.20.0"])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "protobuf==3.19.6"])
 
 
 import streamlit as st
