@@ -1,3 +1,19 @@
+from time import sleep
+import os
+
+try:
+    os.system('wget https://jaist.dl.sourceforge.net/project/ta-lib/ta-lib/0.4.0/ta-lib-0.4.0-linux.tar.gz')
+    sleep(1)
+    os.system('tar -xvf ta-lib-0.4.0-linux.tar.gz')
+    sleep(1)
+    os.system('sudo cp libta-lib.so /usr/lib')
+    sleep(1)
+    os.system('sudo cp ta-lib.py /usr/lib/python3/dist-packages')
+    sleep(5)
+except Exception as e:
+    print(e)
+
+
 import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
