@@ -7,6 +7,9 @@ import subprocess
 # check if the library folder already exists, to avoid building everytime you load the pahe
 if not os.path.isdir("/tmp/ta-lib"):
 
+    st.title('Please wait while we`re Unfreezing the system 😉')
+    st.snow()
+
     # Download ta-lib to disk
     with open("/tmp/ta-lib-0.4.0-src.tar.gz", "wb") as file:
         response = requests.get(
