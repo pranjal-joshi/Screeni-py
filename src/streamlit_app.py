@@ -4,6 +4,8 @@ import os
 import sys
 import subprocess
 
+st.set_page_config(layout="wide")
+
 # Set protobuf to python to avoid TF error (This is a Slower infernece)
 os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 os.environ["TERM"] = "xterm"
@@ -130,14 +132,6 @@ def get_extra_inputs(tickerOption, executeOption, c_index=None, c_criteria=None,
             execute_inputs = [tickerOption, executeOption, select_pattern, confluence_percentage, 'N']
         else:
             execute_inputs = [tickerOption, executeOption, select_pattern, 'N']
-
-
-
-            
-
-    
-
-st.set_page_config(layout="wide")
 
 st.markdown("""
         <style>
