@@ -19,7 +19,6 @@ pytoml
 retrying
 scipy==1.7.3
 # ta-lib      # Disabling ta-lib for streamlit app
-TA-Lib
 tabulate
 yfinance==0.1.87
 alive-progress==1.6.2
