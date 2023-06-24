@@ -6,6 +6,7 @@ import subprocess
 
 # Set protobuf to python to avoid TF error (This is a Slower infernece)
 os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
+os.environ["TERM"] = "xterm"
 
 # check if the library folder already exists, to avoid building everytime you load the pahe
 if not os.path.isdir("/tmp/ta-lib"):
