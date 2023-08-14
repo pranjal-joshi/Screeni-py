@@ -2,7 +2,6 @@ import numpy as np
 
 try:
     import pandas_ta as talib
-    # import talib
 except ImportError:
     import talib
 
@@ -110,7 +109,7 @@ class ScreenerTA:
     @staticmethod
     def CDL3OUTSIDE(open, high, low, close):
         try:
-            return talib.cdl_pattern(open,high,low,close,'3outside').tail(1).values[0][0] != 0
+            return talib.cdl_pattern(open,high,low,close,'3outside').tail(1).values[0][0]
         except Exception as e:
             return talib.CDL3OUTSIDE(open,high,low,close).tail(1).item() != 0
     
@@ -187,14 +186,17 @@ class ScreenerTA:
     @staticmethod
     def CDLDOJI(open, high, low, close):
         try:
-            return talib.cdl_pattern(open,high,low,close,'doji').tail(1).values[0][0] != 0
+            try:
+                return talib.cdl_pattern(open,high,low,close,'doji').tail(1).values[0][0] != 0
+            except AttributeError:
+                return False
         except Exception as e:
             return talib.CDLDOJI(open,high,low,close).tail(1).item() != 0
     
     @staticmethod
     def CDLENGULFING(open, high, low, close):
         try:
-            return talib.cdl_pattern(open,high,low,close,'engulfing').tail(1).values[0][0] != 0
+            return talib.cdl_pattern(open,high,low,close,'engulfing').tail(1).values[0][0]
         except Exception as e:
             return talib.CDLENGULFING(open,high,low,close).tail(1).item() != 0
         

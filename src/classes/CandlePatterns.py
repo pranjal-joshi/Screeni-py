@@ -6,7 +6,6 @@
 '''
 
 import pandas as pd
-# import talib
 from classes.ScreenipyTA import ScreenerTA
 from classes.ColorText import colorText
 
@@ -84,13 +83,13 @@ class CandlePatterns:
             return True
 
         check = ScreenerTA.CDL3OUTSIDE(data['Open'], data['High'], data['Low'], data['Close'])
-        if(check):
-            if(check is not None and check.tail(1).item() > 0):
-                dict['Pattern'] = colorText.BOLD + colorText.GREEN + '3 Outside Up' + colorText.END
-                saveDict['Pattern'] = '3 Outside Up'
-            else:
-                dict['Pattern'] = colorText.BOLD + colorText.FAIL + '3 Outside Down' + colorText.END
-                saveDict['Pattern'] = '3 Outside Down'
+        if(check > 0):
+            dict['Pattern'] = colorText.BOLD + colorText.GREEN + '3 Outside Up' + colorText.END
+            saveDict['Pattern'] = '3 Outside Up'
+            return True
+        elif(check < 0):
+            dict['Pattern'] = colorText.BOLD + colorText.FAIL + '3 Outside Down' + colorText.END
+            saveDict['Pattern'] = '3 Outside Down'
             return True
 
         check = ScreenerTA.CDL3WHITESOLDIERS(data['Open'], data['High'], data['Low'], data['Close'])
@@ -172,13 +171,13 @@ class CandlePatterns:
             return True
 
         check = ScreenerTA.CDLENGULFING(data['Open'], data['High'], data['Low'], data['Close'])
-        if(check):
-            if(check is not None and check.tail(1).item() > 0):
-                dict['Pattern'] = colorText.BOLD + colorText.GREEN + 'Bullish Engulfing' + colorText.END
-                saveDict['Pattern'] = 'Bullish Engulfing'
-            else:
-                dict['Pattern'] = colorText.BOLD + colorText.FAIL + 'Bearish Engulfing' + colorText.END
-                saveDict['Pattern'] = 'Bearish Engulfing'
+        if(check > 0):
+            dict['Pattern'] = colorText.BOLD + colorText.GREEN + 'Bullish Engulfing' + colorText.END
+            saveDict['Pattern'] = 'Bullish Engulfing'
+            return True
+        elif(check < 0):
+            dict['Pattern'] = colorText.BOLD + colorText.FAIL + 'Bearish Engulfing' + colorText.END
+            saveDict['Pattern'] = 'Bearish Engulfing'
             return True
 
         dict['Pattern'] = ''
