@@ -68,7 +68,7 @@ class tools:
                 for i in range(5):
                     next(cr)  # skipping first line
                 for row in cr:
-                    listStockCodes.append(row[1])                
+                    listStockCodes.append(row[1].strip())                
             else:
                 next(cr)  # skipping first line
                 for row in cr:

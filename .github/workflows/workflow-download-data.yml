@@ -38,12 +38,12 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-
 
-    - name: Install TA-Lib
-      run: |
-        python -m pip install --upgrade pip
-        cd .github/dependencies/
-        echo %cd%
-        pip install TA_Lib-0.4.19-cp39-cp39-win_amd64.whl
+    # - name: Install TA-Lib
+    #   run: |
+    #     python -m pip install --upgrade pip
+    #     cd .github/dependencies/
+    #     echo %cd%
+    #     pip install TA_Lib-0.4.19-cp39-cp39-win_amd64.whl
 
     - name: Install Python Dependencies
       run: |

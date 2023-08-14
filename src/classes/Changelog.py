@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.43"
+VERSION = "1.44"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -192,6 +192,9 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [1.43]
 1. New Index added - F&O Only stocks
+
+[1.44]
+1. Migrated ta-lib dependency to pandas_ta
 
 --- END ---
 ''' + colorText.END
