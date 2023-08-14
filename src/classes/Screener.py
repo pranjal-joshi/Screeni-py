@@ -9,7 +9,7 @@ import sys
 import math
 import numpy as np
 import pandas as pd
-import talib
+# import talib
 import joblib
 import keras
 import classes.Utility as Utility
@@ -18,6 +18,7 @@ from scipy.signal import argrelextrema
 from scipy.stats import linregress
 from classes.ColorText import colorText
 from classes.SuppressOutput import SuppressOutput
+from classes.ScreenipyTA import ScreenerTA
 
 
 # Exception for newly listed stocks with candle nos < daysToLookback
@@ -49,8 +50,8 @@ class tools:
         if daysToLookback is None:
             daysToLookback = self.configManager.daysToLookback
         if self.configManager.useEMA:
-            sma = talib.EMA(data['Close'],timeperiod=50)
-            lma = talib.EMA(data['Close'],timeperiod=200)
+            sma = ScreenerTA.EMA(data['Close'],timeperiod=50)
+            lma = ScreenerTA.EMA(data['Close'],timeperiod=200)
             data.insert(6,'SMA',sma)
             data.insert(7,'LMA',lma)
         else:
@@ -59,7 +60,7 @@ class tools:
             data.insert(6,'SMA',sma['Close'])
             data.insert(7,'LMA',lma['Close'])
         vol = data.rolling(window=20).mean()
-        rsi = talib.RSI(data['Close'], timeperiod=14)
+        rsi = ScreenerTA.RSI(data['Close'], timeperiod=14)
         data.insert(8,'VolMA',vol['Volume'])
         data.insert(9,'RSI',rsi)
         data = data[::-1]               # Reverse the dataframe
@@ -398,9 +399,9 @@ class tools:
             maLength = 20
         data = data[::-1]
         if self.configManager.useEMA:
-            maRev = talib.EMA(data['Close'],timeperiod=maLength)
+            maRev = ScreenerTA.EMA(data['Close'],timeperiod=maLength)
         else:
-            maRev = talib.MA(data['Close'],timeperiod=maLength)
+            maRev = ScreenerTA.MA(data['Close'],timeperiod=maLength)
         data.insert(10,'maRev',maRev)
         data = data[::-1].head(3)
         if data.equals(data[(data.Close >= (data.maRev - (data.maRev*percentage))) & (data.Close <= (data.maRev + (data.maRev*percentage)))]) and data.head(1)['Close'][0] >= data.head(1)['maRev'][0]:
@@ -603,7 +604,7 @@ class tools:
         data_tuple = fetcher.fetchFiveEmaData()
         for cnt in range(len(data_tuple)):
             d = data_tuple[cnt]
-            d['5EMA'] = talib.EMA(d['Close'],timeperiod=5)
+            d['5EMA'] = ScreenerTA.EMA(d['Close'],timeperiod=5)
             d = d[col_names]
             d = d.dropna().round(2)
 
