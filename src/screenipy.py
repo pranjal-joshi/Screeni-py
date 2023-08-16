@@ -431,9 +431,9 @@ if __name__ == "__main__":
             while True:
                 main()
         except Exception as e:
-            raise e
+            # raise e
             if isDevVersion == OTAUpdater.developmentVersion:
                 raise(e)
             input(colorText.BOLD + colorText.FAIL +
                 "[+] Press any key to Exit!" + colorText.END)
-            sys.exit(0)
+            sys.exit(1)
