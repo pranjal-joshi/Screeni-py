@@ -9,7 +9,7 @@ import sys
 import math
 import numpy as np
 import pandas as pd
-import talib
+# import talib
 import joblib
 import keras
 import classes.Utility as Utility
@@ -18,6 +18,7 @@ from scipy.signal import argrelextrema
 from scipy.stats import linregress
 from classes.ColorText import colorText
 from classes.SuppressOutput import SuppressOutput
+from classes.ScreenipyTA import ScreenerTA
 
 
 # Exception for newly listed stocks with candle nos < daysToLookback
@@ -49,8 +50,8 @@ class tools:
         if daysToLookback is None:
             daysToLookback = self.configManager.daysToLookback
         if self.configManager.useEMA:
-            sma = talib.EMA(data['Close'],timeperiod=50)
-            lma = talib.EMA(data['Close'],timeperiod=200)
+            sma = ScreenerTA.EMA(data['Close'],timeperiod=50)
+            lma = ScreenerTA.EMA(data['Close'],timeperiod=200)
             data.insert(6,'SMA',sma)
             data.insert(7,'LMA',lma)
         else:
@@ -59,7 +60,7 @@ class tools:
             data.insert(6,'SMA',sma['Close'])
             data.insert(7,'LMA',lma['Close'])
         vol = data.rolling(window=20).mean()
-        rsi = talib.RSI(data['Close'], timeperiod=14)
+        rsi = ScreenerTA.RSI(data['Close'], timeperiod=14)
         data.insert(8,'VolMA',vol['Volume'])
         data.insert(9,'RSI',rsi)
         data = data[::-1]               # Reverse the dataframe
@@ -78,6 +79,15 @@ class tools:
         data = data.fillna(0)
         data = data.replace([np.inf, -np.inf], 0)
         recent = data.head(1)
+
+        pct_change = (data[::-1]['Close'].pct_change() * 100).iloc[-1]
+        if pct_change > 0.2:
+            pct_change = colorText.GREEN + (" (%.1f%%)" % pct_change) + colorText.END
+        elif pct_change < -0.2:
+            pct_change = colorText.FAIL + (" (%.1f%%)" % pct_change) + colorText.END
+        else:
+            pct_change = colorText.WARN + (" (%.1f%%)" % pct_change) + colorText.END
+            
         ltp = round(recent['Close'][0],2)
         saveDict['LTP'] = str(ltp)
         verifyStageTwo = True
@@ -87,9 +97,9 @@ class tools:
             if ltp < (2 * yearlyLow) or ltp < (0.75 * yearlyHigh):
                 verifyStageTwo = False
         if(ltp >= minLTP and ltp <= maxLTP and verifyStageTwo):
-            screenDict['LTP'] = colorText.GREEN + ("%.2f" % ltp) + colorText.END
+            screenDict['LTP'] = colorText.GREEN + ("%.2f" % ltp) + pct_change + colorText.END
             return True
-        screenDict['LTP'] = colorText.FAIL + ("%.2f" % ltp) + colorText.END
+        screenDict['LTP'] = colorText.FAIL + ("%.2f" % ltp) + pct_change + colorText.END
         return False
 
     # Validate if share prices are consolidating
@@ -99,11 +109,11 @@ class tools:
         hc = data.describe()['Close']['max']
         lc = data.describe()['Close']['min']
         if ((hc - lc) <= (hc*percentage/100) and (hc - lc != 0)):
-            screenDict['Consolidating'] = colorText.BOLD + colorText.GREEN + "Range = " + str(round((abs((hc-lc)/hc)*100),2))+"%" + colorText.END
+            screenDict['Consolidating'] = colorText.BOLD + colorText.GREEN + "Range = " + str(round((abs((hc-lc)/hc)*100),1))+"%" + colorText.END
         else:
-            screenDict['Consolidating'] = colorText.BOLD + colorText.FAIL + "Range = " + str(round((abs((hc-lc)/hc)*100),2)) + "%" + colorText.END
-        saveDict['Consolidating'] = str(round((abs((hc-lc)/hc)*100),2))+"%"
-        return round((abs((hc-lc)/hc)*100),2)
+            screenDict['Consolidating'] = colorText.BOLD + colorText.FAIL + "Range = " + str(round((abs((hc-lc)/hc)*100),1)) + "%" + colorText.END
+        saveDict['Consolidating'] = str(round((abs((hc-lc)/hc)*100),1))+"%"
+        return round((abs((hc-lc)/hc)*100),1)
 
     # Validate Moving averages and look for buy/sell signals
     def validateMovingAverages(self, data, screenDict, saveDict, maRange=2.5):
@@ -318,7 +328,7 @@ class tools:
             elif angle >= 60:
                 screenDict['Trend'] = colorText.BOLD + colorText.GREEN + "Strong Up" + colorText.END
                 saveDict['Trend'] = 'Strong Up'
-            elif (angle >= -30 and angle < -61):
+            elif (angle <= -30 and angle > -61):
                 screenDict['Trend'] = colorText.BOLD + colorText.FAIL + "Weak Down" + colorText.END
                 saveDict['Trend'] = 'Weak Down'
             elif angle <= -60:
@@ -389,9 +399,9 @@ class tools:
             maLength = 20
         data = data[::-1]
         if self.configManager.useEMA:
-            maRev = talib.EMA(data['Close'],timeperiod=maLength)
+            maRev = ScreenerTA.EMA(data['Close'],timeperiod=maLength)
         else:
-            maRev = talib.MA(data['Close'],timeperiod=maLength)
+            maRev = ScreenerTA.MA(data['Close'],timeperiod=maLength)
         data.insert(10,'maRev',maRev)
         data = data[::-1].head(3)
         if data.equals(data[(data.Close >= (data.maRev - (data.maRev*percentage))) & (data.Close <= (data.maRev + (data.maRev*percentage)))]) and data.head(1)['Close'][0] >= data.head(1)['maRev'][0]:
@@ -594,7 +604,7 @@ class tools:
         data_tuple = fetcher.fetchFiveEmaData()
         for cnt in range(len(data_tuple)):
             d = data_tuple[cnt]
-            d['5EMA'] = talib.EMA(d['Close'],timeperiod=5)
+            d['5EMA'] = ScreenerTA.EMA(d['Close'],timeperiod=5)
             d = d[col_names]
             d = d.dropna().round(2)
 
