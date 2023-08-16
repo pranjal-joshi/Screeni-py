@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.44"
+VERSION = "1.45"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -195,6 +195,9 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [1.44]
 1. Migrated ta-lib dependency to pandas_ta
+
+[1.45]
+1. Minor bug fixes after dependency change
 
 --- END ---
 ''' + colorText.END
