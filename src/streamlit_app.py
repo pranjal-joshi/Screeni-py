@@ -8,7 +8,7 @@ st.set_page_config(layout="wide")
 
 # Set protobuf to python to avoid TF error (This is a Slower infernece)
 os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
-
+os.environ["TERM"] = "xterm"
 
 import streamlit as st
 import pandas as pd
