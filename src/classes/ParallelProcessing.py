@@ -143,8 +143,10 @@ class StockConsumer(multiprocessing.Process):
                 except np.RankWarning:
                     screeningDictionary['Trend'] = 'Unknown'
                     saveDictionary['Trend'] = 'Unknown'
-                isCandlePattern = candlePatterns.findPattern(
-                    processedData, screeningDictionary, saveDictionary)
+
+                with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
+                    isCandlePattern = candlePatterns.findPattern(
+                        processedData, screeningDictionary, saveDictionary)
                 
                 isConfluence = False
                 isInsideBar = False
