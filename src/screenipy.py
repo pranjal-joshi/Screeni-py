@@ -405,6 +405,7 @@ def main(testing=False, testBuild=False, downloadOnly=False):
                 stockDict, configManager, loadCount)
 
         Utility.tools.setLastScreenedResults(screenResults)
+        Utility.tools.setLastScreenedResults(saveResults, unformatted=True)
         if not testBuild and not downloadOnly:
             Utility.tools.promptSaveResults(saveResults)
             print(colorText.BOLD + colorText.WARN +
