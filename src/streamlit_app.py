@@ -19,21 +19,17 @@ execute_inputs = []
 
 def on_start_button_click():
     global execute_inputs
-    st.write(execute_inputs)
-    my_bar = st.progress(0, text="Starting Stocks Screening...")
-    with patch('builtins.input', side_effect=execute_inputs):
-        try:
-            screenipy_main()
-        except StopIteration:
-            pass
-    for percent_complete in range(100):
-        progress_text = f'Screening stocks: {percent_complete}/100'
-        my_bar.progress(percent_complete + 1, text=progress_text)
-    my_bar.empty()
+    st.write(f'Received inputs (Debug only): {execute_inputs}')
+    with st.spinner('Screening stocks for you...'):
+      with patch('builtins.input', side_effect=execute_inputs):
+          try:
+              screenipy_main()
+          except StopIteration:
+              pass
 
 def get_extra_inputs(tickerOption, executeOption, c_index=None, c_criteria=None, start_button=None):
     global execute_inputs
-    if int(tickerOption) == 0:
+    if int(tickerOption) == 0 or tickerOption is None:
         stock_codes = c_index.text_input('Enter Stock Code(s) (Multiple codes should be seperated by ,)', placeholder='SBIN, INFY, ITC')
         if stock_codes:
             execute_inputs = [tickerOption, executeOption, stock_codes, 'N']
