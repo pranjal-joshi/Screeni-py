@@ -16,6 +16,7 @@ import pandas as pd
 from nsetools import Nse
 from classes.ColorText import colorText
 from classes.SuppressOutput import SuppressOutput
+from classes.Utility import isDocker
 
 nse = Nse()
 
@@ -209,6 +210,10 @@ class tools:
                   '[+] Bad Watchlist Format: First Column (A1) should have Header named "Stock Code"' + colorText.END)
             createTemplate = True
         if createTemplate:
+            if isDocker():
+                print(colorText.BOLD + colorText.FAIL +
+                  f'[+] This feature is not available with dockerized application. Try downloading .exe/.bin file to use this!' + colorText.END)
+                return None
             sample = {'Stock Code': ['SBIN', 'INFY', 'TATAMOTORS', 'ITC']}
             sample_data = pd.DataFrame(sample, columns=['Stock Code'])
             sample_data.to_excel('watchlist_template.xlsx',

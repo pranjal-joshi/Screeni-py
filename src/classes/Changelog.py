@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.45"
+VERSION = "1.46"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -198,6 +198,9 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [1.45]
 1. Minor bug fixes after dependency change
+
+[1.46]
+1. TA-Lib reanabled. Dockerized for better distribution of the tool
 
 --- END ---
 ''' + colorText.END

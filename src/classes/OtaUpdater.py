@@ -6,6 +6,7 @@
 '''
 
 from classes.ColorText import colorText
+from classes.Utility import isDocker
 import requests
 import os
 import platform
@@ -107,7 +108,8 @@ rm updater.sh
             else:
                 OTAUpdater.checkForUpdate.url = resp.json()['assets'][0]['browser_download_url']
                 size = int(resp.json()['assets'][0]['size']/(1024*1024))
-            if(float(resp.json()['tag_name']) > now):
+            # if(float(resp.json()['tag_name']) > now):
+            if(float(resp.json()['tag_name']) > now and not isDocker()):    # OTA not applicable if we're running in docker!
                 print(colorText.BOLD + colorText.WARN + "[+] What's New in this Update?\n" + OTAUpdater.showWhatsNew() + colorText.END)
                 action = str(input(colorText.BOLD + colorText.WARN + ('\n[+] New Software update (v%s) available. Download Now (Size: %dMB)? [Y/N]: ' % (str(resp.json()['tag_name']),size)))).lower()
                 if(action == 'y'):
@@ -121,6 +123,9 @@ rm updater.sh
                     except Exception as e:
                         print(colorText.BOLD + colorText.WARN + '[+] Error occured while updating!' + colorText.END)
                         raise(e)
+            elif(float(resp.json()['tag_name']) > now and isDocker()):    # OTA not applicable if we're running in docker!
+                print(colorText.BOLD + colorText.FAIL + ('\n[+] New Software update (v%s) available.\n[+] Run `docker pull joshipranjal/screeni-py:latest` to update your docker to the latest version!' % (str(resp.json()['tag_name']))) + colorText.END)
+                print(colorText.BOLD + colorText.WARN + "[+] What's New in this Update?\n" + OTAUpdater.showWhatsNew() + colorText.END)
             elif(float(resp.json()['tag_name']) < now):
                 print(colorText.BOLD + colorText.FAIL + ('[+] This version (v%s) is in Development mode and unreleased!' % VERSION) + colorText.END)
                 return OTAUpdater.developmentVersion

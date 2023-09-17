@@ -173,7 +173,7 @@ def test_ota_updater():
 
 def test_release_readme_urls():
     global last_release
-    f = open('../src/release.md', 'r')
+    f = open('../src/release.md', 'r', encoding='utf-8')
     contents = f.read()
     f.close()
     failUrl = [f"https://github.com/pranjal-joshi/Screeni-py/releases/download/{last_release}/screenipy.bin",
