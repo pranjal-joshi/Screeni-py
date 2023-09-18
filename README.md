@@ -1,15 +1,15 @@
 | |
 | :-: |
 | ![Screeni-py](https://user-images.githubusercontent.com/6128978/217816268-74c40180-fc47-434d-938b-3639898ee3e0.png) |
-| [![GitHub release (latest by date)](https://img.shields.io/github/v/release/pranjal-joshi/Screeni-py?style=for-the-badge)](https://github.com/pranjal-joshi/Screeni-py/releases/latest) [![GitHub all releases](https://img.shields.io/github/downloads/pranjal-joshi/Screeni-py/total?color=Green&label=Downloads&style=for-the-badge)](#) [![GitHub](https://img.shields.io/github/license/pranjal-joshi/Screeni-py?style=for-the-badge)](https://github.com/pranjal-joshi/Screeni-py/blob/main/LICENSE) [![CodeFactor](https://www.codefactor.io/repository/github/pranjal-joshi/screeni-py/badge?style=for-the-badge)](https://www.codefactor.io/repository/github/pranjal-joshi/screeni-py) [![MADE-IN-INDIA](https://img.shields.io/badge/MADE%20WITH%20%E2%9D%A4%20IN-INDIA-orange?style=for-the-badge)](https://en.wikipedia.org/wiki/India) [![BADGE](https://img.shields.io/badge/PULL%20REQUEST-GUIDELINES-red?style=for-the-badge)](https://github.com/pranjal-joshi/Screeni-py/blob/new-features/CONTRIBUTING.md) |
+| [![GitHub release (latest by date)](https://img.shields.io/github/v/release/pranjal-joshi/Screeni-py?style=for-the-badge)](https://github.com/pranjal-joshi/Screeni-py/releases/latest) [![GitHub all releases](https://img.shields.io/github/downloads/pranjal-joshi/Screeni-py/total?color=Green&label=Downloads&style=for-the-badge)](#) ![Docker Pulls](https://img.shields.io/docker/pulls/joshipranjal/screeni-py?style=for-the-badge&logo=docker) [![GitHub](https://img.shields.io/github/license/pranjal-joshi/Screeni-py?style=for-the-badge)](https://github.com/pranjal-joshi/Screeni-py/blob/main/LICENSE) [![CodeFactor](https://www.codefactor.io/repository/github/pranjal-joshi/screeni-py/badge?style=for-the-badge)](https://www.codefactor.io/repository/github/pranjal-joshi/screeni-py) [![MADE-IN-INDIA](https://img.shields.io/badge/MADE%20WITH%20%E2%9D%A4%20IN-INDIA-orange?style=for-the-badge)](https://en.wikipedia.org/wiki/India) [![BADGE](https://img.shields.io/badge/PULL%20REQUEST-GUIDELINES-red?style=for-the-badge)](https://github.com/pranjal-joshi/Screeni-py/blob/new-features/CONTRIBUTING.md) |
 | [![Screenipy Test - New Features](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-test.yml/badge.svg?branch=new-features)](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-test.yml) [![Screenipy Build - New Release](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-build-matrix.yml/badge.svg)](https://github.com/pranjal-joshi/Screeni-py/actions/workflows/workflow-build-matrix.yml) |
-| ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white) ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) ![Mac OS](https://img.shields.io/badge/mac%20os-D3D3D3?style=for-the-badge&logo=apple&logoColor=000000) |
+| ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white) ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) ![Mac OS](https://img.shields.io/badge/mac%20os-D3D3D3?style=for-the-badge&logo=apple&logoColor=000000) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) |
 | <img width="240" src="https://user-images.githubusercontent.com/6128978/217814499-7934edf6-fcc3-46d7-887e-7757c94e1632.png"><h2>Scan QR Code to join [Official Telegram Group](https://t.me/+0Tzy08mR0do0MzNl) for Additional Discussions</h2> |
 
-| **Download** | **Discussion** | **Bugs/Issues** | **Documentation** |
-| :---: | :---: | :---: | :---: |
-| [![cloud-computing (1)](https://user-images.githubusercontent.com/6128978/149935359-ca0a7155-d1e3-4e47-98e8-67f879e707e7.png)](https://github.com/pranjal-joshi/Screeni-py/releases/latest) | [![meeting](https://user-images.githubusercontent.com/6128978/149935812-31266023-cc5b-4c98-a416-1d4cf8800c0c.png)](https://github.com/pranjal-joshi/Screeni-py/discussions) | [![warning](https://user-images.githubusercontent.com/6128978/149936142-04d7cf1c-5bc5-45c1-a8e4-015454a2de48.png)](https://github.com/pranjal-joshi/Screeni-py/issues?q=is%3Aissue) | [![help](https://user-images.githubusercontent.com/6128978/149937331-5ee5c00a-748d-4fbf-a9f9-e2273480d8a2.png)](https://github.com/pranjal-joshi/Screeni-py/blob/main/README.md#what-is-screeni-py) |
-| Download the Latest Version | Join/Read the Community Discussion | Raise an Issue about a Problem | Get Help about Usage |
+| **Download** | **Use** | **Discussion** | **Bugs/Issues** | **Documentation** |
+| :---: | :---: | :---: | :---: | :---: |
+| [![cloud-computing (1)](https://user-images.githubusercontent.com/6128978/149935359-ca0a7155-d1e3-4e47-98e8-67f879e707e7.png)](https://github.com/pranjal-joshi/Screeni-py/releases/latest) | [![docker](https://github.com/pranjal-joshi/Screeni-py/assets/6128978/f44054b8-9fcb-465c-a38b-63f6ecc4a0c9)](https://hub.docker.com/r/joshipranjal/screeni-py/tags) | [![meeting](https://user-images.githubusercontent.com/6128978/149935812-31266023-cc5b-4c98-a416-1d4cf8800c0c.png)](https://github.com/pranjal-joshi/Screeni-py/discussions) | [![warning](https://user-images.githubusercontent.com/6128978/149936142-04d7cf1c-5bc5-45c1-a8e4-015454a2de48.png)](https://github.com/pranjal-joshi/Screeni-py/issues?q=is%3Aissue) | [![help](https://user-images.githubusercontent.com/6128978/149937331-5ee5c00a-748d-4fbf-a9f9-e2273480d8a2.png)](https://github.com/pranjal-joshi/Screeni-py/blob/main/README.md#what-is-screeni-py) |
+| Download the Latest Version | Get started quickly using Docker | Join/Read the Community Discussion | Raise an Issue about a Problem | Get Help about Usage |
 
 <!-- ## [**Click to Download the Latest Version**](https://github.com/pranjal-joshi/Screeni-py/releases/latest) -->
 
@@ -23,7 +23,7 @@
 Screenipy is totally customizable and it can screen stocks with the settings that you have provided.
 
 ## How to use?
-* Download the suitable file according to your OS.
+* Download the suitable file according to your OS or install Docker Desktop and pull the `latest` docker image.
 * Linux & Mac users should make sure that the `screenipy.bin or screenipy.run` is having `execute` permission.
 * **Run** the file. Following window will appear after a brief delay.
 
@@ -74,6 +74,37 @@ onlystagetwostocks = y
 useema = n
 ```
 Try to tweak this parameters as per your trading styles. For example, If you're comfortable with weekly charts, make `duration=5d` and so on.
+
+## Installation Guide:
+
+![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white) ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) ![Mac OS](https://img.shields.io/badge/mac%20os-D3D3D3?style=for-the-badge&logo=apple&logoColor=000000) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+
+**Should I download the Exe/Bin file? Or Should I use Docker?**
+
+| Executable/Binary File | Docker |
+| :-- | :-- |
+| [![GitHub all releases](https://img.shields.io/github/downloads/pranjal-joshi/Screeni-py/total?color=Green&label=Downloads&style=for-the-badge)](#) | ![Docker Pulls](https://img.shields.io/docker/pulls/joshipranjal/screeni-py?style=for-the-badge&logo=docker) |
+| Download Directly from the [Release](https://github.com/pranjal-joshi/Screeni-py/releases/latest) page | Need to Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) ⚠️|
+| May take a long time to open the app | Loads quickly |
+| Slower screening | Performance boosted as per your CPU capabilities |
+| Supports Excel Watchlist screening, Export results as excel | Excel features are not supported ⚠️ |
+| You may face errors/warnings due to different CPU arch of your system ⚠️ | Compatible with all x86/x86_64 CPUs irrespective of OS (Mac M1/M2 not yet supported ⚠️) |
+| Works only with Windows 10/11 ⚠️ | Works with older versions of Windows as well |
+| Different file for each OS | Same container is compatible with everyone |
+| Antivirus may block this as untrusted file ⚠️ | No issues with Antivirus | 
+| Need to download new file for every update | Updates quickly with minimal downloading |
+| No need of commands/technical knowledge | Very basic command execution skills may be required |
+| Custom configuration works and persisted accross the runs/restarts | Works only with default configuration as config file resets at every run ⚠️ |
+
+### How to setup and use Screeni-py with Docker?
+
+1. Download and Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) with default settings
+2. If you are using windows, update WSL (Windows subsystem for linux) by running `wsl --update` command in command prompt
+3. Restart your computer after installation
+4. Open Docker Desktop and keep it as it is
+5. Open Command Prompt (Windows) or Terminal (Mac/Linux) and run command `docker pull joshipranjal/screeni-py:latest`
+6. Once installed, always start screenipy by running this command:
+`docker run -it joshipranjal/screeni-py:latest run_screenipy.sh`
 
 ## Contributing:
 * Please feel free to Suggest improvements bugs by creating an issue.

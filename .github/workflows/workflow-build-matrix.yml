@@ -14,7 +14,7 @@ on:
 jobs:
 
   # Job for builing packages
-  Build:
+  Build_Executables:
     name: Build Packages
     #needs: Create-Release
     runs-on: ${{ matrix.os }}
@@ -24,8 +24,15 @@ jobs:
           - os: windows-latest
             TARGET: Windows
             CMD_BUILD: |
-              pyinstaller --onefile --icon=src\icon.ico src\screenipy.py  --hidden-import cmath --hidden-import numpy --hidden-import pandas --hidden-import alive-progress --hidden-import alive_progress
+              pyinstaller --onefile --icon=src\icon.ico src\screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas --hidden-import alive-progress --hidden-import alive_progress
             DEP_BUILD: |
+              python -m pip install --upgrade pip
+              echo Installing TA-lib...
+              cd .github/dependencies/
+              echo %cd%
+              pip install TA_Lib-0.4.19-cp39-cp39-win_amd64.whl
+              cd ..
+              cd ..
               python -m pip install --upgrade pip
               pip install -r requirements.txt
             TEST_BUILD: |
@@ -37,13 +44,21 @@ jobs:
           - os: ubuntu-20.04
             TARGET: Linux
             CMD_BUILD: |
-              pyinstaller --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import numpy --hidden-import pandas --hidden-import alive-progress --hidden-import alive_progress
+              pyinstaller --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas --hidden-import alive-progress --hidden-import alive_progress
               mv /home/runner/work/Screeni-py/Screeni-py/dist/screenipy /home/runner/work/Screeni-py/Screeni-py/dist/screenipy.bin
               chmod +x /home/runner/work/Screeni-py/Screeni-py/dist/screenipy.bin
             DEP_BUILD: |
+              cd .github/dependencies/
+              pwd
+              tar -xzf ta-lib-0.4.0-src.tar.gz
+              cd ta-lib/
+              ./configure --prefix=/usr
+              make
+              sudo make install
               cd /home/runner/work/Screeni-py/Screeni-py/
               python -m pip install --upgrade pip
               pip install -r requirements.txt
+              pip install ta-lib==0.4.24
             TEST_BUILD: |
               /home/runner/work/Screeni-py/Screeni-py/dist/screenipy.bin --testbuild
               exit $?
@@ -53,11 +68,13 @@ jobs:
           - os: macos-latest
             TARGET: MacOS
             CMD_BUILD: |
-              pyinstaller --onefile --windowed --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import numpy --hidden-import pandas --hidden-import alive-progress --hidden-import alive_progress
+              pyinstaller --onefile --windowed --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas --hidden-import alive-progress --hidden-import alive_progress
               mv /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy.run
             DEP_BUILD: |
+              brew install ta-lib
               python -m pip install --upgrade pip
               pip install -r requirements.txt
+              pip install ta-lib==0.4.24
             TEST_BUILD: |
               /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy.run --testbuild
               exit $?
@@ -65,7 +82,7 @@ jobs:
             FILE_NAME: screenipy.run
           
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Get the GitHub Tag version
         id: get_version
@@ -77,16 +94,16 @@ jobs:
         with:
           python-version: 3.9.4
 
-      # - name: Load Cache for Linux Dependencies
-      #   uses: actions/cache@v2
-      #   if: startsWith(runner.os, 'Linux')
-      #   with:
-      #     path: |
-      #       /usr/include/ta-lib
-      #       /usr/bin/ta-lib-config
-      #     key: ${{ runner.os }}-talib
-      #     restore-keys: |
-      #       ${{ runner.os }}-talib
+      - name: Load Cache for Linux Dependencies
+        uses: actions/cache@v2
+        if: startsWith(runner.os, 'Linux')
+        with:
+          path: |
+            /usr/include/ta-lib
+            /usr/bin/ta-lib-config
+          key: ${{ runner.os }}-talib
+          restore-keys: |
+            ${{ runner.os }}-talib
 
       - name: Install dependencies for ${{ matrix.TARGET }}
         run: ${{ matrix.DEP_BUILD }}
@@ -126,3 +143,30 @@ jobs:
           body: |
             ${{ steps.read_release.outputs.RELEASE_BODY }}
           overwrite: true
+
+  Docker_Build:
+    name: Build and Release Docker
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        
+
+    - name: Build and Push latest image
+      run: |
+        ver=$(grep 'VERSION = ' src/classes/Changelog.py | awk -F'"' '{print $2}')
+        echo $ver
+        if [ -z "$ver" ]; then
+          ver="latest"
+        fi
+        docker build -t screeni-py:$ver .
+        docker tag screeni-py:$ver joshipranjal/screeni-py:$ver
+        docker push joshipranjal/screeni-py:$ver
+        docker tag screeni-py:$ver joshipranjal/screeni-py:latest
+        docker push joshipranjal/screeni-py:latest

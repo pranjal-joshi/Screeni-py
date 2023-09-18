@@ -1,9 +1,10 @@
 import numpy as np
 
 try:
-    import pandas_ta as talib
-except ImportError:
     import talib
+except ImportError:
+    import pandas_ta as talib
+
 
 class ScreenerTA:
 

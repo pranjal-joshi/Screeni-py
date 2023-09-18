@@ -1,9 +1,9 @@
-[![MADE-IN-INDIA](https://img.shields.io/badge/MADE%20WITH%20%E2%9D%A4%20IN-INDIA-orange?style=for-the-badge)](https://en.wikipedia.org/wiki/India) [![GitHub release (latest by date)](https://img.shields.io/github/v/release/pranjal-joshi/Screeni-py?style=for-the-badge)](#) [![GitHub all releases](https://img.shields.io/github/downloads/pranjal-joshi/Screeni-py/total?color=Green&label=Downloads&style=for-the-badge)](#) [![MADE_WITH](https://img.shields.io/badge/BUILT%20USING-PYTHON-yellow?style=for-the-badge&logo=python&logoColor=yellow)](https://www.python.org/)
+[![MADE-IN-INDIA](https://img.shields.io/badge/MADE%20WITH%20%E2%9D%A4%20IN-INDIA-orange?style=for-the-badge)](https://en.wikipedia.org/wiki/India) [![GitHub release (latest by date)](https://img.shields.io/github/v/release/pranjal-joshi/Screeni-py?style=for-the-badge)](#) [![GitHub all releases](https://img.shields.io/github/downloads/pranjal-joshi/Screeni-py/total?color=Green&label=Downloads&style=for-the-badge)](#) ![Docker Pulls](https://img.shields.io/docker/pulls/joshipranjal/screeni-py?style=for-the-badge&logo=docker) [![MADE_WITH](https://img.shields.io/badge/BUILT%20USING-PYTHON-yellow?style=for-the-badge&logo=python&logoColor=yellow)](https://www.python.org/)
 ## What's New?
 
-Celebrating more than 6K+ Downloads - Thank You for your support :tada:
+Celebrating more than 7K+ Downloads - Thank You for your support :tada:
 
-**Migrated from `ta-lib` dependency to `pandas_ta` for easy environment setup**
+🐳 **Docker containers are now released for quick setup and easy usage!**
 
 1. New Index - **F&O Stocks Only** Added for F&O traders
 2. Trend detection fixed (#173) and % change added.
@@ -15,9 +15,16 @@ Celebrating more than 6K+ Downloads - Thank You for your support :tada:
 ## Downloads
 | Operating System | Executable File |
 | :-: | --- |
- | ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white) | **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.45/screenipy.exe)** |
-| ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) | **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.45/screenipy.bin)** |
-| ![Mac OS](https://img.shields.io/badge/mac%20os-D3D3D3?style=for-the-badge&logo=apple&logoColor=000000) | **[screenipy.run](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.45/screenipy.run)** ([Read Installation Guide](https://github.com/pranjal-joshi/Screeni-py/blob/main/INSTALLATION.md#for-macos)) |
+| ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white) | **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.46/screenipy.exe)** |
+| ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) | **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.46/screenipy.bin)** |
+| ![Mac OS](https://img.shields.io/badge/mac%20os-D3D3D3?style=for-the-badge&logo=apple&logoColor=000000) | **[screenipy.run](https://github.com/pranjal-joshi/Screeni-py/releases/download/1.46/screenipy.run)** ([Read Installation Guide](https://github.com/pranjal-joshi/Screeni-py/blob/main/INSTALLATION.md#for-macos)) |
+
+## [Docker Releases](https://hub.docker.com/r/joshipranjal/screeni-py/tags)
+
+| | Tag | Pull Command | Run Command |
+|:-: | :-: | --- | --- |
+| ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) | `latest` | `docker pull joshipranjal/screeni-py:latest` | `docker run -it joshipranjal/screeni-py:latest run_screenipy.sh` |
+| ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) | `dev` | `docker pull joshipranjal/screeni-py:dev` | `docker run -it joshipranjal/screeni-py:dev run_screenipy.sh` |
 
 ## How to use?
 
