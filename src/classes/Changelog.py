@@ -202,5 +202,5 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 [1.46]
 1. TA-Lib reanabled. Dockerized for better distribution of the tool
 
---- END ---
+
 ''' + colorText.END
