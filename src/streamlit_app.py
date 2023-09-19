@@ -3,6 +3,7 @@ import requests
 import os
 import sys
 import subprocess
+from time import sleep
 
 st.set_page_config(layout="wide")
 
@@ -21,11 +22,11 @@ def on_start_button_click():
     global execute_inputs
     st.write(f'Received inputs (Debug only): {execute_inputs}')
     with st.spinner('Screening stocks for you...'):
-      with patch('builtins.input', side_effect=execute_inputs):
-          try:
-              screenipy_main()
-          except StopIteration:
-              pass
+      # with patch('builtins.input', side_effect=execute_inputs):
+        try:
+            screenipy_main(execute_inputs=execute_inputs)
+        except StopIteration:
+            pass
 
 def get_extra_inputs(tickerOption, executeOption, c_index=None, c_criteria=None, start_button=None):
     global execute_inputs
@@ -214,6 +215,7 @@ get_extra_inputs(tickerOption=tickerOption, executeOption=executeOption, c_index
 
 if start_button:
    on_start_button_click()
+   sleep(2)
 
 with st.container():
     try:

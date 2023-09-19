@@ -26,6 +26,7 @@ from datetime import datetime
 from time import sleep
 from tabulate import tabulate
 import multiprocessing
+import traceback
 multiprocessing.freeze_support()
 
 # Argument Parsing for test purpose
@@ -151,7 +152,7 @@ def initExecution():
     return tickerOption, executeOption
 
 # Main function
-def main(testing=False, testBuild=False, downloadOnly=False):
+def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list = []):
     global screenCounter, screenResultsCounter, stockDict, loadedStockData, keyboardInterruptEvent, loadCount, maLength, newlyListedOnly
     screenCounter = multiprocessing.Value('i', 1)
     screenResultsCounter = multiprocessing.Value('i', 0)
@@ -180,38 +181,46 @@ def main(testing=False, testBuild=False, downloadOnly=False):
         tickerOption, executeOption = 12, 2
     else:
         try:
-            tickerOption, executeOption = initExecution()
+            if execute_inputs != []:
+                tickerOption, executeOption = int(execute_inputs[0]), int(execute_inputs[1])
+            else:
+                tickerOption, executeOption = initExecution()
         except KeyboardInterrupt:
-            input(colorText.BOLD + colorText.FAIL +
-                "[+] Press any key to Exit!" + colorText.END)
+            if execute_inputs == []:
+                input(colorText.BOLD + colorText.FAIL +
+                    "[+] Press any key to Exit!" + colorText.END)
             sys.exit(0)
 
     if executeOption == 4:
         try:
-            daysForLowestVolume = int(input(colorText.BOLD + colorText.WARN +
+            if execute_inputs != []:
+                daysForLowestVolume = int(execute_inputs[2])
+            else:
+                daysForLowestVolume = int(input(colorText.BOLD + colorText.WARN +
                                             '\n[+] The Volume should be lowest since last how many candles? '))
         except ValueError:
             print(colorText.END)
             print(colorText.BOLD + colorText.FAIL +
                   '[+] Error: Non-numeric value entered! Screening aborted.' + colorText.END)
-            input('')
-            main()
         print(colorText.END)
     if executeOption == 5:
-        minRSI, maxRSI = Utility.tools.promptRSIValues()
+        if execute_inputs != []:
+            minRSI, maxRSI = int(execute_inputs[2]), int(execute_inputs[3])
+        else:
+            minRSI, maxRSI = Utility.tools.promptRSIValues()
         if (not minRSI and not maxRSI):
             print(colorText.BOLD + colorText.FAIL +
                   '\n[+] Error: Invalid values for RSI! Values should be in range of 0 to 100. Screening aborted.' + colorText.END)
-            input('')
-            main()
     if executeOption == 6:
-        reversalOption, maLength = Utility.tools.promptReversalScreening()
-        if reversalOption is None or reversalOption == 0:
-            main()
+        if execute_inputs != []:
+            reversalOption, maLength = int(execute_inputs[2]),int(execute_inputs[3])
+        else:
+            reversalOption, maLength = Utility.tools.promptReversalScreening()
     if executeOption == 7:
-        respChartPattern, insideBarToLookback = Utility.tools.promptChartPatterns()
-        if insideBarToLookback is None:
-            main()
+        if execute_inputs != []:
+            respChartPattern, insideBarToLookback = int(execute_inputs[2]), int(execute_inputs[3])
+        else:
+            respChartPattern, insideBarToLookback = Utility.tools.promptChartPatterns()
     if executeOption == 8:
         configManager.setConfig(ConfigManager.parser)
         main()
@@ -244,7 +253,6 @@ def main(testing=False, testBuild=False, downloadOnly=False):
                     data=fetcher.fetchLatestNiftyDaily(proxyServer=proxyServer), 
                     proxyServer=proxyServer
                 )
-                input('\nPress any key to Continue...\n')
                 return
             elif tickerOption == 'E':
                 result_df = pd.DataFrame(columns=['Time','Stock/Index','Action','SL','Target','R:R'])
@@ -274,7 +282,6 @@ def main(testing=False, testBuild=False, downloadOnly=False):
                         sleep(60)
                         first_scan = False
                 except KeyboardInterrupt:
-                    input('\nPress any key to Continue...\n')
                     return
             else:
                 if tickerOption == 14:    # Override config for F&O Stocks
@@ -407,12 +414,10 @@ def main(testing=False, testBuild=False, downloadOnly=False):
         Utility.tools.setLastScreenedResults(screenResults)
         Utility.tools.setLastScreenedResults(saveResults, unformatted=True)
         if not testBuild and not downloadOnly:
-            Utility.tools.promptSaveResults(saveResults)
             print(colorText.BOLD + colorText.WARN +
                 "[+] Note: Trend calculation is based on number of days recent to screen as per your configuration." + colorText.END)
             print(colorText.BOLD + colorText.GREEN +
                 "[+] Screening Completed! Press Enter to Continue.." + colorText.END)
-            input('')
         newlyListedOnly = False
 
 
@@ -435,6 +440,4 @@ if __name__ == "__main__":
             # raise e
             if isDevVersion == OTAUpdater.developmentVersion:
                 raise(e)
-            input(colorText.BOLD + colorText.FAIL +
-                "[+] Press any key to Exit!" + colorText.END)
             sys.exit(1)
