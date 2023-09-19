@@ -1,4 +1,3 @@
-streamlit
 # numpy==1.21.0 # Installed as dependency for yfinance, scipy, matplotlib, pandas
 numpy
 appdirs
@@ -61,3 +60,4 @@ urllib3 # Installed as dependency for requests
 webencodings # Installed as dependency for html5lib
 pandas_ta
 protobuf==3.19.6
+streamlit==1.26.0
