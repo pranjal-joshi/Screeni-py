@@ -213,12 +213,20 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
                   '\n[+] Error: Invalid values for RSI! Values should be in range of 0 to 100. Screening aborted.' + colorText.END)
     if executeOption == 6:
         if execute_inputs != []:
-            reversalOption, maLength = int(execute_inputs[2]),int(execute_inputs[3])
+            reversalOption = int(execute_inputs[2])
+            try:
+                 maLength = int(execute_inputs[3])
+            except ValueError:
+                pass
         else:
             reversalOption, maLength = Utility.tools.promptReversalScreening()
     if executeOption == 7:
         if execute_inputs != []:
-            respChartPattern, insideBarToLookback = int(execute_inputs[2]), int(execute_inputs[3])
+            respChartPattern = int(execute_inputs[2])
+            try:
+                insideBarToLookback = int(execute_inputs[3])
+            except ValueError:
+                pass
         else:
             respChartPattern, insideBarToLookback = Utility.tools.promptChartPatterns()
     if executeOption == 8:
@@ -440,4 +448,6 @@ if __name__ == "__main__":
             # raise e
             if isDevVersion == OTAUpdater.developmentVersion:
                 raise(e)
+            input(colorText.BOLD + colorText.FAIL +
+                "[+] Press any key to Exit!" + colorText.END)
             sys.exit(1)

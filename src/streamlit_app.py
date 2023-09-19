@@ -20,7 +20,7 @@ execute_inputs = []
 
 def on_start_button_click():
     global execute_inputs
-    st.write(f'Received inputs (Debug only): {execute_inputs}')
+    st.info(f'Received inputs (Debug only): {execute_inputs}')
     with st.spinner('Screening stocks for you...'):
       # with patch('builtins.input', side_effect=execute_inputs):
         try:
@@ -36,6 +36,8 @@ def get_extra_inputs(tickerOption, executeOption, c_index=None, c_criteria=None,
             execute_inputs = [tickerOption, executeOption, stock_codes, 'N']
         else:
             c_index.error("Stock codes can't be left blank!")
+    if int(executeOption) >= 0 and int(executeOption) < 4:
+        execute_inputs = [tickerOption, executeOption, 'N']
     if int(executeOption) == 4:
         num_candles = c_criteria.text_input('The Volume should be lowest since last how many candles?', value='20')
         if num_candles:

@@ -70,12 +70,12 @@ class tools:
                         '[+] Use Option > 5 to edit in future.' + colorText.END)
                     print(colorText.BOLD + colorText.GREEN +
                         '[+] Close and Restart the program now.' + colorText.END)
-                    input('')
-                    sys.exit(0)
+                    # input('')
+                    # sys.exit(0)
             except IOError:
                 print(colorText.BOLD + colorText.FAIL +
                       '[+] Failed to save user config. Exiting..' + colorText.END)
-                input('')
+                # input('')
                 sys.exit(1)
         else:
             parser = configparser.ConfigParser(strict=False)
@@ -130,12 +130,12 @@ class tools:
                       '[+] User configuration saved.' + colorText.END)
                 print(colorText.BOLD + colorText.GREEN +
                       '[+] Restart the Program to start Screening...' + colorText.END)
-                input('')
-                sys.exit(0)
+                # input('')
+                # sys.exit(0)
             except IOError:
                 print(colorText.BOLD + colorText.FAIL +
                       '[+] Failed to save user config. Exiting..' + colorText.END)
-                input('')
+                # input('')
                 sys.exit(1)
 
     # Load user config from file
