@@ -59,5 +59,6 @@ toml # Installed as dependency for pep517, pytest
 urllib3 # Installed as dependency for requests
 webencodings # Installed as dependency for html5lib
 pandas_ta
-protobuf==3.19.6
+# protobuf==3.19.6
+protobuf
 streamlit==1.26.0
