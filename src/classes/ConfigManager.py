@@ -55,7 +55,7 @@ class tools:
             parser.set('config', 'volumeRatio', str(self.volumeRatio))
             parser.set('config', 'consolidationPercentage',
                        str(self.consolidationPercentage))
-            parser.set('config', 'shuffle', 'y' if self.shuffle else 'n')
+            parser.set('config', 'shuffle', 'y' if self.shuffleEnabled else 'n')
             parser.set('config', 'cacheStockData', 'y' if self.cacheEnabled else 'n')
             parser.set('config', 'onlyStageTwoStocks', 'y' if self.stageTwo else 'n')
             parser.set('config', 'useEMA', 'y' if self.useEMA else 'n')
