@@ -182,6 +182,8 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
     else:
         try:
             if execute_inputs != []:
+                if not configManager.checkConfigFile():
+                    configManager.setConfig(ConfigManager.parser, default=True, showFileCreatedText=False)
                 tickerOption, executeOption = int(execute_inputs[0]), int(execute_inputs[1])
             else:
                 tickerOption, executeOption = initExecution()
