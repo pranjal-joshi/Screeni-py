@@ -1,5 +1,6 @@
 streamlit
-numpy==1.21.0 # Installed as dependency for yfinance, scipy, matplotlib, pandas
+# numpy==1.21.0 # Installed as dependency for yfinance, scipy, matplotlib, pandas
+numpy
 appdirs
 cachecontrol
 contextlib2
