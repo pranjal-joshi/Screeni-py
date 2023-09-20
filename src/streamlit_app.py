@@ -203,10 +203,10 @@ with tab_screen:
 
   list_index = [
     'All Stocks (Default)',
-    'W > Screen stocks from my own Watchlist',
-    'N > Nifty Prediction using Artifical Intelligence (Use for Gap-Up/Gap-Down/BTST/STBT)',
-    'E > Live Index Scan : 5 EMA for Intraday',
-    '0 > Screen stocks by the stock names (NSE Stock Code)',
+    # 'W > Screen stocks from my own Watchlist',
+    # 'N > Nifty Prediction using Artifical Intelligence (Use for Gap-Up/Gap-Down/BTST/STBT)',
+    # 'E > Live Index Scan : 5 EMA for Intraday',
+    # '0 > Screen stocks by the stock names (NSE Stock Code)',
     '1 > Nifty 50',
     '2 > Nifty Next 50',
     '3 > Nifty 100',
@@ -310,3 +310,26 @@ with tab_config:
     with open('screenipy.ini', 'wb') as f: 
       f.write(bytes_data)
     st.toast('Configuration Imported', icon='⚙️')
+
+marquee_html = '''
+<!DOCTYPE html>
+<html>
+<head>
+	<style>
+		.sampleMarquee {
+			color: #f63366;
+			font-family: 'Ubuntu Mono', monospace;
+			background-color: #ffffff;
+			font-size: 18px;
+			line-height: 30px;
+			padding: px;
+			font-weight: bold;
+		}
+	</style>
+</head>
+<body>
+	<marquee class="sampleMarquee" direction="left" scrollamount="7" behavior="scroll">Released in Development mode. This tool should be used only for analysis/study purposes. We do NOT provide any Buy/Sell advice for any Securities. Authors of this tool will not be held liable for any losses. Understand the Risks subjected with Markets before Investing.</marquee>
+</body>
+</html>
+'''
+components.html(marquee_html)
