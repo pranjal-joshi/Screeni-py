@@ -144,7 +144,6 @@ class tools:
                 return None
             print(colorText.BOLD + colorText.GREEN + "=> Done!" +
                   colorText.END, end='\r', flush=True)
-        print(f'{stockCode}: {len(data)}')
         return data
 
     # Get Daily Nifty 50 Index:
