@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.45"
+VERSION = "2.00"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -199,5 +199,7 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 [1.45]
 1. Minor bug fixes after dependency change
 
+[2.00]
+1. Streamlit UI added
 --- END ---
 ''' + colorText.END
