@@ -110,7 +110,14 @@ def get_extra_inputs(tickerOption, executeOption, c_index=None, c_criteria=None,
         else:
             execute_inputs = [tickerOption, executeOption, select_pattern, 'N']
 
-st.title('Screeni-py: UI Development')
+ac, bc = st.columns([13,1])
+
+ac.title('Screeni-py')
+ac.subheader('in Beta Release 🚧  (Scan QR to Report Bugs / Request Features)')
+
+telegram_url = "https://user-images.githubusercontent.com/6128978/217814499-7934edf6-fcc3-46d7-887e-7757c94e1632.png"
+bc.divider()
+bc.image(telegram_url, width=96)
 
 tab_screen, tab_config = st.tabs(['Screen Stocks', 'Configuration'])
 
