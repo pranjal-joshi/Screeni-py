@@ -285,7 +285,7 @@ with tab_config:
 
   ac, bc = st.columns([1,1])
   volumeratio = ac.number_input('Volume multiplier for Breakout confirmation', value=float(configManager.volumeRatio), step=0.1)
-  consolidationpercentage = bc.number_input('Range consolidation (%)', value=configManager.consolidationPercentage, step=1.0)
+  consolidationpercentage = bc.number_input('Range consolidation (%)', value=int(configManager.consolidationPercentage), step=1)
 
   ac, bc, cc, dc = st.columns([1,1,1,1])
   shuffle = ac.checkbox('Shuffle stocks while screening', value=configManager.shuffleEnabled, disabled=True)
