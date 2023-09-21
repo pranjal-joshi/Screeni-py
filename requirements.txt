@@ -25,7 +25,6 @@ yfinance==0.1.87
 alive-progress==1.6.2
 Pillow
 scikit-learn==1.1.1
-tensorflow
 joblib
 altgraph # Installed as dependency for pyinstaller
 atomicwrites # Installed as dependency for pytest
@@ -62,3 +61,4 @@ pandas_ta
 # protobuf==3.19.6
 protobuf
 streamlit==1.26.0
+tensorflow
