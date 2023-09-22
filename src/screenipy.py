@@ -17,6 +17,7 @@ from classes.OtaUpdater import OTAUpdater
 from classes.CandlePatterns import CandlePatterns
 from classes.ParallelProcessing import StockConsumer
 from classes.Changelog import VERSION
+from classes.Utility import isDocker, isGui
 from alive_progress import alive_bar
 import argparse
 import urllib
@@ -151,7 +152,7 @@ def initExecution():
     return tickerOption, executeOption
 
 # Main function
-def main(testing=False, testBuild=False, downloadOnly=False):
+def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list = []):
     global screenCounter, screenResultsCounter, stockDict, loadedStockData, keyboardInterruptEvent, loadCount, maLength, newlyListedOnly
     screenCounter = multiprocessing.Value('i', 1)
     screenResultsCounter = multiprocessing.Value('i', 0)
@@ -180,52 +181,87 @@ def main(testing=False, testBuild=False, downloadOnly=False):
         tickerOption, executeOption = 12, 2
     else:
         try:
-            tickerOption, executeOption = initExecution()
+            if execute_inputs != []:
+                if not configManager.checkConfigFile():
+                    configManager.setConfig(ConfigManager.parser, default=True, showFileCreatedText=False)
+                tickerOption, executeOption = int(execute_inputs[0]), int(execute_inputs[1])
+            else:
+                tickerOption, executeOption = initExecution()
         except KeyboardInterrupt:
-            input(colorText.BOLD + colorText.FAIL +
-                "[+] Press any key to Exit!" + colorText.END)
+            if execute_inputs == [] and not isGui():
+                input(colorText.BOLD + colorText.FAIL +
+                    "[+] Press any key to Exit!" + colorText.END)
             sys.exit(0)
 
     if executeOption == 4:
         try:
-            daysForLowestVolume = int(input(colorText.BOLD + colorText.WARN +
+            if execute_inputs != []:
+                daysForLowestVolume = int(execute_inputs[2])
+            else:
+                daysForLowestVolume = int(input(colorText.BOLD + colorText.WARN +
                                             '\n[+] The Volume should be lowest since last how many candles? '))
         except ValueError:
             print(colorText.END)
             print(colorText.BOLD + colorText.FAIL +
                   '[+] Error: Non-numeric value entered! Screening aborted.' + colorText.END)
-            input('')
-            main()
+            if not isGui():
+                input('')
+                main()
         print(colorText.END)
     if executeOption == 5:
-        minRSI, maxRSI = Utility.tools.promptRSIValues()
+        if execute_inputs != []:
+            minRSI, maxRSI = int(execute_inputs[2]), int(execute_inputs[3])
+        else:
+            minRSI, maxRSI = Utility.tools.promptRSIValues()
         if (not minRSI and not maxRSI):
             print(colorText.BOLD + colorText.FAIL +
                   '\n[+] Error: Invalid values for RSI! Values should be in range of 0 to 100. Screening aborted.' + colorText.END)
-            input('')
-            main()
+            if not isGui():
+                input('')
+                main()
     if executeOption == 6:
-        reversalOption, maLength = Utility.tools.promptReversalScreening()
+        if execute_inputs != []:
+            reversalOption = int(execute_inputs[2])
+            try:
+                 maLength = int(execute_inputs[3])
+            except ValueError:
+                pass
+        else:
+            reversalOption, maLength = Utility.tools.promptReversalScreening()
         if reversalOption is None or reversalOption == 0:
-            main()
+            if not isGui():
+                main()
     if executeOption == 7:
-        respChartPattern, insideBarToLookback = Utility.tools.promptChartPatterns()
+        if execute_inputs != []:
+            respChartPattern = int(execute_inputs[2])
+            try:
+                insideBarToLookback = int(execute_inputs[3])
+            except ValueError:
+                pass
+        else:
+            respChartPattern, insideBarToLookback = Utility.tools.promptChartPatterns()
         if insideBarToLookback is None:
-            main()
+            if not isGui():
+                main()
     if executeOption == 8:
         configManager.setConfig(ConfigManager.parser)
-        main()
+        if not isGui():
+            main()
     if executeOption == 9:
         configManager.showConfigFile()
-        main()
+        if not isGui():
+            main()
     if executeOption == 10:
         Utility.tools.getLastScreenedResults()
-        main()
+        if not isGui():
+            main()
     if executeOption == 11:
         Utility.tools.showDevInfo()
-        main()
+        if not isGui():
+            main()
     if executeOption == 12:
-        input(colorText.BOLD + colorText.FAIL +
+        if not isGui():
+            input(colorText.BOLD + colorText.FAIL +
               "[+] Press any key to Exit!" + colorText.END)
         sys.exit(0)
 
@@ -274,7 +310,8 @@ def main(testing=False, testBuild=False, downloadOnly=False):
                         sleep(60)
                         first_scan = False
                 except KeyboardInterrupt:
-                    input('\nPress any key to Continue...\n')
+                    if not isGui():
+                        input('\nPress any key to Continue...\n')
                     return
             else:
                 if tickerOption == 14:    # Override config for F&O Stocks
@@ -285,7 +322,8 @@ def main(testing=False, testBuild=False, downloadOnly=False):
         except urllib.error.URLError:
             print(colorText.BOLD + colorText.FAIL +
                   "\n\n[+] Oops! It looks like you don't have an Internet connectivity at the moment! Press any key to exit!" + colorText.END)
-            input('')
+            if not isGui():
+                input('')
             sys.exit(0)
 
         if not Utility.tools.isTradingTime() and configManager.cacheEnabled and not loadedStockData and not testing:
@@ -405,13 +443,15 @@ def main(testing=False, testBuild=False, downloadOnly=False):
                 stockDict, configManager, loadCount)
 
         Utility.tools.setLastScreenedResults(screenResults)
+        Utility.tools.setLastScreenedResults(saveResults, unformatted=True)
         if not testBuild and not downloadOnly:
             Utility.tools.promptSaveResults(saveResults)
             print(colorText.BOLD + colorText.WARN +
                 "[+] Note: Trend calculation is based on number of days recent to screen as per your configuration." + colorText.END)
             print(colorText.BOLD + colorText.GREEN +
                 "[+] Screening Completed! Press Enter to Continue.." + colorText.END)
-            input('')
+            if not isGui():
+                input('')
         newlyListedOnly = False
 
 

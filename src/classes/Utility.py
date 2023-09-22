@@ -5,8 +5,6 @@
  *  Description         :   Class for managing misc and utility methods
 '''
 
-from decimal import DivisionByZero
-from genericpath import isfile
 import os
 import sys
 import platform
@@ -41,6 +39,7 @@ art = colorText.GREEN + '''
 ''' + colorText.END
 
 lastScreened = 'last_screened_results.pkl'
+lastScreenedUnformatted = 'last_screened_unformatted_results.pkl'
 
 # Class for managing misc and utility methods
 
@@ -72,14 +71,18 @@ class tools:
         input('')
 
     # Save last screened result to pickle file
-    def setLastScreenedResults(df):
+    def setLastScreenedResults(df, unformatted=False):
         try:
-            df.sort_values(by=['Stock'], ascending=True, inplace=True)
-            df.to_pickle(lastScreened)
+            if not unformatted:
+                df.sort_values(by=['Stock'], ascending=True, inplace=True)
+                df.to_pickle(lastScreened)
+            else:
+                df.sort_values(by=['Stock'], ascending=True, inplace=True)
+                df.to_pickle(lastScreenedUnformatted)
         except IOError:
-            input(colorText.BOLD + colorText.FAIL +
+            print(colorText.BOLD + colorText.FAIL +
                   '[+] Failed to save recently screened result table on disk! Skipping..' + colorText.END)
-
+            
     # Load last screened result to pickle file
     def getLastScreenedResults():
         try:
@@ -197,7 +200,7 @@ class tools:
 
     # Save screened results to excel
     def promptSaveResults(df):
-        if isDocker():  # Skip export to excel inside docker
+        if isDocker() or isGui():  # Skip export to excel inside docker
             return
         try:
             response = str(input(colorText.BOLD + colorText.WARN +
@@ -355,6 +358,11 @@ class tools:
             sleep(delay)
 
 def isDocker():
-    if '/opt/program/' in os.getcwd():
+    if 'SCREENIPY_DOCKER' in os.environ:
+        return True
+    return False
+
+def isGui():
+    if 'SCREENIPY_GUI' in os.environ:
         return True
     return False

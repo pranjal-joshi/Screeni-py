@@ -88,13 +88,13 @@ Try to tweak this parameters as per your trading styles. For example, If you're 
 | May take a long time to open the app | Loads quickly |
 | Slower screening | Performance boosted as per your CPU capabilities |
 | Supports Excel Watchlist screening, Export results as excel | Excel features are not supported ⚠️ |
-| You may face errors/warnings due to different CPU arch of your system ⚠️ | Compatible with all x86/x86_64 CPUs irrespective of OS (Mac M1/M2 not yet supported ⚠️) |
+| You may face errors/warnings due to different CPU arch of your system ⚠️ | Compatible with all x86_64/amd64/arm64 CPUs irrespective of OS (including Mac M1/M2) |
 | Works only with Windows 10/11 ⚠️ | Works with older versions of Windows as well |
 | Different file for each OS | Same container is compatible with everyone |
 | Antivirus may block this as untrusted file ⚠️ | No issues with Antivirus | 
 | Need to download new file for every update | Updates quickly with minimal downloading |
 | No need of commands/technical knowledge | Very basic command execution skills may be required |
-| Custom configuration works and persisted accross the runs/restarts | Works only with default configuration as config file resets at every run ⚠️ |
+| Custom configuration works and persisted accross the runs/restarts | Config file resets at every run but your custom config can be uploaded in GUI mode |
 
 ### How to setup and use Screeni-py with Docker?
 
@@ -104,7 +104,13 @@ Try to tweak this parameters as per your trading styles. For example, If you're 
 4. Open Docker Desktop and keep it as it is
 5. Open Command Prompt (Windows) or Terminal (Mac/Linux) and run command `docker pull joshipranjal/screeni-py:latest`
 6. Once installed, always start screenipy by running this command:
-`docker run -it joshipranjal/screeni-py:latest run_screenipy.sh`
+    ```
+    docker run -it joshipranjal/screeni-py:latest run_screenipy.sh --gui
+
+    OR
+
+    docker run -it joshipranjal/screeni-py:latest run_screenipy.sh --cli
+    ```
 
 ## Contributing:
 * Please feel free to Suggest improvements bugs by creating an issue.
