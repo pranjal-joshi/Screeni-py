@@ -55,10 +55,10 @@ class tools:
             parser.set('config', 'volumeRatio', str(self.volumeRatio))
             parser.set('config', 'consolidationPercentage',
                        str(self.consolidationPercentage))
-            parser.set('config', 'shuffle', 'y')
-            parser.set('config', 'cacheStockData', 'y')
-            parser.set('config', 'onlyStageTwoStocks', 'y')
-            parser.set('config', 'useEMA', 'n')
+            parser.set('config', 'shuffle', 'y' if self.shuffleEnabled else 'n')
+            parser.set('config', 'cacheStockData', 'y' if self.cacheEnabled else 'n')
+            parser.set('config', 'onlyStageTwoStocks', 'y' if self.stageTwo else 'n')
+            parser.set('config', 'useEMA', 'y' if self.useEMA else 'n')
             try:
                 fp = open('screenipy.ini', 'w')
                 parser.write(fp)
@@ -70,12 +70,12 @@ class tools:
                         '[+] Use Option > 5 to edit in future.' + colorText.END)
                     print(colorText.BOLD + colorText.GREEN +
                         '[+] Close and Restart the program now.' + colorText.END)
-                    input('')
-                    sys.exit(0)
+                    # input('')
+                    # sys.exit(0)
             except IOError:
                 print(colorText.BOLD + colorText.FAIL +
                       '[+] Failed to save user config. Exiting..' + colorText.END)
-                input('')
+                # input('')
                 sys.exit(1)
         else:
             parser = configparser.ConfigParser(strict=False)
@@ -130,12 +130,12 @@ class tools:
                       '[+] User configuration saved.' + colorText.END)
                 print(colorText.BOLD + colorText.GREEN +
                       '[+] Restart the Program to start Screening...' + colorText.END)
-                input('')
-                sys.exit(0)
+                # input('')
+                # sys.exit(0)
             except IOError:
                 print(colorText.BOLD + colorText.FAIL +
                       '[+] Failed to save user config. Exiting..' + colorText.END)
-                input('')
+                # input('')
                 sys.exit(1)
 
     # Load user config from file

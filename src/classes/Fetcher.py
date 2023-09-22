@@ -62,6 +62,7 @@ class tools:
                 res = requests.get(url,proxies={'https':proxyServer})
             else:
                 res = requests.get(url)
+            print(f'fetchCodes Response -> {res}')
             
             cr = csv.reader(res.text.strip().split('\n'))
             
@@ -75,8 +76,10 @@ class tools:
                 for row in cr:
                     listStockCodes.append(row[2])
         except Exception as error:
+            import traceback
+            print(traceback.format_exc())
             print(error)
-
+        print(f'Length of listStockCodes -> {len(listStockCodes)}')
         return listStockCodes
 
     # Fetch all stock codes from NSE

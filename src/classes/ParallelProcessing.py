@@ -247,6 +247,7 @@ class StockConsumer(multiprocessing.Process):
         except KeyError:
             pass
         except Exception as e:
+            print(e)
             if printCounter:
                 print(colorText.FAIL +
                       ("\n[+] Exception Occured while Screening %s! Skipping this stock.." % stock) + colorText.END)
