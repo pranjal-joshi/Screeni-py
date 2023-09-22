@@ -5,8 +5,6 @@
  *  Description         :   Class for managing misc and utility methods
 '''
 
-from decimal import DivisionByZero
-from genericpath import isfile
 import os
 import sys
 import platform
@@ -355,6 +353,11 @@ class tools:
             sleep(delay)
 
 def isDocker():
-    if '/opt/program/' in os.getcwd():
+    if 'SCREENIPY_DOCKER' in os.environ:
+        return True
+    return False
+
+def isGui():
+    if 'SCREENIPY_GUI' in os.environ:
         return True
     return False
