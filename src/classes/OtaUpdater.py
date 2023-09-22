@@ -124,7 +124,7 @@ rm updater.sh
                         print(colorText.BOLD + colorText.WARN + '[+] Error occured while updating!' + colorText.END)
                         raise(e)
             elif(float(resp.json()['tag_name']) > now and isDocker()):    # OTA not applicable if we're running in docker!
-                print(colorText.BOLD + colorText.FAIL + ('\n[+] New Software update (v%s) available.\n[+] Run `docker pull joshipranjal/screeni-py:latest` to update your docker to the latest version!' % (str(resp.json()['tag_name']))) + colorText.END)
+                print(colorText.BOLD + colorText.FAIL + ('\n[+] New Software update (v%s) available.\n[+] Run `docker pull joshipranjal/screeni-py:latest` to update your docker to the latest version!\n' % (str(resp.json()['tag_name']))) + colorText.END)
                 print(colorText.BOLD + colorText.WARN + "[+] What's New in this Update?\n" + OTAUpdater.showWhatsNew() + colorText.END)
             elif(float(resp.json()['tag_name']) < now):
                 print(colorText.BOLD + colorText.FAIL + ('[+] This version (v%s) is in Development mode and unreleased!' % VERSION) + colorText.END)

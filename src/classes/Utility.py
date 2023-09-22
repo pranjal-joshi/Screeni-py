@@ -195,7 +195,7 @@ class tools:
 
     # Save screened results to excel
     def promptSaveResults(df):
-        if isDocker():  # Skip export to excel inside docker
+        if isDocker() or isGui():  # Skip export to excel inside docker
             return
         try:
             response = str(input(colorText.BOLD + colorText.WARN +

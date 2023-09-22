@@ -3,8 +3,20 @@ variable_name="SCREENIPY_GUI"
 
 cd src
 
-if [ -z "${!variable_name}" ]; then
-	python3 screenipy.py
-else
+# Check if the script was provided with at least one argument
+if [ $# -lt 1 ]; then
+    echo "Usage: $0 [--gui|--cli]"
+    exit 1
+fi
+
+# Check the value of the first argument
+if [ "$1" = "--gui" ]; then
+    echo "Starting GUI mode... Copy and Paste following URL in your browser.."
 	streamlit run streamlit_app.py --server.port=8501 --server.address=0.0.0.0
+elif [ "$1" = "--cli" ]; then
+    echo "Starting CLI mode..."
+    python3 screenipy.py
+else
+    echo "Invalid argument. Usage: $0 [--gui|--cli]"
+    exit 1
 fi
