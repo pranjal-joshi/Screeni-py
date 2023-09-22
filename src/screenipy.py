@@ -449,7 +449,8 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
                 "[+] Note: Trend calculation is based on number of days recent to screen as per your configuration." + colorText.END)
             print(colorText.BOLD + colorText.GREEN +
                 "[+] Screening Completed! Press Enter to Continue.." + colorText.END)
-            input('')
+            if not isGui():
+                input('')
         newlyListedOnly = False
 
 

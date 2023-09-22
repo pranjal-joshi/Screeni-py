@@ -39,6 +39,7 @@ art = colorText.GREEN + '''
 ''' + colorText.END
 
 lastScreened = 'last_screened_results.pkl'
+lastScreenedUnformatted = 'last_screened_unformatted_results.pkl'
 
 # Class for managing misc and utility methods
 
@@ -70,14 +71,18 @@ class tools:
         input('')
 
     # Save last screened result to pickle file
-    def setLastScreenedResults(df):
+    def setLastScreenedResults(df, unformatted=False):
         try:
-            df.sort_values(by=['Stock'], ascending=True, inplace=True)
-            df.to_pickle(lastScreened)
+            if not unformatted:
+                df.sort_values(by=['Stock'], ascending=True, inplace=True)
+                df.to_pickle(lastScreened)
+            else:
+                df.sort_values(by=['Stock'], ascending=True, inplace=True)
+                df.to_pickle(lastScreenedUnformatted)
         except IOError:
-            input(colorText.BOLD + colorText.FAIL +
+            print(colorText.BOLD + colorText.FAIL +
                   '[+] Failed to save recently screened result table on disk! Skipping..' + colorText.END)
-
+            
     # Load last screened result to pickle file
     def getLastScreenedResults():
         try:
