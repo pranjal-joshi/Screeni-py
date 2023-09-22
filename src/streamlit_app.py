@@ -119,7 +119,7 @@ telegram_url = "https://user-images.githubusercontent.com/6128978/217814499-7934
 bc.divider()
 bc.image(telegram_url, width=96)
 
-tab_screen, tab_config = st.tabs(['Screen Stocks', 'Configuration'])
+tab_screen, tab_config, tab_about = st.tabs(['Screen Stocks', 'Configuration', 'About'])
 
 with tab_screen:
   st.markdown("""
@@ -310,6 +310,27 @@ with tab_config:
     with open('screenipy.ini', 'wb') as f: 
       f.write(bytes_data)
     st.toast('Configuration Imported', icon='⚙️')
+
+with tab_about:
+  from classes.Changelog import VERSION, changelog
+
+  st.success(f'Screeni-py v{VERSION}', icon='🔍')
+  st.info("""
+👨🏻‍💻 Developed and Maintained by: Pranjal Joshi
+          
+🏠 Home Page: https://github.com/pranjal-joshi/Screeni-py
+          
+⚠️ Read/Post Issues here: https://github.com/pranjal-joshi/Screeni-py/issues
+          
+📣 Join Community Discussions: https://github.com/pranjal-joshi/Screeni-py/discussions
+          
+⬇️ Download latest software from https://github.com/pranjal-joshi/Screeni-py/releases/latest
+          
+💬 Join Telegram Group for discussion: https://t.me/+0Tzy08mR0do0MzNl
+          """)
+  st.warning("ChangeLog:\n " + changelog[40:-3], icon='⚙️')
+        
+    
 
 marquee_html = '''
 <!DOCTYPE html>
