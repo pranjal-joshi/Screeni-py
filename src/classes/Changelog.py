@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.01"
+VERSION = "2.02"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -204,10 +204,16 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 
 [2.00]
-1. Streamlit UI (WebApp) added.
-2. Multi-Arch Docker support enabled.
+1. Streamlit UI (WebApp) added
+2. Multi-Arch Docker support enabled
 
 [2.01]
-1. Docker build fixed - Versioning critical bug fixed for further OTA updates.
+1. Docker build fixed - Versioning critical bug fixed for further OTA updates
+
+[2.02]
+1. Newly Listed (IPO) index critical bug fixed
+2. OTA Updates fixed for GUI
+3. Cosmetic improvements
+4. YouTube Video added to docs
 
 ''' + colorText.END

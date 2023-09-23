@@ -77,6 +77,13 @@ Try to tweak this parameters as per your trading styles. For example, If you're 
 
 ## Installation Guide:
 
+**YouTube Video of Detailed Installation Guide**
+
+[![YouTube Video Views](https://img.shields.io/youtube/views/2HMN0ac4H20?style=for-the-badge&logo=youtube)](https://youtu.be/2HMN0ac4H20)
+
+
+[![Screeni-py - Detailed Installation Guide](https://markdown-videos-api.jorgenkh.no/url?url=https%3A%2F%2Fyoutu.be%2F2HMN0ac4H20)](https://youtu.be/2HMN0ac4H20)
+
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white) ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) ![Mac OS](https://img.shields.io/badge/mac%20os-D3D3D3?style=for-the-badge&logo=apple&logoColor=000000) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 
 **Should I download the Exe/Bin file? Or Should I use Docker?**
@@ -105,11 +112,11 @@ Try to tweak this parameters as per your trading styles. For example, If you're 
 5. Open Command Prompt (Windows) or Terminal (Mac/Linux) and run command `docker pull joshipranjal/screeni-py:latest`
 6. Once installed, always start screenipy by running this command:
     ```
-    docker run -it joshipranjal/screeni-py:latest run_screenipy.sh --gui
+    docker run -p 8501:8501 joshipranjal/screeni-py:latest
 
     OR
 
-    docker run -it joshipranjal/screeni-py:latest run_screenipy.sh --cli
+    docker run -it --entrypoint /bin/bash joshipranjal/screeni-py:latest -c "run_screenipy.sh --cli"
     ```
 
 ## Contributing:
