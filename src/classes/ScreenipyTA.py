@@ -1,9 +1,14 @@
 import numpy as np
+import os
 
-try:
-    import talib
-except ImportError:
+if 'STREAMLIT_APP' in os.environ:
     import pandas_ta as talib
+    print('[+] Importing pandas_ta as we are running on Streamlit cloud app')
+else:
+    try:
+        import talib
+    except ImportError:
+        import pandas_ta as talib
 
 
 class ScreenerTA:

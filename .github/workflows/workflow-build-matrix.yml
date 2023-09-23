@@ -168,11 +168,10 @@ jobs:
     - name: Get tag version version
       id: version
       run: |
-        echo "ver=$(grep 'VERSION = ' src/classes/Changelog.py | awk -F'"' '{print $2}')" >> $GITHUB_OUTPUT
-        if [ -z "$ver" ]; then
-          echo "ver=latest" >> $GITHUB_OUTPUT
-        fi
-        echo $ver
+        VER=$(grep 'VERSION = ' src/classes/Changelog.py | awk -F'"' '{print $2}')
+        echo "VERSION=$VER" >> $GITHUB_ENV
+        # echo "ver=$(grep 'VERSION = ' src/classes/Changelog.py | awk -F'"' '{print $2}')" >> $GITHUB_OUTPUT
+        echo $VER
         
     - name: Streamlit Build and Push
       uses: docker/build-push-action@v4
@@ -180,5 +179,6 @@ jobs:
         context: .
         platforms: linux/amd64, linux/arm64
         push: true
-        tags: joshipranjal/screeni-py:latest, joshipranjal/screeni-py:${{ steps.version.outputs.ver }}
+        tags: joshipranjal/screeni-py:latest, joshipranjal/screeni-py:${{ env.VERSION }}
+        # tags: joshipranjal/screeni-py:latest, joshipranjal/screeni-py:${{ steps.version.outputs.ver }}
 
