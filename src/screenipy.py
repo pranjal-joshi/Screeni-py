@@ -185,6 +185,9 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
                 if not configManager.checkConfigFile():
                     configManager.setConfig(ConfigManager.parser, default=True, showFileCreatedText=False)
                 tickerOption, executeOption = int(execute_inputs[0]), int(execute_inputs[1])
+                if tickerOption == 13:
+                    newlyListedOnly = True
+                    tickerOption = 12
             else:
                 tickerOption, executeOption = initExecution()
         except KeyboardInterrupt:

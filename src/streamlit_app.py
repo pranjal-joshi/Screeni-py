@@ -10,7 +10,7 @@ from time import sleep
 from pathlib import Path
 import classes.ConfigManager as ConfigManager
 
-st.set_page_config(layout="wide")
+st.set_page_config(layout="wide", page_title="Screeni-py", page_icon="📈")
 
 # Set protobuf to python to avoid TF error (This is a Slower infernece)
 os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
@@ -123,12 +123,12 @@ def get_extra_inputs(tickerOption, executeOption, c_index=None, c_criteria=None,
 
 ac, bc = st.columns([13,1])
 
-ac.title('Screeni-py')
+ac.title('📈 Screeni-py')
 ac.subheader('in Beta Release 🚧  (Scan QR to Report Bugs / Request Features)')
 
 if isDevVersion:
     ac.warning(guiUpdateMessage, icon='⚠️')
-elif guiUpdateMessage is not None:
+elif guiUpdateMessage != "":
     ac.success(guiUpdateMessage, icon='❇️')
 
 telegram_url = "https://user-images.githubusercontent.com/6128978/217814499-7934edf6-fcc3-46d7-887e-7757c94e1632.png"
@@ -343,6 +343,8 @@ with tab_about:
 ⬇️ Download latest software from https://github.com/pranjal-joshi/Screeni-py/releases/latest
           
 💬 Join Telegram Group for discussion: https://t.me/+0Tzy08mR0do0MzNl
+          
+🎬 YouTube Playlist: https://youtube.com/playlist?list=PLsGnKKT_974J3UVS8M6bxqePfWLeuMsBi&si=b6JNMf03IbA_SsXs
           """)
   st.warning("ChangeLog:\n " + changelog[40:-3], icon='⚙️')
         
