@@ -9,16 +9,22 @@ import sys
 import math
 import numpy as np
 import pandas as pd
-# import talib
 import joblib
 import keras
+import time
 import classes.Utility as Utility
+from classes.Utility import isGui
 from sklearn.preprocessing import StandardScaler
 from scipy.signal import argrelextrema
 from scipy.stats import linregress
 from classes.ColorText import colorText
 from classes.SuppressOutput import SuppressOutput
 from classes.ScreenipyTA import ScreenerTA
+try:
+    import chromadb
+    CHROMA_AVAILABLE = True
+except:
+    CHROMA_AVAILABLE = False
 
 
 # Exception for newly listed stocks with candle nos < daysToLookback
@@ -592,9 +598,11 @@ class tools:
             out = colorText.BOLD + colorText.GREEN + "BULLISH" + colorText.END + colorText.BOLD
             sug = "Stay Bullish!"
         if not Utility.tools.isClosingHour():
-            print(colorText.BOLD + colorText.WARN + "Note: The AI prediction should be executed After 3 PM or Near to Closing time as the Prediction Accuracy is based on the Closing price!" + colorText.END)
+            print(colorText.BOLD + colorText.WARN + "Note: The AI prediction should be executed After 3 PM Around the Closing hours as the Prediction Accuracy is based on the Closing price!" + colorText.END)
         print(colorText.BOLD + colorText.BLUE + "\n" + "[+] Nifty AI Prediction -> " + colorText.END + colorText.BOLD + "Market may Open {} next day! {}".format(out, sug) + colorText.END)
         print(colorText.BOLD + colorText.BLUE + "\n" + "[+] Nifty AI Prediction -> " + colorText.END + "Probability/Strength of Prediction = {}%".format(Utility.tools.getSigmoidConfidence(pred[0])))
+        if isGui():
+            return pred, 'BULLISH' if pred <= 0.5 else 'BEARISH', Utility.tools.getSigmoidConfidence(pred[0])
         return pred
 
     def monitorFiveEma(self, proxyServer, fetcher, result_df, last_signal, risk_reward = 3):
@@ -668,7 +676,27 @@ class tools:
         result_df.drop_duplicates(keep='last', inplace=True)
         result_df.sort_values(by='Time', inplace=True)
         return result_df[::-1]
-            
+    
+    # Add data to vector database
+    def addVector(self, data, stockCode, daysToLookback):
+        data = data[::-1] # Reinverting preprocessedData for pct_change
+        data = data.pct_change()
+        # data = data[::-1]     # Do we need to invert again? No we dont - See operation after flatten
+        data = data[['Open', 'High', 'Low', 'Close']]
+        data = data.reset_index(drop=True)
+        data = data.dropna()
+        data = data.to_numpy().flatten().tolist()
+        data = data[(-4 * daysToLookback):]     # Keep only OHLC * daysToLookback samples
+        if len(data) == (4 * daysToLookback):
+            chroma_client = chromadb.PersistentClient(path="./chromadb_store/")
+            collection = chroma_client.get_or_create_collection(name="nse_stocks")
+            collection.upsert(
+                embeddings=[data],
+                documents=[stockCode],
+                ids=[stockCode]
+            )
+            return data
+
 
     '''
     # Find out trend for days to lookback

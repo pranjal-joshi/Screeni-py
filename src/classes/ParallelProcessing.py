@@ -59,7 +59,7 @@ class StockConsumer(multiprocessing.Process):
             sys.exit(0)
 
     def screenStocks(self, executeOption, reversalOption, maLength, daysForLowestVolume, minRSI, maxRSI, respChartPattern, insideBarToLookback, totalSymbols,
-                     configManager, fetcher, screener, candlePatterns, stock, newlyListedOnly, downloadOnly, printCounter=False):
+                     configManager, fetcher, screener, candlePatterns, stock, newlyListedOnly, downloadOnly, vectorSearch, printCounter=False):
         screenResults = pd.DataFrame(columns=[
             'Stock', 'Consolidating', 'Breaking-Out', 'MA-Signal', 'Volume', 'LTP', 'RSI', 'Trend', 'Pattern'])
         screeningDictionary = {'Stock': "", 'Consolidating': "",  'Breaking-Out': "",
@@ -105,6 +105,11 @@ class StockConsumer(multiprocessing.Process):
 
             fullData, processedData = screener.preprocessData(
                 data, daysToLookback=configManager.daysToLookback)
+            
+            if type(vectorSearch) != bool and type(vectorSearch) and vectorSearch[2] == True:
+                executeOption = 0
+                with self.screenCounter.get_lock():
+                    screener.addVector(fullData, stock, vectorSearch[1])
 
             if newlyListedOnly:
                 if not screener.validateNewlyListed(fullData, period):

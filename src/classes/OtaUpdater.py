@@ -85,7 +85,8 @@ rm updater.sh
         md = requests.get(url)
         txt = md.text
         txt = txt.split("New?")[1]
-        txt = txt.split("## Downloads")[0]
+        # txt = txt.split("## Downloads")[0]
+        txt = txt.split("## Installation Guide")[0]
         txt = txt.replace('**','').replace('`','').strip()
         return (txt+"\n")
 
