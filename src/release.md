@@ -3,20 +3,22 @@
 
 Celebrating more than 7K+ Downloads - Thank You for your support :tada:
 
-🐳 **Docker containers are now released for quick setup and easy usage!**
+🐳 **Docker containers are released for quick setup and easy usage!**
 
-1. New Index - **F&O Stocks Only** Added for F&O traders
-2. Trend detection fixed (#173) and % change added.
+⚠️ **Executable files (.exe, .bin and .run) are now DEPRECATED! Please Switch to Docker**
+
+1. **Search Similar Stocks** Added using Vector Similarity search - Try `Search Similar Stocks`.
+2. New Index - **F&O Stocks Only** Added for F&O traders with modified screening criterias.
 3. **Artificial Intelligence v2 for Nifty 50 Prediction** - Predict Next day Gap-up/down - Try `Select Index for Screening > N`
-4. **Live Intraday Scanner - 5 EMA** - Try `Select Index for Screening > E` - Get live trade entries for Nifty and BankNifty with notifications!
-5. New Screener **Buy at Trendline** added for Swing/Mid/Long term traders - Try `Option > 7 > 5`.
-6. Alternate Data Source for faster After-Market Analysis - Optimizations and  Cosmetic Updates!
+4. New Screener **Buy at Trendline** added for Swing/Mid/Long term traders - Try `Option > 7 > 5`.
+6. Alternate Data Source for faster After-Market Analysis - OTA Optimizations and Cosmetic Updates for Docker/GUI!
 
 ## Installation Guide
 
 [![Screeni-py - Detailed Installation Guide](https://markdown-videos-api.jorgenkh.no/url?url=https%3A%2F%2Fyoutu.be%2F2HMN0ac4H20)](https://youtu.be/2HMN0ac4H20)
 
-## Downloads
+## Downloads 
+### Deprycated - Use Docker Method mentioned in next section
 | Operating System | Executable File |
 | :-: | --- |
 | ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white) | **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/2.02/screenipy.exe)** |
@@ -32,7 +34,7 @@ Celebrating more than 7K+ Downloads - Thank You for your support :tada:
 | ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) | `dev` | `docker pull joshipranjal/screeni-py:dev` | Command Line | `docker run -it --entrypoint /bin/bash joshipranjal/screeni-py:dev -c "run_screenipy.sh --cli"` |
 | ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) | `dev` | `docker pull joshipranjal/screeni-py:dev` | GUI WebApp | `docker run -p 8501:8501 joshipranjal/screeni-py:dev` |
 
-**Should I download the Exe/Bin file? Or Should I use Docker?**
+**Why we shifted to Docker from the Good old EXEs?**
 
 | Executable/Binary File | Docker |
 | :-- | :-- |
@@ -47,7 +49,8 @@ Celebrating more than 7K+ Downloads - Thank You for your support :tada:
 | Antivirus may block this as untrusted file ⚠️ | No issues with Antivirus | 
 | Need to download new file for every update | Updates quickly with minimal downloading |
 | No need of commands/technical knowledge | Very basic command execution skills may be required |
-| Custom configuration works and persisted accross the runs/restarts | Config file resets at every run but your custom config can be uploaded in GUI mode |
+| Custom configuration works and persists accross the runs/restarts | Config file resets at every run but your custom config can be uploaded in GUI mode |
+| Incompatible with Vector Database ⚠️ | Compatible with all Python libraries |
 
 
 ## How to use?

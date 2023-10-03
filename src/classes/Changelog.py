@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.02"
+VERSION = "2.03"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -215,5 +215,9 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 2. OTA Updates fixed for GUI
 3. Cosmetic improvements
 4. YouTube Video added to docs
+
+[2.03]
+1. AI based Nifty-50 Gap up/down prediction added to GUI
+2. Cosmetic updates and minor bug-fixes.
 
 ''' + colorText.END

@@ -15,7 +15,7 @@ jobs:
 
   # Job for builing packages
   Build-Executables:
-    name: Build Packages
+    name: Build Packages (Disabled onwards v2.03)
     #needs: Create-Release
     runs-on: ${{ matrix.os }}
     strategy:
@@ -24,7 +24,7 @@ jobs:
           - os: windows-latest
             TARGET: Windows
             CMD_BUILD: |
-              pyinstaller --onefile --icon=src\icon.ico src\screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas --hidden-import alive-progress --hidden-import alive_progress
+              pyinstaller --onefile --icon=src\icon.ico src\screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas --hidden-import alive-progress --hidden-import alive_progress --hidden-import chromadb
             DEP_BUILD: |
               python -m pip install --upgrade pip
               echo Installing TA-lib...
@@ -44,7 +44,7 @@ jobs:
           - os: ubuntu-20.04
             TARGET: Linux
             CMD_BUILD: |
-              pyinstaller --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas --hidden-import alive-progress --hidden-import alive_progress
+              pyinstaller --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas --hidden-import alive-progress --hidden-import alive_progress --hidden-import chromadb
               mv /home/runner/work/Screeni-py/Screeni-py/dist/screenipy /home/runner/work/Screeni-py/Screeni-py/dist/screenipy.bin
               chmod +x /home/runner/work/Screeni-py/Screeni-py/dist/screenipy.bin
             DEP_BUILD: |
@@ -68,7 +68,7 @@ jobs:
           - os: macos-latest
             TARGET: MacOS
             CMD_BUILD: |
-              pyinstaller --onefile --windowed --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas --hidden-import alive-progress --hidden-import alive_progress
+              pyinstaller --onefile --windowed --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas --hidden-import alive-progress --hidden-import alive_progress --hidden-import chromadb
               mv /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy.run
             DEP_BUILD: |
               brew install ta-lib
@@ -89,38 +89,38 @@ jobs:
         shell: bash
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
 
-      - name: Set up Python 3.9.4
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.9.4
+      # - name: Set up Python 3.9.4
+      #   uses: actions/setup-python@v2
+      #   with:
+      #     python-version: 3.9.4
 
-      - name: Load Cache for Linux Dependencies
-        uses: actions/cache@v2
-        if: startsWith(runner.os, 'Linux')
-        with:
-          path: |
-            /usr/include/ta-lib
-            /usr/bin/ta-lib-config
-          key: ${{ runner.os }}-talib
-          restore-keys: |
-            ${{ runner.os }}-talib
+      # - name: Load Cache for Linux Dependencies
+      #   uses: actions/cache@v2
+      #   if: startsWith(runner.os, 'Linux')
+      #   with:
+      #     path: |
+      #       /usr/include/ta-lib
+      #       /usr/bin/ta-lib-config
+      #     key: ${{ runner.os }}-talib
+      #     restore-keys: |
+      #       ${{ runner.os }}-talib
 
-      - name: Install dependencies for ${{ matrix.TARGET }}
-        run: ${{ matrix.DEP_BUILD }}
+      # - name: Install dependencies for ${{ matrix.TARGET }}
+      #   run: ${{ matrix.DEP_BUILD }}
 
-      - name: Build for ${{ matrix.TARGET }}
-        run: ${{ matrix.CMD_BUILD }}
+      # - name: Build for ${{ matrix.TARGET }}
+      #   run: ${{ matrix.CMD_BUILD }}
 
-      - name: Test Built Binary for ${{ matrix.TARGET }}
-        shell: bash
-        run: ${{ matrix.TEST_BUILD }}
-        continue-on-error: false
+      # - name: Test Built Binary for ${{ matrix.TARGET }}
+      #   shell: bash
+      #   run: ${{ matrix.TEST_BUILD }}
+      #   continue-on-error: false
 
-      - name: Save Binaries as Artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: ${{ matrix.FILE_NAME }}
-          path: ${{ matrix.OUT_PATH }}
+      # - name: Save Binaries as Artifacts
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: ${{ matrix.FILE_NAME }}
+      #     path: ${{ matrix.OUT_PATH }}
 
       - name: Read release.md
         id: read_release
@@ -136,8 +136,8 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ matrix.OUT_PATH }}
-          asset_name: ${{ matrix.FILE_NAME }}
+          file: README.md
+          asset_name: README.md
           tag: ${{ github.ref }}
           release_name: Screenipy - v${{ steps.get_version.outputs.VERSION }}
           body: |
@@ -170,8 +170,6 @@ jobs:
       run: |
         VER=$(grep 'VERSION = ' src/classes/Changelog.py | awk -F'"' '{print $2}')
         echo "VERSION=$VER" >> $GITHUB_ENV
-        # echo "ver=$(grep 'VERSION = ' src/classes/Changelog.py | awk -F'"' '{print $2}')" >> $GITHUB_OUTPUT
-        echo $VER
         
     - name: Streamlit Build and Push
       uses: docker/build-push-action@v4
@@ -180,5 +178,4 @@ jobs:
         platforms: linux/amd64, linux/arm64
         push: true
         tags: joshipranjal/screeni-py:latest, joshipranjal/screeni-py:${{ env.VERSION }}
-        # tags: joshipranjal/screeni-py:latest, joshipranjal/screeni-py:${{ steps.version.outputs.ver }}
 

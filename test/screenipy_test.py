@@ -162,28 +162,28 @@ def test_option_14(mocker):
         pass
 
 
-def test_ota_updater():
-    try:
-        OTAUpdater.checkForUpdate(proxyServer, VERSION)
-        assert (
-            "exe" in OTAUpdater.checkForUpdate.url or "bin" in OTAUpdater.checkForUpdate.url)
-    except StopIteration:
-        pass
+# def test_ota_updater():
+#     try:
+#         OTAUpdater.checkForUpdate(proxyServer, VERSION)
+#         assert (
+#             "exe" in OTAUpdater.checkForUpdate.url or "bin" in OTAUpdater.checkForUpdate.url)
+#     except StopIteration:
+#         pass
 
 
-def test_release_readme_urls():
-    global last_release
-    f = open('../src/release.md', 'r', encoding='utf-8')
-    contents = f.read()
-    f.close()
-    failUrl = [f"https://github.com/pranjal-joshi/Screeni-py/releases/download/{last_release}/screenipy.bin",
-               f"https://github.com/pranjal-joshi/Screeni-py/releases/download/{last_release}/screenipy.exe"]
-    passUrl = [f"https://github.com/pranjal-joshi/Screeni-py/releases/download/{VERSION}/screenipy.bin",
-               f"https://github.com/pranjal-joshi/Screeni-py/releases/download/{VERSION}/screenipy.exe"]
-    for url in failUrl:
-        assert not url in contents
-    for url in passUrl:
-        assert url in contents
+# def test_release_readme_urls():
+#     global last_release
+#     f = open('../src/release.md', 'r', encoding='utf-8')
+#     contents = f.read()
+#     f.close()
+#     failUrl = [f"https://github.com/pranjal-joshi/Screeni-py/releases/download/{last_release}/screenipy.bin",
+#                f"https://github.com/pranjal-joshi/Screeni-py/releases/download/{last_release}/screenipy.exe"]
+#     passUrl = [f"https://github.com/pranjal-joshi/Screeni-py/releases/download/{VERSION}/screenipy.bin",
+#                f"https://github.com/pranjal-joshi/Screeni-py/releases/download/{VERSION}/screenipy.exe"]
+#     for url in failUrl:
+#         assert not url in contents
+#     for url in passUrl:
+#         assert url in contents
 
 
 def test_if_changelog_version_changed():

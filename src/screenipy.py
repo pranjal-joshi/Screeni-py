@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-# Pyinstaller compile Windows: pyinstaller --onefile --icon=src\icon.ico src\screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas --hidden-import alive-progress
-# Pyinstaller compile Linux  : pyinstaller --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas --hidden-import alive-progress
+# Pyinstaller compile Windows: pyinstaller --onefile --icon=src\icon.ico src\screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas --hidden-import alive-progress --hidden-import chromadb
+# Pyinstaller compile Linux  : pyinstaller --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas --hidden-import alive-progress --hidden-import chromadb
 
 # Keep module imports prior to classes
 import os
@@ -28,6 +28,11 @@ from time import sleep
 from tabulate import tabulate
 import multiprocessing
 multiprocessing.freeze_support()
+try:
+    import chromadb
+    CHROMA_AVAILABLE = True
+except:
+    CHROMA_AVAILABLE = False
 
 # Argument Parsing for test purpose
 argParser = argparse.ArgumentParser()
@@ -51,6 +56,9 @@ loadedStockData = False
 loadCount = 0
 maLength = None
 newlyListedOnly = False
+vectorSearch = False
+
+CHROMADB_PATH = "chromadb_store/"
 
 configManager = ConfigManager.tools()
 fetcher = Fetcher.tools(configManager)
@@ -63,6 +71,15 @@ try:
 except KeyError:
     proxyServer = ""
 
+# Clear chromadb store initially
+if CHROMA_AVAILABLE:
+    chroma_client = chromadb.PersistentClient(path=CHROMADB_PATH)
+    try:
+        chroma_client.delete_collection("nse_stocks")
+    except:
+        pass
+
+
 # Manage Execution flow
 
 
@@ -74,6 +91,7 @@ def initExecution():
      W > Screen stocks from my own Watchlist
      N > Nifty Prediction using Artifical Intelligence (Use for Gap-Up/Gap-Down/BTST/STBT)
      E > Live Index Scan : 5 EMA for Intraday
+     S > Search for Similar Stocks (forming Similar Chart Pattern)
 
      0 > Screen stocks by the stock names (NSE Stock Code)
      1 > Nifty 50               2 > Nifty Next 50           3 > Nifty 100
@@ -108,7 +126,7 @@ def initExecution():
         Utility.tools.clearScreen()
         return initExecution()
 
-    if tickerOption == 'N' or tickerOption == 'E':
+    if tickerOption == 'N' or tickerOption == 'E' or tickerOption == 'S':
         return tickerOption, 0
 
     if tickerOption and tickerOption != 'W':
@@ -153,7 +171,7 @@ def initExecution():
 
 # Main function
 def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list = []):
-    global screenCounter, screenResultsCounter, stockDict, loadedStockData, keyboardInterruptEvent, loadCount, maLength, newlyListedOnly
+    global screenCounter, screenResultsCounter, stockDict, loadedStockData, keyboardInterruptEvent, loadCount, maLength, newlyListedOnly, vectorSearch
     screenCounter = multiprocessing.Value('i', 1)
     screenResultsCounter = multiprocessing.Value('i', 0)
     keyboardInterruptEvent = multiprocessing.Manager().Event()
@@ -184,7 +202,10 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
             if execute_inputs != []:
                 if not configManager.checkConfigFile():
                     configManager.setConfig(ConfigManager.parser, default=True, showFileCreatedText=False)
-                tickerOption, executeOption = int(execute_inputs[0]), int(execute_inputs[1])
+                try:
+                    tickerOption, executeOption = int(execute_inputs[0]), int(execute_inputs[1])
+                except:
+                    tickerOption, executeOption = str(execute_inputs[0]), int(execute_inputs[1])
                 if tickerOption == 13:
                     newlyListedOnly = True
                     tickerOption = 12
@@ -268,7 +289,7 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
               "[+] Press any key to Exit!" + colorText.END)
         sys.exit(0)
 
-    if tickerOption == 'W' or tickerOption == 'N' or tickerOption == 'E' or (tickerOption >= 0 and tickerOption < 15):
+    if tickerOption == 'W' or tickerOption == 'N' or tickerOption == 'E' or tickerOption == 'S' or (tickerOption >= 0 and tickerOption < 15):
         configManager.getConfig(ConfigManager.parser)
         try:
             if tickerOption == 'W':
@@ -316,6 +337,18 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
                     if not isGui():
                         input('\nPress any key to Continue...\n')
                     return
+            elif tickerOption == 'S':
+                if not CHROMA_AVAILABLE:
+                    print(colorText.BOLD + colorText.FAIL +
+                  "\n\n[+] ChromaDB not available in your environment! You can't use this feature!\n" + colorText.END)
+                else:
+                    if execute_inputs != []:
+                        stockCode, candles = execute_inputs[2], execute_inputs[3]
+                    else:
+                        stockCode, candles = Utility.tools.promptSimilarStockSearch()
+                    vectorSearch = [stockCode, candles, True]
+                    tickerOption, executeOption = 12, 1
+                    listStockCodes = fetcher.fetchStockCodes(tickerOption, proxyServer=proxyServer)
             else:
                 if tickerOption == 14:    # Override config for F&O Stocks
                     configManager.stageTwo = False
@@ -338,7 +371,7 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
               "[+] Starting Stock Screening.. Press Ctrl+C to stop!\n")
 
         items = [(executeOption, reversalOption, maLength, daysForLowestVolume, minRSI, maxRSI, respChartPattern, insideBarToLookback, len(listStockCodes),
-                  configManager, fetcher, screener, candlePatterns, stock, newlyListedOnly, downloadOnly)
+                  configManager, fetcher, screener, candlePatterns, stock, newlyListedOnly, downloadOnly, vectorSearch)
                  for stock in listStockCodes]
 
         tasks_queue = multiprocessing.JoinableQueue()
@@ -416,6 +449,25 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
             except Exception as e:
                 break
 
+        if CHROMA_AVAILABLE and type(vectorSearch) == list and vectorSearch[2]:
+            chroma_client = chromadb.PersistentClient(path=CHROMADB_PATH)
+            collection = chroma_client.get_collection(name="nse_stocks")
+            query_embeddings= collection.get(ids = [stockCode], include=["embeddings"])["embeddings"]
+            results = collection.query(
+                query_embeddings=query_embeddings,
+                n_results=4
+            )['ids'][0]
+            try:
+                results.remove(stockCode)
+            except ValueError:
+                pass
+            matchedScreenResults, matchedSaveResults = pd.DataFrame(columns=screenResults.columns), pd.DataFrame(columns=saveResults.columns)
+            for stk in results:
+                matchedScreenResults = matchedScreenResults.append(screenResults[screenResults['Stock'].str.contains(stk)])
+                matchedSaveResults = matchedSaveResults.append(saveResults[saveResults['Stock'].str.contains(stk)])
+            screenResults, saveResults = matchedScreenResults, matchedSaveResults
+            
+
         screenResults.sort_values(by=['Stock'], ascending=True, inplace=True)
         saveResults.sort_values(by=['Stock'], ascending=True, inplace=True)
         screenResults.set_index('Stock', inplace=True)
@@ -456,6 +508,7 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
             if not isGui():
                 input('')
         newlyListedOnly = False
+        vectorSearch = False
 
 
 if __name__ == "__main__":
@@ -474,7 +527,7 @@ if __name__ == "__main__":
             while True:
                 main()
         except Exception as e:
-            # raise e
+            raise e
             if isDevVersion == OTAUpdater.developmentVersion:
                 raise(e)
             input(colorText.BOLD + colorText.FAIL +
