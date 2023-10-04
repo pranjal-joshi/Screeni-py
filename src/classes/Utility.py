@@ -286,6 +286,19 @@ class tools:
             input(colorText.BOLD + colorText.FAIL +
                   "\n[+] Invalid Option Selected. Press Any Key to Continue..." + colorText.END)
             return (None, None)
+        
+    # Prompt for Similar stock search
+    def promptSimilarStockSearch():
+        try:
+            stockCode = str(input(colorText.BOLD + colorText.WARN +
+                                    "\n[+] Enter the Name of the stock to search similar stocks for: " + colorText.END)).upper()
+            candles = int(input(colorText.BOLD + colorText.WARN +
+                                    "\n[+] How many candles (TimeFrame) to look back for similarity? : " + colorText.END))
+            return stockCode, candles
+        except ValueError:
+            input(colorText.BOLD + colorText.FAIL +
+                "\n[+] Invalid Option Selected. Press Any Key to Continue..." + colorText.END)
+            return None, None
 
     def getProgressbarStyle():
         bar = 'smooth'

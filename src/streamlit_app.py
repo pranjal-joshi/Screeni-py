@@ -2,8 +2,6 @@ import streamlit as st
 import streamlit.components.v1 as components
 import requests
 import os
-import sys
-import subprocess
 import configparser
 import urllib
 from time import sleep
@@ -31,6 +29,23 @@ isDevVersion, guiUpdateMessage = OTAUpdater.checkForUpdate(proxyServer, VERSION)
 
 execute_inputs = []
 
+def show_df_as_result_table():
+  try:
+    df = pd.read_pickle('last_screened_unformatted_results.pkl')
+    st.markdown(f'#### 🔍 Found {len(df)} Results')
+    df.index = df.index.map(lambda x: "https://in.tradingview.com/chart?symbol=NSE%3A" + x)
+    df.index = df.index.map(lambda x: f'<a href="{x}" target="_blank">{x.split("%3A")[-1]}</a>')
+    df['Stock'] = df.index
+    stock_column = df.pop('Stock')  # Remove 'Age' column and store it separately
+    df.insert(0, 'Stock', stock_column)
+    st.write(df.to_html(escape=False, index=False, index_names=False), unsafe_allow_html=True)
+    st.write(' ')
+  except FileNotFoundError:
+    st.error('Last Screened results are not available at the moment')
+  except Exception as e:
+    st.error('No Dataframe found for last_screened_results.pkl')
+    st.exception(e)
+
 def on_config_change():
     configManager = ConfigManager.tools()
     configManager.period = period
@@ -47,13 +62,51 @@ def on_config_change():
 
 def on_start_button_click():
     global execute_inputs
-    st.info(f'Received inputs (Debug only): {execute_inputs}')
+    if isDevVersion != None:
+      st.info(f'Received inputs (Debug only): {execute_inputs}')
     with st.spinner('Screening stocks for you...'):
-      # with patch('builtins.input', side_effect=execute_inputs):
         try:
             screenipy_main(execute_inputs=execute_inputs)
         except StopIteration:
             pass
+        except requests.exceptions.RequestException as e:
+           st.error('Failed to reach Screeni-py server!', icon='🫤')
+           st.info('This issue is related with your Internet Service Provider (ISP) - Many **Jio** users faced this issue as the screeni-py data cache server appeared to be not reachable for them!\n\nPlease go through this thread carefully to resolve this error: https://github.com/pranjal-joshi/Screeni-py/issues/164', icon='ℹ️')
+           st.exception(e)
+
+def nifty_predict(col):
+  with col.container():
+    with st.spinner('🔮 Taking a Look into the Future, Please wait...'):
+      import classes.Fetcher as Fetcher
+      import classes.Screener as Screener
+      configManager = ConfigManager.tools()
+      fetcher = Fetcher.tools(configManager)
+      screener = Screener.tools(configManager)
+      os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+      prediction, trend, confidence = screener.getNiftyPrediction(
+          data=fetcher.fetchLatestNiftyDaily(proxyServer=proxyServer), 
+          proxyServer=proxyServer
+      )
+  if 'BULLISH' in trend:
+      col.success(f'Market may Open **Gap Up** next day!\n\nProbability/Strength of Prediction = {confidence}%', icon='📈')
+  elif 'BEARISH' in trend:
+      col.error(f'Market may Open **Gap Down** next day!\n\nProbability/Strength of Prediction = {confidence}%', icon='📉')
+  else:
+      col.info("Couldn't determine the Trend. Try again later!")
+  col.warning('The AI prediction should be executed After 3 PM or Around the Closing hours as the Prediction Accuracy is based on the Closing price!\n\nThis is Just a Statistical Prediction and There are Chances of **False** Predictions!', icon='⚠️')
+      
+def find_similar_stocks(stockCode:str, candles:int):
+  global execute_inputs
+  stockCode = stockCode.upper()
+  if ',' in stockCode or ' ' in stockCode or stockCode == '':
+    st.error('Invalid Character in Stock Name!', icon='😾')
+    return False
+  else:
+    execute_inputs = ['S', 0, stockCode, candles, 'N']
+    on_start_button_click()
+    st.toast('Screening Completed!', icon='🎉')
+    sleep(2)
+  return True
 
 def get_extra_inputs(tickerOption, executeOption, c_index=None, c_criteria=None, start_button=None):
     global execute_inputs
@@ -135,7 +188,7 @@ telegram_url = "https://user-images.githubusercontent.com/6128978/217814499-7934
 bc.divider()
 bc.image(telegram_url, width=96)
 
-tab_screen, tab_config, tab_about = st.tabs(['Screen Stocks', 'Configuration', 'About'])
+tab_screen, tab_similar, tab_nifty, tab_config, tab_about = st.tabs(['Screen Stocks', 'Search Similar Stocks', 'Nifty-50 Gap Prediction', 'Configuration', 'About'])
 
 with tab_screen:
   st.markdown("""
@@ -265,28 +318,15 @@ with tab_screen:
     sleep(2)
 
   with st.container():
-      try:
-        df = pd.read_pickle('last_screened_unformatted_results.pkl')
-        st.markdown(f'#### Found {len(df)} Results')
-        df.index = df.index.map(lambda x: "https://in.tradingview.com/chart?symbol=NSE%3A" + x)
-        df.index = df.index.map(lambda x: f'<a href="{x}" target="_blank">{x.split("%3A")[-1]}</a>')
-        df['Stock'] = df.index
-        stock_column = df.pop('Stock')  # Remove 'Age' column and store it separately
-        df.insert(0, 'Stock', stock_column)
-        st.write(df.to_html(escape=False, index=False, index_names=False), unsafe_allow_html=True)
-        st.write(' ')
-      except FileNotFoundError:
-        st.error('Last Screened results are not available at the moment')
-      except Exception as e:
-        st.error('No Dataframe found for last_screened_results.pkl')
-        st.exception(e)
+    show_df_as_result_table()
+        
 
 with tab_config:
   configManager = ConfigManager.tools()
   configManager.getConfig(parser=ConfigManager.parser)
 
   ac, bc = st.columns([10,2])
-  ac.markdown('### Screening Configuration')
+  ac.markdown('### 🔧 Screening Configuration')
   bc.download_button(
     label="Export Configuration",
     data=Path('screenipy.ini').read_text(),
@@ -326,6 +366,27 @@ with tab_config:
     with open('screenipy.ini', 'wb') as f: 
       f.write(bytes_data)
     st.toast('Configuration Imported', icon='⚙️')
+
+with tab_nifty:
+    ac, bc = st.columns([9,1])
+
+    ac.subheader('🧠 AI-based prediction for Next Day Nifty-50 Gap Up / Gap Down')
+    bc.button('**Predict**', type='primary', on_click=nifty_predict, args=(ac,), use_container_width=True)
+
+with tab_similar:
+   
+  st.subheader('🕵🏻 Find Stocks forming Similar Chart Patterns')
+  ac, bc, cc = st.columns([4,2,1])   
+
+  stockCode = ac.text_input('Enter Stock Name and Press Enter', placeholder='HDFCBANK')
+  candles = bc.number_input('Lookback Period (No. of Candles)', min_value=1, step=1, value=int(configManager.daysToLookback))
+  similar_search_button = cc.button('**Search**', type='primary', use_container_width=True)
+  
+  if similar_search_button:
+    result = find_similar_stocks(stockCode, candles)
+    if result:
+      with st.container():
+        show_df_as_result_table()
 
 with tab_about:
   from classes.Changelog import VERSION, changelog

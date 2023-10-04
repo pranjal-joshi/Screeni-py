@@ -9,7 +9,7 @@
 | **Download** | **Use** | **Discussion** | **Bugs/Issues** | **Documentation** |
 | :---: | :---: | :---: | :---: | :---: |
 | [![cloud-computing (1)](https://user-images.githubusercontent.com/6128978/149935359-ca0a7155-d1e3-4e47-98e8-67f879e707e7.png)](https://github.com/pranjal-joshi/Screeni-py/releases/latest) | [![docker](https://github.com/pranjal-joshi/Screeni-py/assets/6128978/f44054b8-9fcb-465c-a38b-63f6ecc4a0c9)](https://hub.docker.com/r/joshipranjal/screeni-py/tags) | [![meeting](https://user-images.githubusercontent.com/6128978/149935812-31266023-cc5b-4c98-a416-1d4cf8800c0c.png)](https://github.com/pranjal-joshi/Screeni-py/discussions) | [![warning](https://user-images.githubusercontent.com/6128978/149936142-04d7cf1c-5bc5-45c1-a8e4-015454a2de48.png)](https://github.com/pranjal-joshi/Screeni-py/issues?q=is%3Aissue) | [![help](https://user-images.githubusercontent.com/6128978/149937331-5ee5c00a-748d-4fbf-a9f9-e2273480d8a2.png)](https://github.com/pranjal-joshi/Screeni-py/blob/main/README.md#what-is-screeni-py) |
-| Download the Latest Version | Get started quickly using Docker | Join/Read the Community Discussion | Raise an Issue about a Problem | Get Help about Usage |
+| Download the Latest Version (DEPRECATED) | Get started quickly using Docker | Join/Read the Community Discussion | Raise an Issue about a Problem | Get Help about Usage |
 
 <!-- ## [**Click to Download the Latest Version**](https://github.com/pranjal-joshi/Screeni-py/releases/latest) -->
 
@@ -19,13 +19,24 @@
 
 ### A Python-based stock screener for NSE, India.
 
-**Screenipy** is an advanced stock screener to find potential breakout stocks from NSE and tell it's possible breakout values. It also helps to find the stocks which are consolidating and may breakout, or the particular chart patterns that you're looking specifically to make your decisions.
+**Screenipy** is an advanced stock screener to find potential breakout stocks from NSE and tell its possible breakout values. It also helps to find the stocks that are consolidating and may breakout, or the particular chart patterns that you're looking for specifically to make your decisions.
 Screenipy is totally customizable and it can screen stocks with the settings that you have provided.
 
-## How to use?
+## How to use? (New Version - GUI Based)
+* Install Docker Desktop and pull the `latest` docker image from the [release](https://github.com/pranjal-joshi/Screeni-py/releases/latest) page.
+* Checkout this [YouTube Video](https://youtu.be/2HMN0ac4H20) for detailed installation guide.
+  
+<img width="1438" alt="image" src="https://github.com/pranjal-joshi/Screeni-py/assets/6128978/2016be00-5892-4735-8ab3-5f5b70add103">
+<img width="1438" alt="image" src="https://github.com/pranjal-joshi/Screeni-py/assets/6128978/28947290-7f42-4f6f-9fc0-0bae1ee6d6f4">
+<img width="1438" alt="image" src="https://github.com/pranjal-joshi/Screeni-py/assets/6128978/857f8acc-a4e8-4b86-a748-c26057b0e8b1">
+<img width="1438" alt="image" src="https://github.com/pranjal-joshi/Screeni-py/assets/6128978/360b5faa-f4f4-4df6-bec1-90985889bee6">
+<img width="1438" alt="image" src="https://github.com/pranjal-joshi/Screeni-py/assets/6128978/99903d67-d450-4c04-93ae-1f5bb4b905a5">
+
+
+## How to use? (Older Version - CLI Based - DEPRECATED)
 * Download the suitable file according to your OS or install Docker Desktop and pull the `latest` docker image.
-* Linux & Mac users should make sure that the `screenipy.bin or screenipy.run` is having `execute` permission.
-* **Run** the file. Following window will appear after a brief delay.
+* Linux & Mac users should make sure that the `screenipy.bin or screenipy.run` has `execute` permission.
+* **Run** the file. The following window will appear after a brief delay.
 
 ![home](https://raw.githubusercontent.com/pranjal-joshi/Screeni-py/new-features/screenshots/screenipy_demo.gif)
 
@@ -39,7 +50,7 @@ Screenipy is totally customizable and it can screen stocks with the settings tha
 ![results](https://raw.githubusercontent.com/pranjal-joshi/Screeni-py/new-features/screenshots/results.png)
 ![done](https://raw.githubusercontent.com/pranjal-joshi/Screeni-py/new-features/screenshots/done.png)
 
-* Once done, you can also save the results in an excel file.
+* Once done, you can also save the results in an Excel file.
 
 ## Understanding the Result Table:
 
@@ -49,12 +60,12 @@ The Result table contains a lot of different parameters which can be pretty over
 |:---:|:---:|:---|:---|
 |1|**Stock**|This is a NSE scrip symbol. If your OS/Terminal supports unicode, You can directly open **[TradingView](https://in.tradingview.com/)** charts by pressing `Ctrl+Click` on the stock name.|[TATAMOTORS](https://in.tradingview.com/chart?symbol=NSE%3ATATAMOTORS)|
 |2|**Consolidating**|It gives the price range in which stock is trading since last `N` days. `N` is configurable and can be modified by executing `Edit User Configuration` option.|If stock is trading between price 100-120 in last 30 days, Output will be `Range = 20.0 %`|
-|3|**Breakout (N Days)**|This is pure magic! The `BO` is Breakout level in last N days while `R` is the next resistance level if available. Investor should consider both BO & R level to decide entry/exits in their trades.|`B:302, R:313`(Breakout level is 100 & Next resistance is 102)|
+|3|**Breakout (N Days)**|This is pure magic! The `BO` is Breakout level in last N days while `R` is the next resistance level if available. An investor should consider both BO & R level to decide entry/exits in their trades.|`B:302, R:313`(Breakout level is 100 & Next resistance is 102)|
 |4|**LTP**|LTP is the Last Traded Price of an asset traded on NSE.|`298.7` (Stock is trading at this price)|
 |5|**Volume**|Volume shows the relative volume of the recent candle with respect to 20 period MA of Volume. It could be `Unknown` for newly listed stocks.|if 20MA(Volume) is 1M and todays Volume is 2.8M, then `Volume = 2.8x`|
-|6|**MA-Signal**|It describes the price trend of an asset by analysing various 50-200 MA/EMA crossover strategies.|`200MA-Support`,`BullCross-50MA` etc|
-|7|**RSI**|For the momentum traders, it describes 14-period RSI for quick decision making about their trading plans|`0 to 100`|
-|8|**Trend**|By using advance algorithms, the average trendlines are computed for `N` days and their strenght is displayed depending on steepness of trendlines. (This does NOT show any trendline on chart, it is calculated internally)|`Strong Up`, `Weak Down` etc.|
+|6|**MA-Signal**|It describes the price trend of an asset by analyzing various 50-200 MA/EMA crossover strategies.|`200MA-Support`,`BullCross-50MA` etc|
+|7|**RSI**|For the momentum traders, it describes 14-period RSI for quick decision-making about their trading plans|`0 to 100`|
+|8|**Trend**|By using advanced algorithms, the average trendlines are computed for `N` days and their strength is displayed depending on the steepness of the trendlines. (This does NOT show any trendline on a chart, it is calculated internally)|`Strong Up`, `Weak Down` etc.|
 |9|**Pattern**|If the chart or the candle itself forming any important pattern in the recent timeframe or as per the selected screening option, various important patterns will be indicated here.|`Momentum Gainer`, `Inside Bar (N)`,`Bullish Engulfing` etc.|
 
 ## Hack it your way:
@@ -73,7 +84,7 @@ cachestockdata = y
 onlystagetwostocks = y
 useema = n
 ```
-Try to tweak this parameters as per your trading styles. For example, If you're comfortable with weekly charts, make `duration=5d` and so on.
+Try to tweak these parameters as per your trading styles. For example, If you're comfortable with weekly charts, make `duration=5d` and so on.
 
 ## Installation Guide:
 
@@ -86,7 +97,7 @@ Try to tweak this parameters as per your trading styles. For example, If you're 
 
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white) ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) ![Mac OS](https://img.shields.io/badge/mac%20os-D3D3D3?style=for-the-badge&logo=apple&logoColor=000000) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 
-**Should I download the Exe/Bin file? Or Should I use Docker?**
+**Why we shifted to Docker from the Good old EXEs?**
 
 | Executable/Binary File | Docker |
 | :-- | :-- |
@@ -101,12 +112,13 @@ Try to tweak this parameters as per your trading styles. For example, If you're 
 | Antivirus may block this as untrusted file ⚠️ | No issues with Antivirus | 
 | Need to download new file for every update | Updates quickly with minimal downloading |
 | No need of commands/technical knowledge | Very basic command execution skills may be required |
-| Custom configuration works and persisted accross the runs/restarts | Config file resets at every run but your custom config can be uploaded in GUI mode |
+| Custom configuration works and persists accross the runs/restarts | Config file resets at every run but your custom config can be uploaded in GUI mode |
+| Incompatible with Vector Database ⚠️ | Compatible with all Python libraries |
 
-### How to setup and use Screeni-py with Docker?
+### How to set up and use Screeni-py with Docker?
 
 1. Download and Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) with default settings
-2. If you are using windows, update WSL (Windows subsystem for linux) by running `wsl --update` command in command prompt
+2. If you are using Windows, update WSL (Windows subsystem for linux) by running `wsl --update` command in the command prompt
 3. Restart your computer after installation
 4. Open Docker Desktop and keep it as it is
 5. Open Command Prompt (Windows) or Terminal (Mac/Linux) and run command `docker pull joshipranjal/screeni-py:latest`
@@ -119,8 +131,10 @@ Try to tweak this parameters as per your trading styles. For example, If you're 
     docker run -it --entrypoint /bin/bash joshipranjal/screeni-py:latest -c "run_screenipy.sh --cli"
     ```
 
+Check out this [YouTube Video](https://youtu.be/2HMN0ac4H20) for a detailed installation guide.
+
 ## Contributing:
-* Please feel free to Suggest improvements bugs by creating an issue.
+* Please feel free to Suggest improvements/report bugs by creating an issue.
 * Please follow the [Guidelines for Contributing](https://github.com/pranjal-joshi/Screeni-py/blob/new-features/CONTRIBUTING.md) while making a Pull Request.
 
 ## Disclaimer:
