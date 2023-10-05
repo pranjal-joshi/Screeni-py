@@ -19,6 +19,7 @@ Celebrating more than 7K+ Downloads - Thank You for your support :tada:
 
 ## Downloads 
 ### Deprecated - Use Docker Method mentioned in next section
+
 | Operating System | Executable File |
 | :-: | --- |
 | ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white) | **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/2.02/screenipy.exe)** |
