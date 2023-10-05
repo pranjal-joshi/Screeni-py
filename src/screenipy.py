@@ -407,7 +407,8 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
             for _ in range(multiprocessing.cpu_count()):
                 tasks_queue.put(None)
             try:
-                numStocks = len(listStockCodes)
+                numStocks, totalStocks = len(listStockCodes), len(listStockCodes)
+                os.environ['SCREENIPY_TOTAL_STOCKS'] = str(totalStocks)
                 print(colorText.END+colorText.BOLD)
                 bar, spinner = Utility.tools.getProgressbarStyle()
                 with alive_bar(numStocks, bar=bar, spinner=spinner) as progressbar:
@@ -419,6 +420,7 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
                             saveResults = saveResults.append(
                                 result[1], ignore_index=True)
                         numStocks -= 1
+                        os.environ['SCREENIPY_SCREEN_COUNTER'] = str(int((totalStocks-numStocks)/totalStocks*100))
                         progressbar.text(colorText.BOLD + colorText.GREEN +
                                          f'Found {screenResultsCounter.value} Stocks' + colorText.END)
                         progressbar()

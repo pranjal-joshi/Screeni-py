@@ -14,72 +14,73 @@ on:
 jobs:
 
   # Job for builing packages
-  Build-Executables:
-    name: Build Packages (Disabled onwards v2.03)
+  Build-Executables-(Disabled onwards v2.03):
+    name: Build Packages
+    runs-on: ubuntu-latest
     #needs: Create-Release
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: windows-latest
-            TARGET: Windows
-            CMD_BUILD: |
-              pyinstaller --onefile --icon=src\icon.ico src\screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas --hidden-import alive-progress --hidden-import alive_progress --hidden-import chromadb
-            DEP_BUILD: |
-              python -m pip install --upgrade pip
-              echo Installing TA-lib...
-              cd .github/dependencies/
-              echo %cd%
-              pip install TA_Lib-0.4.19-cp39-cp39-win_amd64.whl
-              cd ..
-              cd ..
-              python -m pip install --upgrade pip
-              pip install -r requirements.txt
-            TEST_BUILD: |
-              ./dist/screenipy.exe --testbuild
-              exit $?
-            OUT_PATH: .\dist\screenipy.exe
-            FILE_NAME: screenipy.exe
+    # runs-on: ${{ matrix.os }}
+    # strategy:
+    #   matrix:
+    #     include:
+    #       - os: windows-latest
+    #         TARGET: Windows
+    #         CMD_BUILD: |
+    #           pyinstaller --onefile --icon=src\icon.ico src\screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas --hidden-import alive-progress --hidden-import alive_progress --hidden-import chromadb
+    #         DEP_BUILD: |
+    #           python -m pip install --upgrade pip
+    #           echo Installing TA-lib...
+    #           cd .github/dependencies/
+    #           echo %cd%
+    #           pip install TA_Lib-0.4.19-cp39-cp39-win_amd64.whl
+    #           cd ..
+    #           cd ..
+    #           python -m pip install --upgrade pip
+    #           pip install -r requirements.txt
+    #         TEST_BUILD: |
+    #           ./dist/screenipy.exe --testbuild
+    #           exit $?
+    #         OUT_PATH: .\dist\screenipy.exe
+    #         FILE_NAME: screenipy.exe
           
-          - os: ubuntu-20.04
-            TARGET: Linux
-            CMD_BUILD: |
-              pyinstaller --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas --hidden-import alive-progress --hidden-import alive_progress --hidden-import chromadb
-              mv /home/runner/work/Screeni-py/Screeni-py/dist/screenipy /home/runner/work/Screeni-py/Screeni-py/dist/screenipy.bin
-              chmod +x /home/runner/work/Screeni-py/Screeni-py/dist/screenipy.bin
-            DEP_BUILD: |
-              cd .github/dependencies/
-              pwd
-              tar -xzf ta-lib-0.4.0-src.tar.gz
-              cd ta-lib/
-              ./configure --prefix=/usr
-              make
-              sudo make install
-              cd /home/runner/work/Screeni-py/Screeni-py/
-              python -m pip install --upgrade pip
-              pip install -r requirements.txt
-              pip install ta-lib==0.4.24
-            TEST_BUILD: |
-              /home/runner/work/Screeni-py/Screeni-py/dist/screenipy.bin --testbuild
-              exit $?
-            OUT_PATH: /home/runner/work/Screeni-py/Screeni-py/dist/screenipy.bin
-            FILE_NAME: screenipy.bin
+    #       - os: ubuntu-20.04
+    #         TARGET: Linux
+    #         CMD_BUILD: |
+    #           pyinstaller --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas --hidden-import alive-progress --hidden-import alive_progress --hidden-import chromadb
+    #           mv /home/runner/work/Screeni-py/Screeni-py/dist/screenipy /home/runner/work/Screeni-py/Screeni-py/dist/screenipy.bin
+    #           chmod +x /home/runner/work/Screeni-py/Screeni-py/dist/screenipy.bin
+    #         DEP_BUILD: |
+    #           cd .github/dependencies/
+    #           pwd
+    #           tar -xzf ta-lib-0.4.0-src.tar.gz
+    #           cd ta-lib/
+    #           ./configure --prefix=/usr
+    #           make
+    #           sudo make install
+    #           cd /home/runner/work/Screeni-py/Screeni-py/
+    #           python -m pip install --upgrade pip
+    #           pip install -r requirements.txt
+    #           pip install ta-lib==0.4.24
+    #         TEST_BUILD: |
+    #           /home/runner/work/Screeni-py/Screeni-py/dist/screenipy.bin --testbuild
+    #           exit $?
+    #         OUT_PATH: /home/runner/work/Screeni-py/Screeni-py/dist/screenipy.bin
+    #         FILE_NAME: screenipy.bin
 
-          - os: macos-latest
-            TARGET: MacOS
-            CMD_BUILD: |
-              pyinstaller --onefile --windowed --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas --hidden-import alive-progress --hidden-import alive_progress --hidden-import chromadb
-              mv /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy.run
-            DEP_BUILD: |
-              brew install ta-lib
-              python -m pip install --upgrade pip
-              pip install -r requirements.txt
-              pip install ta-lib==0.4.24
-            TEST_BUILD: |
-              /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy.run --testbuild
-              exit $?
-            OUT_PATH: /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy.run
-            FILE_NAME: screenipy.run
+    #       - os: macos-latest
+    #         TARGET: MacOS
+    #         CMD_BUILD: |
+    #           pyinstaller --onefile --windowed --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas --hidden-import alive-progress --hidden-import alive_progress --hidden-import chromadb
+    #           mv /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy.run
+    #         DEP_BUILD: |
+    #           brew install ta-lib
+    #           python -m pip install --upgrade pip
+    #           pip install -r requirements.txt
+    #           pip install ta-lib==0.4.24
+    #         TEST_BUILD: |
+    #           /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy.run --testbuild
+    #           exit $?
+    #         OUT_PATH: /Users/runner/work/Screeni-py/Screeni-py/dist/screenipy.run
+    #         FILE_NAME: screenipy.run
           
     steps:
       - uses: actions/checkout@v4

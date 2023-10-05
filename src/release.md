@@ -8,9 +8,10 @@ Celebrating more than 7K+ Downloads - Thank You for your support :tada:
 ⚠️ **Executable files (.exe, .bin and .run) are now DEPRECATED! Please Switch to Docker**
 
 1. **Search Similar Stocks** Added using Vector Similarity search - Try `Search Similar Stocks`.
-2. New Index - **F&O Stocks Only** Added for F&O traders with modified screening criterias.
-3. **Artificial Intelligence v2 for Nifty 50 Prediction** - Predict Next day Gap-up/down - Try `Select Index for Screening > N`
-4. New Screener **Buy at Trendline** added for Swing/Mid/Long term traders - Try `Option > 7 > 5`.
+2. Progressbar added for Screener in GUI mode!
+3. New Index - **F&O Stocks Only** Added for F&O traders with modified screening criterias.
+4. **Artificial Intelligence v2 for Nifty 50 Prediction** - Predict Next day Gap-up/down - Try `Select Index for Screening > N`
+5. New Screener **Buy at Trendline** added for Swing/Mid/Long term traders - Try `Option > 7 > 5`.
 6. Alternate Data Source for faster After-Market Analysis - OTA Optimizations and Cosmetic Updates for Docker/GUI!
 
 ## Installation Guide

@@ -223,7 +223,9 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 4. Executables Deprecated now onwards
 
 [2.04]
-1. OTA update fixes
-2. Documentation updated
+1. OTA update fixed - caching added in GUI
+2. Moved to TA-Lib-Precompiled (0.4.25)
+3. Progressbar added for screening to GUI
+4. Documentation updated
 
 ''' + colorText.END
