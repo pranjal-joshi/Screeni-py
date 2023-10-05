@@ -18,7 +18,7 @@ Celebrating more than 7K+ Downloads - Thank You for your support :tada:
 [![Screeni-py - Detailed Installation Guide](https://markdown-videos-api.jorgenkh.no/url?url=https%3A%2F%2Fyoutu.be%2F2HMN0ac4H20)](https://youtu.be/2HMN0ac4H20)
 
 ## Downloads 
-### Deprycated - Use Docker Method mentioned in next section
+### Deprecated - Use Docker Method mentioned in next section
 | Operating System | Executable File |
 | :-: | --- |
 | ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white) | **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/2.02/screenipy.exe)** |
