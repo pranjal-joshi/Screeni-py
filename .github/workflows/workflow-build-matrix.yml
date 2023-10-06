@@ -14,10 +14,10 @@ on:
 jobs:
 
   # Job for builing packages
-  Build-Executables-(Disabled onwards v2.03):
+  Build-Executables:
     name: Build Packages
     runs-on: ubuntu-latest
-    #needs: Create-Release
+    needs: Docker-Build
     # runs-on: ${{ matrix.os }}
     # strategy:
     #   matrix:
