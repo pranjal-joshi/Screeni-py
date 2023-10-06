@@ -6,10 +6,10 @@
 | ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white) ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) ![Mac OS](https://img.shields.io/badge/mac%20os-D3D3D3?style=for-the-badge&logo=apple&logoColor=000000) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) |
 | <img width="240" src="https://user-images.githubusercontent.com/6128978/217814499-7934edf6-fcc3-46d7-887e-7757c94e1632.png"><h2>Scan QR Code to join [Official Telegram Group](https://t.me/+0Tzy08mR0do0MzNl) for Additional Discussions</h2> |
 
-| **Download** | **Use** | **Discussion** | **Bugs/Issues** | **Documentation** |
+| **YouTube** | **Use** | **Discussion** | **Bugs/Issues** | **Documentation** |
 | :---: | :---: | :---: | :---: | :---: |
-| [![cloud-computing (1)](https://user-images.githubusercontent.com/6128978/149935359-ca0a7155-d1e3-4e47-98e8-67f879e707e7.png)](https://github.com/pranjal-joshi/Screeni-py/releases/latest) | [![docker](https://github.com/pranjal-joshi/Screeni-py/assets/6128978/f44054b8-9fcb-465c-a38b-63f6ecc4a0c9)](https://hub.docker.com/r/joshipranjal/screeni-py/tags) | [![meeting](https://user-images.githubusercontent.com/6128978/149935812-31266023-cc5b-4c98-a416-1d4cf8800c0c.png)](https://github.com/pranjal-joshi/Screeni-py/discussions) | [![warning](https://user-images.githubusercontent.com/6128978/149936142-04d7cf1c-5bc5-45c1-a8e4-015454a2de48.png)](https://github.com/pranjal-joshi/Screeni-py/issues?q=is%3Aissue) | [![help](https://user-images.githubusercontent.com/6128978/149937331-5ee5c00a-748d-4fbf-a9f9-e2273480d8a2.png)](https://github.com/pranjal-joshi/Screeni-py/blob/main/README.md#what-is-screeni-py) |
-| Download the Latest Version (DEPRECATED) | Get started quickly using Docker | Join/Read the Community Discussion | Raise an Issue about a Problem | Get Help about Usage |
+| [![youtube](https://github.com/pranjal-joshi/Screeni-py/assets/6128978/9673bbcf-4798-48f4-918d-692b90e28d37)](https://www.youtube.com/playlist?list=PLsGnKKT_974J3UVS8M6bxqePfWLeuMsBi) | [![docker](https://github.com/pranjal-joshi/Screeni-py/assets/6128978/f44054b8-9fcb-465c-a38b-63f6ecc4a0c9)](https://hub.docker.com/r/joshipranjal/screeni-py/tags) | [![meeting](https://user-images.githubusercontent.com/6128978/149935812-31266023-cc5b-4c98-a416-1d4cf8800c0c.png)](https://github.com/pranjal-joshi/Screeni-py/discussions) | [![warning](https://user-images.githubusercontent.com/6128978/149936142-04d7cf1c-5bc5-45c1-a8e4-015454a2de48.png)](https://github.com/pranjal-joshi/Screeni-py/issues?q=is%3Aissue) | [![help](https://user-images.githubusercontent.com/6128978/149937331-5ee5c00a-748d-4fbf-a9f9-e2273480d8a2.png)](https://github.com/pranjal-joshi/Screeni-py/blob/main/README.md#what-is-screeni-py) |
+| Watch our [YouTube](https://www.youtube.com/playlist?list=PLsGnKKT_974J3UVS8M6bxqePfWLeuMsBi) playlist | Get started quickly using Docker | Join/Read the Community Discussion | Raise an Issue about a Problem | Get Help about Usage |
 
 <!-- ## [**Click to Download the Latest Version**](https://github.com/pranjal-joshi/Screeni-py/releases/latest) -->
 
@@ -23,6 +23,9 @@
 Screenipy is totally customizable and it can screen stocks with the settings that you have provided.
 
 ## How to use? (New Version - GUI Based)
+
+[![Screeni-py - Configuration and Usage | Screenipy - Python NSE Stock Screener](https://markdown-videos-api.jorgenkh.no/url?url=https%3A%2F%2Fyoutu.be%2FJCn6z1A7INI)](https://youtu.be/JCn6z1A7INI)
+
 * Install Docker Desktop and pull the `latest` docker image from the [release](https://github.com/pranjal-joshi/Screeni-py/releases/latest) page.
 * Checkout this [YouTube Video](https://youtu.be/2HMN0ac4H20) for detailed installation guide.
   

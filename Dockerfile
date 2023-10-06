@@ -29,17 +29,18 @@ WORKDIR /opt/program
 
 RUN chmod +x *
 
-WORKDIR /opt/program/.github/dependencies/
-RUN tar -xzf ta-lib-0.4.0-src.tar.gz
+# Removed build ta-lib from source as we're using [pip3 install TA-Lib-Precompiled] for faster docker build
 
-WORKDIR /opt/program/.github/dependencies/ta-lib/
-RUN ./configure --prefix=/usr --build=$(uname -m)-unknown-linux-gnu
-RUN make
-RUN make install
+# WORKDIR /opt/program/.github/dependencies/
+# RUN tar -xzf ta-lib-0.4.0-src.tar.gz
+
+# WORKDIR /opt/program/.github/dependencies/ta-lib/
+# RUN ./configure --prefix=/usr --build=$(uname -m)-unknown-linux-gnu
+# RUN make
+# RUN make install
 
 WORKDIR /opt/program/
 RUN python3 -m pip install --upgrade pip
-# RUN pip3 install ta-lib==0.4.24
 
 RUN pip3 install -r "requirements.txt"
 

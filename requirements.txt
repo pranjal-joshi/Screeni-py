@@ -19,7 +19,8 @@ pytest-mock
 pytoml
 retrying
 scipy==1.11.2
-ta-lib
+# ta-lib
+TA-Lib-Precompiled
 tabulate
 yfinance==0.1.87
 alive-progress==1.6.2

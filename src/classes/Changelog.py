@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.03"
+VERSION = "2.04"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -218,6 +218,14 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [2.03]
 1. AI based Nifty-50 Gap up/down prediction added to GUI
-2. Cosmetic updates and minor bug-fixes.
+2. Cosmetic updates and minor bug-fixes
+3. Search Similar Stock Added
+4. Executables Deprecated now onwards
+
+[2.04]
+1. OTA update fixed - caching added in GUI
+2. Moved to TA-Lib-Precompiled (0.4.25)
+3. Progressbar added for screening to GUI
+4. Documentation updated
 
 ''' + colorText.END

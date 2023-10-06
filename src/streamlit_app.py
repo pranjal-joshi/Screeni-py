@@ -6,6 +6,8 @@ import configparser
 import urllib
 from time import sleep
 from pathlib import Path
+from threading import Thread
+from time import sleep
 import classes.ConfigManager as ConfigManager
 
 st.set_page_config(layout="wide", page_title="Screeni-py", page_icon="📈")
@@ -25,7 +27,14 @@ try:
 except KeyError:
     proxyServer = ""
 
-isDevVersion, guiUpdateMessage = OTAUpdater.checkForUpdate(proxyServer, VERSION)
+isDevVersion, guiUpdateMessage = None, None
+
+@st.cache_data(ttl='1h', show_spinner=False)
+def check_updates():
+  isDevVersion, guiUpdateMessage = OTAUpdater.checkForUpdate(proxyServer, VERSION)
+  return isDevVersion, guiUpdateMessage
+
+isDevVersion, guiUpdateMessage = check_updates()
 
 execute_inputs = []
 
@@ -64,15 +73,44 @@ def on_start_button_click():
     global execute_inputs
     if isDevVersion != None:
       st.info(f'Received inputs (Debug only): {execute_inputs}')
-    with st.spinner('Screening stocks for you...'):
-        try:
-            screenipy_main(execute_inputs=execute_inputs)
-        except StopIteration:
-            pass
-        except requests.exceptions.RequestException as e:
-           st.error('Failed to reach Screeni-py server!', icon='🫤')
-           st.info('This issue is related with your Internet Service Provider (ISP) - Many **Jio** users faced this issue as the screeni-py data cache server appeared to be not reachable for them!\n\nPlease go through this thread carefully to resolve this error: https://github.com/pranjal-joshi/Screeni-py/issues/164', icon='ℹ️')
-           st.exception(e)
+
+    def dummy_call():
+      try:
+          screenipy_main(execute_inputs=execute_inputs)
+      except StopIteration:
+          pass
+      except requests.exceptions.RequestException:
+          os.environ['SCREENIPY_REQ_ERROR'] = "TRUE"
+
+    t = Thread(target=dummy_call)
+    t.start()
+
+    st.markdown("""
+      <style>
+      .stProgress p {
+          font-size: 17px;
+      }
+      </style>
+      """, unsafe_allow_html=True)
+
+    progress_text = "🚀 Preparing Screener, Please Wait! "
+    progress_bar = st.progress(0, text=progress_text)
+
+    os.environ['SCREENIPY_SCREEN_COUNTER'] = '0'
+    while int(os.environ.get('SCREENIPY_SCREEN_COUNTER')) < 100:
+      sleep(0.05)
+      cnt = int(os.environ.get('SCREENIPY_SCREEN_COUNTER'))
+      if cnt > 0:
+        progress_text = "🔍 Screening stocks for you... "
+        progress_bar.progress(cnt, text=progress_text + f"**:red[{cnt}%]** Done")
+      if os.environ.get('SCREENIPY_REQ_ERROR') and "TRUE" in os.environ.get('SCREENIPY_REQ_ERROR'):
+        st.error('Failed to reach Screeni-py server!', icon='🫤')
+        st.info('This issue is related with your Internet Service Provider (ISP) - Many **Jio** users faced this issue as the screeni-py data cache server appeared to be not reachable for them!\n\nTry with another ISP/Network or go through this thread carefully to resolve this error: https://github.com/pranjal-joshi/Screeni-py/issues/164', icon='ℹ️')
+        del os.environ['SCREENIPY_REQ_ERROR']
+        break
+    
+    t.join()
+    progress_bar.empty()
 
 def nifty_predict(col):
   with col.container():
