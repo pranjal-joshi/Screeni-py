@@ -16,6 +16,7 @@ Celebrating more than 7K+ Downloads - Thank You for your support :tada:
 
 ## Installation Guide
 
+[![Screeni-py - How to install Software Updates? | Screenipy - Python NSE Stock Screener](https://markdown-videos-api.jorgenkh.no/url?url=https%3A%2F%2Fyoutu.be%2FT41m13iMyJc)](https://youtu.be/T41m13iMyJc) 
 [![Screeni-py - Detailed Installation Guide](https://markdown-videos-api.jorgenkh.no/url?url=https%3A%2F%2Fyoutu.be%2F2HMN0ac4H20)](https://youtu.be/2HMN0ac4H20)
 
 ## Downloads 
@@ -41,17 +42,15 @@ Celebrating more than 7K+ Downloads - Thank You for your support :tada:
 | Executable/Binary File | Docker |
 | :-- | :-- |
 | [![GitHub all releases](https://img.shields.io/github/downloads/pranjal-joshi/Screeni-py/total?color=Green&label=Downloads&style=for-the-badge)](#) | ![Docker Pulls](https://img.shields.io/docker/pulls/joshipranjal/screeni-py?style=for-the-badge&logo=docker) |
-| Download Directly from the [Release](https://github.com/pranjal-joshi/Screeni-py/releases/latest) page | Need to Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) ⚠️|
+| Download Directly from the [Release](https://github.com/pranjal-joshi/Screeni-py/releases/latest) page (DEPRECATED) | Need to Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) ⚠️|
 | May take a long time to open the app | Loads quickly |
 | Slower screening | Performance boosted as per your CPU capabilities |
-| Supports Excel Watchlist screening, Export results as excel | Excel features are not supported ⚠️ |
 | You may face errors/warnings due to different CPU arch of your system ⚠️ | Compatible with all x86_64/amd64/arm64 CPUs irrespective of OS (including Mac M1/M2) |
 | Works only with Windows 10/11 ⚠️ | Works with older versions of Windows as well |
 | Different file for each OS | Same container is compatible with everyone |
 | Antivirus may block this as untrusted file ⚠️ | No issues with Antivirus | 
 | Need to download new file for every update | Updates quickly with minimal downloading |
 | No need of commands/technical knowledge | Very basic command execution skills may be required |
-| Custom configuration works and persists accross the runs/restarts | Config file resets at every run but your custom config can be uploaded in GUI mode |
 | Incompatible with Vector Database ⚠️ | Compatible with all Python libraries |
 
 

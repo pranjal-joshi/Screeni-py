@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.04"
+VERSION = "2.05"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -227,5 +227,10 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 2. Moved to TA-Lib-Precompiled (0.4.25)
 3. Progressbar added for screening to GUI
 4. Documentation updated
+
+[2.05]
+1. Download Results button added
+2. Configuration save bug fixed for checkboxes
+3. Attempted to changed Docker DNS
 
 ''' + colorText.END
