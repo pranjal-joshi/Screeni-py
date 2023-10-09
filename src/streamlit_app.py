@@ -4,6 +4,7 @@ import requests
 import os
 import configparser
 import urllib
+import datetime
 from time import sleep
 from pathlib import Path
 from threading import Thread
@@ -41,7 +42,16 @@ execute_inputs = []
 def show_df_as_result_table():
   try:
     df = pd.read_pickle('last_screened_unformatted_results.pkl')
-    st.markdown(f'#### 🔍 Found {len(df)} Results')
+    ac, bc = st.columns([6,1])
+    ac.markdown(f'#### 🔍 Found {len(df)} Results')
+    bc.download_button(
+        label="Download Results",
+        data=df.to_csv().encode('utf-8'),
+        file_name=f'screenipy_results_{datetime.datetime.now().strftime("%H:%M:%S_%d-%m-%Y")}.csv',
+        mime='text/csv',
+        type='secondary',
+        use_container_width=True
+    )
     df.index = df.index.map(lambda x: "https://in.tradingview.com/chart?symbol=NSE%3A" + x)
     df.index = df.index.map(lambda x: f'<a href="{x}" target="_blank">{x.split("%3A")[-1]}</a>')
     df['Stock'] = df.index
@@ -391,7 +401,7 @@ with tab_config:
   ac, bc, cc, dc = st.columns([1,1,1,1])
   shuffle = ac.checkbox('Shuffle stocks while screening', value=configManager.shuffleEnabled, disabled=True)
   cache = bc.checkbox('Enable caching of stock data after market hours', value=configManager.cacheEnabled, disabled=True)
-  stagetwo = cc.checkbox('Screen only for Stage-2 stocks', value=configManager.stageTwo)
+  stagetwo = cc.checkbox('Screen only for [Stage-2](https://www.investopedia.com/articles/investing/070715/trading-stage-analysis.asp#:~:text=placed%20stops.-,Stage%202%3A%20Uptrends,-Image%20by%20Sabrina) stocks', value=configManager.stageTwo)
   useema = dc.checkbox('Use EMA instead of SMA', value=configManager.useEMA)
 
   save_button = st.button('Save Configuration', on_click=on_config_change, type='primary', use_container_width=True)
