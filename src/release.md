@@ -1,7 +1,7 @@
 [![MADE-IN-INDIA](https://img.shields.io/badge/MADE%20WITH%20%E2%9D%A4%20IN-INDIA-orange?style=for-the-badge)](https://en.wikipedia.org/wiki/India) [![GitHub release (latest by date)](https://img.shields.io/github/v/release/pranjal-joshi/Screeni-py?style=for-the-badge)](#) [![GitHub all releases](https://img.shields.io/github/downloads/pranjal-joshi/Screeni-py/total?color=Green&label=Downloads&style=for-the-badge)](#) ![Docker Pulls](https://img.shields.io/docker/pulls/joshipranjal/screeni-py?style=for-the-badge&logo=docker) [![MADE_WITH](https://img.shields.io/badge/BUILT%20USING-PYTHON-yellow?style=for-the-badge&logo=python&logoColor=yellow)](https://www.python.org/)
 ## What's New?
 
-Celebrating more than 7K+ Downloads - Thank You for your support :tada:
+Screeni-py is now on **YouTube** for additional help! - Thank You for your support :tada:
 
 🐳 **Docker containers are released for quick setup and easy usage!**
 
@@ -12,7 +12,7 @@ Celebrating more than 7K+ Downloads - Thank You for your support :tada:
 3. New Index - **F&O Stocks Only** Added for F&O traders with modified screening criterias.
 4. **Artificial Intelligence v2 for Nifty 50 Prediction** - Predict Next day Gap-up/down - Try `Select Index for Screening > N`
 5. New Screener **Buy at Trendline** added for Swing/Mid/Long term traders - Try `Option > 7 > 5`.
-6. Alternate Data Source for faster After-Market Analysis - OTA Optimizations and Cosmetic Updates for Docker/GUI!
+6. Bugfixes, Optimizations and Cosmetic Updates for Docker/GUI!
 
 ## Installation Guide
 
@@ -30,7 +30,7 @@ Celebrating more than 7K+ Downloads - Thank You for your support :tada:
 
 ## [Docker Releases](https://hub.docker.com/r/joshipranjal/screeni-py/tags)
 
-| | Tag | Pull Command | Mode | Run Command |
+| | Tag | Pull Command | Run Mode | Run Command |
 |:-: | :-: | --- | --- | --- |
 | ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) | `latest` | `docker pull joshipranjal/screeni-py:latest` | Command Line | `docker run -it --entrypoint /bin/bash joshipranjal/screeni-py:latest -c "run_screenipy.sh --cli"` |
 | ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) | `latest` | `docker pull joshipranjal/screeni-py:latest` | GUI WebApp | `docker run -p 8501:8501 joshipranjal/screeni-py:latest` |

@@ -114,8 +114,10 @@ def on_start_button_click():
         progress_text = "🔍 Screening stocks for you... "
         progress_bar.progress(cnt, text=progress_text + f"**:red[{cnt}%]** Done")
       if os.environ.get('SCREENIPY_REQ_ERROR') and "TRUE" in os.environ.get('SCREENIPY_REQ_ERROR'):
-        st.error('Failed to reach Screeni-py server!', icon='🫤')
-        st.info('This issue is related with your Internet Service Provider (ISP) - Many **Jio** users faced this issue as the screeni-py data cache server appeared to be not reachable for them!\n\nTry with another ISP/Network or go through this thread carefully to resolve this error: https://github.com/pranjal-joshi/Screeni-py/issues/164', icon='ℹ️')
+        ac, bc = st.columns([2,1])
+        ac.error(':disappointed: Failed to reach Screeni-py server!')
+        ac.info('This issue is related with your Internet Service Provider (ISP) - Many **Jio** users faced this issue as the screeni-py data cache server appeared to be not reachable for them!\n\nPlease watch the YouTube video attached here to resolve this issue on your local system\n\nTry with another ISP/Network or go through this thread carefully to resolve this error: https://github.com/pranjal-joshi/Screeni-py/issues/164', icon='ℹ️')
+        bc.video('https://youtu.be/JADNADDNTmU')
         del os.environ['SCREENIPY_REQ_ERROR']
         break
     
@@ -429,18 +431,20 @@ with tab_similar:
   stockCode = ac.text_input('Enter Stock Name and Press Enter', placeholder='HDFCBANK')
   candles = bc.number_input('Lookback Period (No. of Candles)', min_value=1, step=1, value=int(configManager.daysToLookback))
   similar_search_button = cc.button('**Search**', type='primary', use_container_width=True)
-  
+
   if similar_search_button:
     result = find_similar_stocks(stockCode, candles)
     if result:
       with st.container():
         show_df_as_result_table()
+        st.write('Click [**here**](https://medium.com/@joshi.pranjal5/spot-your-favourite-trading-setups-using-vector-databases-1651d747fbf0) to know How this Works? 🤔')
 
 with tab_about:
   from classes.Changelog import VERSION, changelog
 
   st.success(f'Screeni-py v{VERSION}', icon='🔍')
-  st.info("""
+  ac, bc = st.columns([2,1])
+  ac.info("""
 👨🏻‍💻 Developed and Maintained by: Pranjal Joshi
           
 🏠 Home Page: https://github.com/pranjal-joshi/Screeni-py
@@ -453,8 +457,9 @@ with tab_about:
           
 💬 Join Telegram Group for discussion: https://t.me/+0Tzy08mR0do0MzNl
           
-🎬 YouTube Playlist: https://youtube.com/playlist?list=PLsGnKKT_974J3UVS8M6bxqePfWLeuMsBi&si=b6JNMf03IbA_SsXs
+🎬 YouTube Playlist: Watch [**Here**](https://youtube.com/playlist?list=PLsGnKKT_974J3UVS8M6bxqePfWLeuMsBi&si=b6JNMf03IbA_SsXs) [![YouTube Channel Subscribers](https://img.shields.io/youtube/channel/subscribers/UCb_4n0rRHCL2dUbmRvS7psA)](https://www.youtube.com/@PranjalJoshi)
           """)
+  bc.write('<iframe width="445" height="295" src="https://www.youtube.com/embed/videoseries?si=aKXpyKKgwCcWIjhW&amp;list=PLsGnKKT_974J3UVS8M6bxqePfWLeuMsBi" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>', unsafe_allow_html=True)
   st.warning("ChangeLog:\n " + changelog[40:-3], icon='⚙️')
         
     
