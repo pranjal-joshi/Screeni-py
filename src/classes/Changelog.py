@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.05"
+VERSION = "2.06"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -232,5 +232,10 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 1. Download Results button added
 2. Configuration save bug fixed for checkboxes
 3. Attempted to changed Docker DNS
+
+
+[2.06]
+1. Links added with cosmetic upgrade
+2. Docs updated
 
 ''' + colorText.END
