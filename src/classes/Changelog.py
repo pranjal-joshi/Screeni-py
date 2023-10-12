@@ -233,6 +233,7 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 2. Configuration save bug fixed for checkboxes
 3. Attempted to changed Docker DNS
 
+
 [2.06]
 1. Links added with cosmetic upgrade
 2. Docs updated
