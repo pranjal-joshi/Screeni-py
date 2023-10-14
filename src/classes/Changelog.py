@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.06"
+VERSION = "2.07"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -237,5 +237,8 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 [2.06]
 1. Links added with cosmetic upgrade
 2. Docs updated
+
+[2.07]
+1. Minor improvements
 
 ''' + colorText.END
