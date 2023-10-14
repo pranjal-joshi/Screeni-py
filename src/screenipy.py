@@ -98,7 +98,7 @@ def initExecution():
      4 > Nifty 200              5 > Nifty 500               6 > Nifty Smallcap 50
      7 > Nifty Smallcap 100     8 > Nifty Smallcap 250      9 > Nifty Midcap 50
     10 > Nifty Midcap 100      11 > Nifty Midcap 150       13 > Newly Listed (IPOs in last 2 Year)
-    14 > F&O Stocks Only 
+    14 > F&O Stocks Only       15 > US S&P 500
     Enter > All Stocks (default) ''' + colorText.END
           )
     try:
@@ -112,7 +112,7 @@ def initExecution():
             tickerOption = tickerOption.upper()
         else:
             tickerOption = int(tickerOption)
-            if(tickerOption < 0 or tickerOption > 14):
+            if(tickerOption < 0 or tickerOption > 15):
                 raise ValueError
             elif tickerOption == 13:
                 newlyListedOnly = True
@@ -289,7 +289,7 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
               "[+] Press any key to Exit!" + colorText.END)
         sys.exit(0)
 
-    if tickerOption == 'W' or tickerOption == 'N' or tickerOption == 'E' or tickerOption == 'S' or (tickerOption >= 0 and tickerOption < 15):
+    if tickerOption == 'W' or tickerOption == 'N' or tickerOption == 'E' or tickerOption == 'S' or (tickerOption >= 0 and tickerOption < 16):
         configManager.getConfig(ConfigManager.parser)
         try:
             if tickerOption == 'W':
@@ -370,7 +370,7 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
         print(colorText.BOLD + colorText.WARN +
               "[+] Starting Stock Screening.. Press Ctrl+C to stop!\n")
 
-        items = [(executeOption, reversalOption, maLength, daysForLowestVolume, minRSI, maxRSI, respChartPattern, insideBarToLookback, len(listStockCodes),
+        items = [(tickerOption, executeOption, reversalOption, maLength, daysForLowestVolume, minRSI, maxRSI, respChartPattern, insideBarToLookback, len(listStockCodes),
                   configManager, fetcher, screener, candlePatterns, stock, newlyListedOnly, downloadOnly, vectorSearch)
                  for stock in listStockCodes]
 

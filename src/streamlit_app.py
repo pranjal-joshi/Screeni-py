@@ -51,9 +51,13 @@ def show_df_as_result_table():
         mime='text/csv',
         type='secondary',
         use_container_width=True
-    )
-    df.index = df.index.map(lambda x: "https://in.tradingview.com/chart?symbol=NSE%3A" + x)
-    df.index = df.index.map(lambda x: f'<a href="{x}" target="_blank">{x.split("%3A")[-1]}</a>')
+    )       
+    if execute_inputs[0] != '15':
+      df.index = df.index.map(lambda x: "https://in.tradingview.com/chart?symbol=NSE%3A" + x)
+      df.index = df.index.map(lambda x: f'<a href="{x}" target="_blank">{x.split("%3A")[-1]}</a>')
+    else:
+      df.index = df.index.map(lambda x: "https://in.tradingview.com/chart?symbol=" + x)
+      df.index = df.index.map(lambda x: f'<a href="{x}" target="_blank">{x.split("=")[-1]}</a>')
     df['Stock'] = df.index
     stock_column = df.pop('Stock')  # Remove 'Age' column and store it separately
     df.insert(0, 'Stock', stock_column)
@@ -339,6 +343,7 @@ with tab_screen:
     '11 > Nifty Midcap 150',
     '13 > Newly Listed (IPOs in last 2 Year)',
     '14 > F&O Stocks Only',
+    '15 > US S&P 500'
   ]
 
   list_criteria = [
