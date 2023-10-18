@@ -58,7 +58,7 @@ class StockConsumer(multiprocessing.Process):
         except Exception as e:
             sys.exit(0)
 
-    def screenStocks(self, executeOption, reversalOption, maLength, daysForLowestVolume, minRSI, maxRSI, respChartPattern, insideBarToLookback, totalSymbols,
+    def screenStocks(self, tickerOption, executeOption, reversalOption, maLength, daysForLowestVolume, minRSI, maxRSI, respChartPattern, insideBarToLookback, totalSymbols,
                      configManager, fetcher, screener, candlePatterns, stock, newlyListedOnly, downloadOnly, vectorSearch, printCounter=False):
         screenResults = pd.DataFrame(columns=[
             'Stock', 'Consolidating', 'Breaking-Out', 'MA-Signal', 'Volume', 'LTP', 'RSI', 'Trend', 'Pattern'])
@@ -84,7 +84,8 @@ class StockConsumer(multiprocessing.Process):
                                               self.proxyServer,
                                               self.screenResultsCounter,
                                               self.screenCounter,
-                                              totalSymbols)
+                                              totalSymbols,
+                                              tickerOption=tickerOption)
                 if configManager.cacheEnabled is True and not self.isTradingTime and (self.stockDict.get(stock) is None) or downloadOnly:
                     self.stockDict[stock] = data.to_dict('split')
                     if downloadOnly:
@@ -119,7 +120,9 @@ class StockConsumer(multiprocessing.Process):
                 self.screenCounter.value += 1
             if not processedData.empty:
                 screeningDictionary['Stock'] = colorText.BOLD + \
-                     colorText.BLUE + f'\x1B]8;;https://in.tradingview.com/chart?symbol=NSE%3A{stock}\x1B\\{stock}\x1B]8;;\x1B\\' + colorText.END
+                    colorText.BLUE + f'\x1B]8;;https://in.tradingview.com/chart?symbol=NSE%3A{stock}\x1B\\{stock}\x1B]8;;\x1B\\' + colorText.END if tickerOption != 15 \
+                    else colorText.BOLD + \
+                    colorText.BLUE + f'\x1B]8;;https://in.tradingview.com/chart?symbol={stock}\x1B\\{stock}\x1B]8;;\x1B\\' + colorText.END
                 saveDictionary['Stock'] = stock
                 consolidationValue = screener.validateConsolidation(
                     processedData, screeningDictionary, saveDictionary, percentage=configManager.consolidationPercentage)

@@ -7,12 +7,12 @@ Screeni-py is now on **YouTube** for additional help! - Thank You for your suppo
 
 ⚠️ **Executable files (.exe, .bin and .run) are now DEPRECATED! Please Switch to Docker**
 
-1. **Search Similar Stocks** Added using Vector Similarity search - Try `Search Similar Stocks`.
-2. Progressbar added for Screener in GUI mode!
-3. New Index - **F&O Stocks Only** Added for F&O traders with modified screening criterias.
-4. **Artificial Intelligence v2 for Nifty 50 Prediction** - Predict Next day Gap-up/down - Try `Select Index for Screening > N`
-5. New Screener **Buy at Trendline** added for Swing/Mid/Long term traders - Try `Option > 7 > 5`.
-6. Bugfixes, Optimizations and Cosmetic Updates for Docker/GUI!
+1. **US S&P 500** Index added for scanning US markets.
+2. **Search Similar Stocks** Added using Vector Similarity search - Try `Search Similar Stocks`.
+3. Progressbar added for Screener in GUI mode!
+4. New Index - **F&O Stocks Only** Added for F&O traders with modified screening criterias.
+5. **Artificial Intelligence v2 for Nifty 50 Prediction** - Predict Next day Gap-up/down - Try `Select Index for Screening > N`
+6. New Screener **Buy at Trendline** added for Swing/Mid/Long term traders - Try `Option > 7 > 5`.
 
 ## Installation Guide
 
