@@ -159,6 +159,21 @@ class tools:
                 progress=False,
                 timeout=10
             )
+        gold = yf.download(
+                tickers="GC=F",
+                period='5d',
+                interval='1d',
+                progress=False,
+                timeout=10
+            ).add_prefix(prefix='gold_')
+        crude = yf.download(
+                    tickers="CL=F",
+                    period='5d',
+                    interval='1d',
+                    progress=False,
+                    timeout=10
+                ).add_prefix(prefix='crude_')
+        data = pd.concat([data, gold, crude], axis=1)
         return data
 
     # Get Data for Five EMA strategy

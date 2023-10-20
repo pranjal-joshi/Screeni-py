@@ -583,10 +583,8 @@ class tools:
         with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
             data = data[pkl['columns']]
             ### v2 Preprocessing
-            data['High'] = data['High'].pct_change() * 100
-            data['Low'] = data['Low'].pct_change() * 100
-            data['Open'] = data['Open'].pct_change() * 100
-            data['Close'] = data['Close'].pct_change() * 100
+            for col in pkl['columns']:
+                data[col] = data[col].pct_change() * 100
             data = data.iloc[-1] 
             ###
             data = pkl['scaler'].transform([data])
