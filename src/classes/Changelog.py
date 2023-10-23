@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.07"
+VERSION = "2.08"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -241,5 +241,8 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 [2.07]
 1. US S&P 500 Index added - Try Index `15 > US S&P 500`
 2. Minor improvemnets
+
+[2.08]
+1. Nifty Prediction enhanced - New AI model uses Crude and Gold data for Gap Prediction
 
 ''' + colorText.END

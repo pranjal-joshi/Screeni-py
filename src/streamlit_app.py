@@ -148,6 +148,7 @@ def nifty_predict(col):
   else:
       col.info("Couldn't determine the Trend. Try again later!")
   col.warning('The AI prediction should be executed After 3 PM or Around the Closing hours as the Prediction Accuracy is based on the Closing price!\n\nThis is Just a Statistical Prediction and There are Chances of **False** Predictions!', icon='⚠️')
+  col.info("What's New in **v3**?\n\nMachine Learning model (v3) now uses Nifty, Crude and Gold Historical prices to Predict the Gap!", icon='🆕')
       
 def find_similar_stocks(stockCode:str, candles:int):
   global execute_inputs
@@ -231,7 +232,8 @@ def get_extra_inputs(tickerOption, executeOption, c_index=None, c_criteria=None,
 ac, bc = st.columns([13,1])
 
 ac.title('📈 Screeni-py')
-ac.subheader('in Beta Release 🚧  (Scan QR to Report Bugs / Request Features)')
+if guiUpdateMessage == "":
+  ac.subheader('Find Breakouts, Just in Time!')
 
 if isDevVersion:
     ac.warning(guiUpdateMessage, icon='⚠️')
