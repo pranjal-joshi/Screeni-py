@@ -7,10 +7,10 @@ Screeni-py is now on **YouTube** for additional help! - Thank You for your suppo
 
 ⚠️ **Executable files (.exe, .bin and .run) are now DEPRECATED! Please Switch to Docker**
 
-1. **Artificial Intelligence v3 for Nifty 50 Prediction** - Predict Next day Gap-up/down using Nifty, Gold and Crude prices! - Try `Select Index for Screening > N`
-2. **US S&P 500** Index added for scanning US markets.
-3. **Search Similar Stocks** Added using Vector Similarity search - Try `Search Similar Stocks`.
-4. Progressbar added for Screener in GUI mode!
+1. **Lorentzian Classification** (by @jdehorty) added for enhanced accuracy for your trades - - Try `Option > 6 > 7` 🤯
+2. **Artificial Intelligence v3 for Nifty 50 Prediction** - Predict Next day Gap-up/down using Nifty, Gold and Crude prices! - Try `Select Index for Screening > N`
+3. **US S&P 500** Index added for scanning US markets.
+4. **Search Similar Stocks** Added using Vector Similarity search - Try `Search Similar Stocks`.
 5. New Index - **F&O Stocks Only** Added for F&O traders with modified screening criterias.
 6. New Screener **Buy at Trendline** added for Swing/Mid/Long term traders - Try `Option > 7 > 5`.
 
@@ -22,11 +22,11 @@ Screeni-py is now on **YouTube** for additional help! - Thank You for your suppo
 ## Downloads 
 ### Deprecated - Use Docker Method mentioned in next section
 
-| Operating System | Executable File |
-| :-: | --- |
-| ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white) | **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/2.02/screenipy.exe)** |
-| ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) | **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/2.02/screenipy.bin)** |
-| ![Mac OS](https://img.shields.io/badge/mac%20os-D3D3D3?style=for-the-badge&logo=apple&logoColor=000000) | **[screenipy.run](https://github.com/pranjal-joshi/Screeni-py/releases/download/2.02/screenipy.run)** ([Read Installation Guide](https://github.com/pranjal-joshi/Screeni-py/blob/main/INSTALLATION.md#for-macos)) |
+| Operating System | Executable File | Remarks |
+| :-: | --- | --- |
+| ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white) | **[screenipy.exe](https://github.com/pranjal-joshi/Screeni-py/releases/download/2.02/screenipy.exe)** | Not supported anymore, Use Docker method |
+| ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) | **[screenipy.bin](https://github.com/pranjal-joshi/Screeni-py/releases/download/2.02/screenipy.bin)** | Not supported anymore, Use Docker method |
+| ![Mac OS](https://img.shields.io/badge/mac%20os-D3D3D3?style=for-the-badge&logo=apple&logoColor=000000) | **[screenipy.run](https://github.com/pranjal-joshi/Screeni-py/releases/download/2.02/screenipy.run)** ([Read Installation Guide](https://github.com/pranjal-joshi/Screeni-py/blob/main/INSTALLATION.md#for-macos)) | Not supported anymore, Use Docker method |
 
 ## [Docker Releases](https://hub.docker.com/r/joshipranjal/screeni-py/tags)
 

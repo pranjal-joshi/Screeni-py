@@ -259,7 +259,7 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
         if execute_inputs != []:
             respChartPattern = int(execute_inputs[2])
             try:
-                insideBarToLookback = int(execute_inputs[3])
+                insideBarToLookback = float(execute_inputs[3])
             except ValueError:
                 pass
         else:
@@ -394,10 +394,8 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
                 tasks_queue.put(item)
                 result = results_queue.get()
                 if result is not None:
-                    screenResults = screenResults.append(
-                        result[0], ignore_index=True)
-                    saveResults = saveResults.append(
-                        result[1], ignore_index=True)
+                    screenResults = pd.concat([screenResults, pd.DataFrame([result[0]])], ignore_index=True)
+                    saveResults = pd.concat([saveResults, pd.DataFrame([result[1]])], ignore_index=True)
                     if testing or (testBuild and len(screenResults) > 2):
                         break
         else:
@@ -415,10 +413,8 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
                     while numStocks:
                         result = results_queue.get()
                         if result is not None:
-                            screenResults = screenResults.append(
-                                result[0], ignore_index=True)
-                            saveResults = saveResults.append(
-                                result[1], ignore_index=True)
+                            screenResults = pd.concat([screenResults, pd.DataFrame([result[0]])], ignore_index=True)
+                            saveResults = pd.concat([saveResults, pd.DataFrame([result[1]])], ignore_index=True)
                         numStocks -= 1
                         os.environ['SCREENIPY_SCREEN_COUNTER'] = str(int((totalStocks-numStocks)/totalStocks*100))
                         progressbar.text(colorText.BOLD + colorText.GREEN +
@@ -465,8 +461,8 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
                 pass
             matchedScreenResults, matchedSaveResults = pd.DataFrame(columns=screenResults.columns), pd.DataFrame(columns=saveResults.columns)
             for stk in results:
-                matchedScreenResults = matchedScreenResults.append(screenResults[screenResults['Stock'].str.contains(stk)])
-                matchedSaveResults = matchedSaveResults.append(saveResults[saveResults['Stock'].str.contains(stk)])
+                matchedScreenResults = pd.concat([matchedScreenResults, screenResults[screenResults['Stock'].str.contains(stk)]], ignore_index=True)
+                matchedSaveResults = pd.concat([matchedSaveResults, saveResults[saveResults['Stock'].str.contains(stk)]], ignore_index=True)
             screenResults, saveResults = matchedScreenResults, matchedSaveResults
             
 

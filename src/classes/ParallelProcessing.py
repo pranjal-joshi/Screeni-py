@@ -190,6 +190,9 @@ class StockConsumer(multiprocessing.Process):
                     with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
                         isBuyingTrendline = screener.findTrendlines(fullData, screeningDictionary, saveDictionary)
 
+                with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
+                    isLorentzian = screener.validateLorentzian(fullData, screeningDictionary, saveDictionary, lookFor = maLength)
+
                 with self.screenResultsCounter.get_lock():
                     if executeOption == 0:
                         self.screenResultsCounter.value += 1
@@ -208,11 +211,11 @@ class StockConsumer(multiprocessing.Process):
                         return screeningDictionary, saveDictionary
                     if executeOption == 6 and isLtpValid:
                         if reversalOption == 1:
-                            if saveDictionary['Pattern'] in CandlePatterns.reversalPatternsBullish or isMaReversal > 0:
+                            if saveDictionary['Pattern'] in CandlePatterns.reversalPatternsBullish or isMaReversal > 0 or 'buy' in saveDictionary['Pattern'].lower():
                                 self.screenResultsCounter.value += 1
                                 return screeningDictionary, saveDictionary
                         elif reversalOption == 2:
-                            if saveDictionary['Pattern'] in CandlePatterns.reversalPatternsBearish or isMaReversal < 0:
+                            if saveDictionary['Pattern'] in CandlePatterns.reversalPatternsBearish or isMaReversal < 0 or 'sell' in saveDictionary['Pattern'].lower():
                                 self.screenResultsCounter.value += 1
                                 return screeningDictionary, saveDictionary
                         elif reversalOption == 3 and isMomentum:
@@ -225,6 +228,9 @@ class StockConsumer(multiprocessing.Process):
                             self.screenResultsCounter.value += 1
                             return screeningDictionary, saveDictionary
                         elif reversalOption == 6 and isNR:
+                            self.screenResultsCounter.value += 1
+                            return screeningDictionary, saveDictionary
+                        elif reversalOption == 7 and isLorentzian:
                             self.screenResultsCounter.value += 1
                             return screeningDictionary, saveDictionary
                     if executeOption == 7 and isLtpValid:
