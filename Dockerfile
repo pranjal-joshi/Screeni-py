@@ -5,7 +5,7 @@
 
 # FROM ubuntu:latest as base
 # FROM tensorflow/tensorflow:2.9.2 as base
-FROM python:3.9-slim as base
+FROM python:3.10.6-slim as base
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -43,6 +43,7 @@ WORKDIR /opt/program/
 RUN python3 -m pip install --upgrade pip
 
 RUN pip3 install -r "requirements.txt"
+RUN pip3 install --no-deps advanced-ta
 
 ENV PYTHONUNBUFFERED=TRUE
 ENV PYTHONDONTWRITEBYTECODE=TRUE

@@ -199,6 +199,7 @@ def get_extra_inputs(tickerOption, executeOption, c_index=None, c_criteria=None,
                                 '4 > Reversal at Moving Average (Bullish Reversal)',
                                 '5 > Volume Spread Analysis (Bullish VSA Reversal)',
                                 '6 > Narrow Range (NRx) Reversal',
+                                '7 > Lorentzian Classifier (Machine Learning based indicator)'
                             ]
                         ).split(' ')[0])
         if select_reversal == 4:
@@ -207,6 +208,15 @@ def get_extra_inputs(tickerOption, executeOption, c_index=None, c_criteria=None,
         elif select_reversal == 6:
             range = c2.number_input('NR(x)',min_value=1, max_value=14, value=4, step=1, format="%d")
             execute_inputs = [tickerOption, executeOption, select_reversal, range, 'N']
+        elif select_reversal == 7:
+            signal = int(c2.selectbox('Signal Type',
+                            options = [
+                                '1 > Any',
+                                '2 > Buy',
+                                '3 > Sell',
+                            ]
+                        ).split(' ')[0])
+            execute_inputs = [tickerOption, executeOption, select_reversal, signal, 'N']
         else:
             execute_inputs = [tickerOption, executeOption, select_reversal, 'N']
     elif int(executeOption) == 7:
@@ -224,7 +234,7 @@ def get_extra_inputs(tickerOption, executeOption, c_index=None, c_criteria=None,
             num_candles = c2.number_input('Lookback Candles', min_value=1, max_value=25, value=12, step=1, format="%d")
             execute_inputs = [tickerOption, executeOption, select_pattern, num_candles, 'N']
         elif select_pattern == 3:
-            confluence_percentage = c2.number_input('MA Confluence %', min_value=0.1, max_value=3.0, value=1.0, step=0.1, format="%1.1f")
+            confluence_percentage = c2.number_input('MA Confluence %', min_value=0.1, max_value=5.0, value=1.0, step=0.1, format="%1.1f")/100.0
             execute_inputs = [tickerOption, executeOption, select_pattern, confluence_percentage, 'N']
         else:
             execute_inputs = [tickerOption, executeOption, select_pattern, 'N']

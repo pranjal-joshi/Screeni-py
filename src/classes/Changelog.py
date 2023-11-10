@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.08"
+VERSION = "2.09"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -244,5 +244,10 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [2.08]
 1. Nifty Prediction enhanced - New AI model uses Crude and Gold data for Gap Prediction
+
+[2.09]
+1. Dependencies bumped to pandas-2.1.2 scikit-learn-1.3.2 for (pip install advanced-ta) compatibility
+2. Added Lorentzian Classifier based screening criteria - Try Option `6 > Reversal signals and 7 > Lorentzian Classification` (Extending Gratitude towards Justin Dehorty and Loki Arya for Open-Sourcing this one ❤️)
+3. MA-Confluence bug fixed
 
 ''' + colorText.END
