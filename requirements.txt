@@ -66,3 +66,4 @@ streamlit
 tensorflow
 chromadb==0.4.10
 mplfinance==0.12.9-beta.7
+num2words
