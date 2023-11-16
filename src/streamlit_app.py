@@ -10,6 +10,7 @@ from time import sleep
 from pathlib import Path
 from threading import Thread
 from time import sleep
+from math import floor
 import classes.ConfigManager as ConfigManager
 
 st.set_page_config(layout="wide", page_title="Screeni-py", page_icon="📈")
@@ -517,11 +518,12 @@ with tab_psc:
 
   if calculate_qty_btn:
     if sl > 0:
-      qty = round(risk_rs / sl)
-      oc.info(body=f'**Order Qty should be {qty}**', icon='✅')
+      qty = floor(risk_rs / sl)
+      oc.metric(label='Quantity', value=qty, delta=f'Max Loss: {(-1 * qty * sl)}', delta_color='inverse', help='Trade this Quantity to prevent excessive unplanned losses')
     elif price > 0 and percentage_sl > 0:
-      qty = round(risk_rs / actual_sl)
-      oc.info(body=f'**Order Qty should be {qty}**', icon='✅')
+      qty = floor(risk_rs / actual_sl)
+      oc.metric(label='Quantity', value=qty, delta=f'Max Loss: {(-1 * qty * actual_sl)}', delta_color='inverse', help='Trade this Quantity to prevent excessive unplanned losses')
+
 
 marquee_html = '''
 <!DOCTYPE html>
