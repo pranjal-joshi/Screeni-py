@@ -253,4 +253,5 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 [2.10]
 1. Position Size Calculator added as a new tab
 
+
 ''' + colorText.END
