@@ -87,7 +87,7 @@ class tools:
         data = data.replace([np.inf, -np.inf], 0)
         recent = data.head(1)
 
-        pct_change = (data[::-1]['Close'].pct_change() * 100).iloc[-1]
+        pct_change = (data[::-1]['Close'].pct_change(fill_method=None) * 100).iloc[-1]
         if pct_change > 0.2:
             pct_change = colorText.GREEN + (" (%.1f%%)" % pct_change) + colorText.END
         elif pct_change < -0.2:
@@ -598,12 +598,23 @@ class tools:
     def getNiftyPrediction(self, data, proxyServer):
         import warnings 
         warnings.filterwarnings("ignore")
+        # Disable GPUs as this causes wrong preds in Docker
+        import tensorflow as tf
+        physical_devices = tf.config.list_physical_devices('GPU')
+        try:
+          tf.config.set_visible_devices([], 'GPU')
+          visible_devices = tf.config.get_visible_devices()
+          for device in visible_devices:
+            assert device.device_type != 'GPU'
+        except:
+          pass
+        #
         model, pkl = Utility.tools.getNiftyModel(proxyServer=proxyServer)
         with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
             data = data[pkl['columns']]
             ### v2 Preprocessing
             for col in pkl['columns']:
-                data[col] = data[col].pct_change() * 100
+                data[col] = data[col].pct_change(fill_method=None) * 100
             data = data.iloc[-1] 
             ###
             data = pkl['scaler'].transform([data])
@@ -697,7 +708,7 @@ class tools:
     # Add data to vector database
     def addVector(self, data, stockCode, daysToLookback):
         data = data[::-1] # Reinverting preprocessedData for pct_change
-        data = data.pct_change()
+        data = data.pct_change(fill_method=None)
         # data = data[::-1]     # Do we need to invert again? No we dont - See operation after flatten
         data = data[['Open', 'High', 'Low', 'Close']]
         data = data.reset_index(drop=True)

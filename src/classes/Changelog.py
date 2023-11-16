@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.10"
+VERSION = "2.11"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -252,6 +252,9 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [2.10]
 1. Position Size Calculator added as a new tab
+
+[2.11]
+1. Nifty Prediction issue fixed - Model is now trained on CPU instead of Apple-M1 GPU
 
 
 ''' + colorText.END
