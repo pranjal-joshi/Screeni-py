@@ -5,6 +5,7 @@ import os
 import configparser
 import urllib
 import datetime
+from num2words import num2words
 from time import sleep
 from pathlib import Path
 from threading import Thread
@@ -254,7 +255,7 @@ telegram_url = "https://user-images.githubusercontent.com/6128978/217814499-7934
 bc.divider()
 bc.image(telegram_url, width=96)
 
-tab_screen, tab_similar, tab_nifty, tab_config, tab_about = st.tabs(['Screen Stocks', 'Search Similar Stocks', 'Nifty-50 Gap Prediction', 'Configuration', 'About'])
+tab_screen, tab_similar, tab_nifty, tab_config, tab_psc, tab_about = st.tabs(['Screen Stocks', 'Search Similar Stocks', 'Nifty-50 Gap Prediction', 'Configuration', 'Position Size Calculator', 'About'])
 
 with tab_screen:
   st.markdown("""
@@ -479,7 +480,48 @@ with tab_about:
   bc.write('<iframe width="445" height="295" src="https://www.youtube.com/embed/videoseries?si=aKXpyKKgwCcWIjhW&amp;list=PLsGnKKT_974J3UVS8M6bxqePfWLeuMsBi" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>', unsafe_allow_html=True)
   st.warning("ChangeLog:\n " + changelog[40:-3], icon='⚙️')
         
-    
+with tab_psc:
+  ac, oc = st.columns([1, 1])
+  ac, bc = ac.columns([4, 1]) 
+  ac.subheader('💸 Position Size Calculator')
+  calculate_qty_btn = bc.button('**Calculate Qty**', type='primary', use_container_width=True)
+
+  ac, bc = st.columns([1, 1]) 
+  capital = ac.number_input(label='Capital Size', min_value=0, value=100000, help='Total Amount used for Trading/Investing')
+  if capital:
+    in_words = num2words(capital, lang='en_IN').title()
+    bc.write(f"<p style='margin-top:35px; font-weight: bold;'>Your Capital is Rs. {in_words}</p>", unsafe_allow_html=True)
+
+  risk = ac.number_input(label="% Risk on Capital for this trade", min_value=0.0, max_value=10.0, step=0.1, value=0.5, help='How many percentage of your total capital you want to risk if your Stoploss hits? If you want a max loss of 1000 for an account value of 100,000 then your risk is 1%. It is not advised to take Risk more than 5% per trade! Think about your maximum loss before you trade!')
+  if risk:
+    risk_rs = capital * (risk/100.0)
+    in_words = num2words(risk_rs, lang='en_IN').title()
+    bc.write(f"<p style='margin-top:40px; font-weight: bold;'>Your Risk for this trade is Rs. {in_words}</p>", unsafe_allow_html=True)
+
+  ac.divider()
+
+  sl = ac.number_input(label="Stoploss in points", min_value=0.0, step=0.1, help='Stoploss in Points or Rupees calculated by you by analyzing the chart.')
+  if sl > 0:
+    in_words = num2words(sl, lang='en_IN').title()
+    bc.write(f"<p style='margin-top:105px;'>Your SL is {in_words} Rs. per share.</p>", unsafe_allow_html=True)
+
+  ac.write('<center><h5>OR</h5></center>', unsafe_allow_html=True)
+
+  a1, a2 = ac.columns([1, 1])
+  price = a1.number_input(label="Entry Price", min_value=0.0, help='Entry price for Long/Short position')
+  percentage_sl = a2.number_input(label="% SL", min_value=0.0, max_value=100.0, value=5.0, help='Stoploss in %')
+  if sl == 0 and (price > 0 and percentage_sl > 0):
+    actual_sl = round(price * (percentage_sl / 100),2)
+    in_words = num2words(actual_sl, lang='en_IN').title()
+    bc.write(f"<p style='margin-top:230px;'>Your SL is Rs. {actual_sl} per share</p>", unsafe_allow_html=True)
+
+  if calculate_qty_btn:
+    if sl > 0:
+      qty = round(risk_rs / sl)
+      oc.info(body=f'**Order Qty should be {qty}**', icon='✅')
+    elif price > 0 and percentage_sl > 0:
+      qty = round(risk_rs / actual_sl)
+      oc.info(body=f'**Order Qty should be {qty}**', icon='✅')
 
 marquee_html = '''
 <!DOCTYPE html>

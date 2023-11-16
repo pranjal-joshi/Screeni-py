@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.09"
+VERSION = "2.10"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -249,5 +249,9 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 1. Dependencies bumped to pandas-2.1.2 scikit-learn-1.3.2 for (pip install advanced-ta) compatibility
 2. Added Lorentzian Classifier based screening criteria - Try Option `6 > Reversal signals and 7 > Lorentzian Classification` (Extending Gratitude towards Justin Dehorty and Loki Arya for Open-Sourcing this one ❤️)
 3. MA-Confluence bug fixed
+
+[2.10]
+1. Position Size Calculator added as a new tab
+
 
 ''' + colorText.END
