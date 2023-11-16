@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.11"
+VERSION = "2.12"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -255,6 +255,10 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [2.11]
 1. Nifty Prediction issue fixed - Model is now trained on CPU instead of Apple-M1 GPU
+
+[2.12]
+1. Cosmetic Updates for Position Size Calculator
+2. Python base bumped to 3.11.6-slim-bookworm
 
 
 ''' + colorText.END

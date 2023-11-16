@@ -300,6 +300,15 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
                     sys.exit(0)
             elif tickerOption == 'N':
                 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+                import tensorflow as tf
+                physical_devices = tf.config.list_physical_devices('GPU')
+                try:
+                    tf.config.set_visible_devices([], 'GPU')
+                    visible_devices = tf.config.get_visible_devices()
+                    for device in visible_devices:
+                        assert device.device_type != 'GPU'
+                except:
+                    pass
                 prediction = screener.getNiftyPrediction(
                     data=fetcher.fetchLatestNiftyDaily(proxyServer=proxyServer), 
                     proxyServer=proxyServer

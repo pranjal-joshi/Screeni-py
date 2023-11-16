@@ -14,7 +14,7 @@ pep517
 pip
 pip-chill
 progress
-pyinstaller==5.6.2
+# pyinstaller==5.6.2
 pytest-mock
 pytoml
 retrying

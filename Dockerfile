@@ -5,7 +5,8 @@
 
 # FROM ubuntu:latest as base
 # FROM tensorflow/tensorflow:2.9.2 as base
-FROM python:3.10.6-slim as base
+# FROM python:3.10.6-slim as base
+FROM python:3.11.6-slim-bookworm as base
 
 ARG DEBIAN_FRONTEND=noninteractive
 
