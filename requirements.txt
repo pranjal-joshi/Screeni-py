@@ -22,7 +22,8 @@ scipy==1.11.2
 # ta-lib
 TA-Lib-Precompiled
 tabulate
-yfinance==0.1.87
+# yfinance==0.1.87
+yfinance==0.2.32
 alive-progress==1.6.2
 Pillow
 scikit-learn==1.3.2

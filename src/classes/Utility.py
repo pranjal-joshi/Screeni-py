@@ -377,6 +377,14 @@ class tools:
             print('\a')
             sleep(delay)
 
+    def isBacktesting(backtestDate):
+        try:
+            if datetime.date.today() != backtestDate:
+                return True
+            return False
+        except:
+            return False
+
 def isDocker():
     if 'SCREENIPY_DOCKER' in os.environ:
         return True

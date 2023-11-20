@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.12"
+VERSION = "2.13"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -260,5 +260,9 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 1. Cosmetic Updates for Position Size Calculator
 2. Python base bumped to 3.11.6-slim-bookworm
 
+[2.13]
+1. Date based Backtesting Added for Screening
+2. Inside bar detection broken - bug fixed
+3. Auto enhanced debug on console in dev release
 
 ''' + colorText.END

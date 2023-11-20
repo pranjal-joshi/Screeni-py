@@ -23,7 +23,7 @@ import argparse
 import urllib
 import numpy as np
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, date
 from time import sleep
 from tabulate import tabulate
 import multiprocessing
@@ -170,13 +170,13 @@ def initExecution():
     return tickerOption, executeOption
 
 # Main function
-def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list = []):
+def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list = [], isDevVersion=None, backtestDate=date.today()):
     global screenCounter, screenResultsCounter, stockDict, loadedStockData, keyboardInterruptEvent, loadCount, maLength, newlyListedOnly, vectorSearch
     screenCounter = multiprocessing.Value('i', 1)
     screenResultsCounter = multiprocessing.Value('i', 0)
     keyboardInterruptEvent = multiprocessing.Manager().Event()
 
-    if stockDict is None:
+    if stockDict is None or Utility.tools.isBacktesting(backtestDate=backtestDate):
         stockDict = multiprocessing.Manager().dict()
         loadCount = 0
 
@@ -371,7 +371,7 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
                 input('')
             sys.exit(0)
 
-        if not Utility.tools.isTradingTime() and configManager.cacheEnabled and not loadedStockData and not testing:
+        if not Utility.tools.isTradingTime() and configManager.cacheEnabled and not loadedStockData and not testing and not Utility.tools.isBacktesting(backtestDate=backtestDate):
             Utility.tools.loadStockData(stockDict, configManager, proxyServer)
             loadedStockData = True
         loadCount = len(stockDict)
@@ -380,7 +380,7 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
               "[+] Starting Stock Screening.. Press Ctrl+C to stop!\n")
 
         items = [(tickerOption, executeOption, reversalOption, maLength, daysForLowestVolume, minRSI, maxRSI, respChartPattern, insideBarToLookback, len(listStockCodes),
-                  configManager, fetcher, screener, candlePatterns, stock, newlyListedOnly, downloadOnly, vectorSearch)
+                  configManager, fetcher, screener, candlePatterns, stock, newlyListedOnly, downloadOnly, vectorSearch, isDevVersion, backtestDate)
                  for stock in listStockCodes]
 
         tasks_queue = multiprocessing.JoinableQueue()
@@ -498,7 +498,7 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
 
         print(colorText.BOLD + colorText.GREEN +
                   f"[+] Found {len(screenResults)} Stocks." + colorText.END)
-        if configManager.cacheEnabled and not Utility.tools.isTradingTime() and not testing:
+        if configManager.cacheEnabled and not Utility.tools.isTradingTime() and not testing and not Utility.tools.isBacktesting(backtestDate=backtestDate):
             print(colorText.BOLD + colorText.GREEN +
                   "[+] Caching Stock Data for future use, Please Wait... " + colorText.END, end='')
             Utility.tools.saveStockData(
