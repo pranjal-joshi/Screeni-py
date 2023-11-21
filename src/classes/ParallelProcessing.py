@@ -12,6 +12,7 @@ import numpy as np
 import sys
 import os
 import pytz
+import traceback
 from queue import Empty
 from datetime import datetime
 import classes.Fetcher as Fetcher
@@ -59,7 +60,7 @@ class StockConsumer(multiprocessing.Process):
             sys.exit(0)
 
     def screenStocks(self, tickerOption, executeOption, reversalOption, maLength, daysForLowestVolume, minRSI, maxRSI, respChartPattern, insideBarToLookback, totalSymbols,
-                     configManager, fetcher, screener, candlePatterns, stock, newlyListedOnly, downloadOnly, vectorSearch, printCounter=False):
+                     configManager, fetcher, screener, candlePatterns, stock, newlyListedOnly, downloadOnly, vectorSearch, isDevVersion, backtestDate, printCounter=False):
         screenResults = pd.DataFrame(columns=[
             'Stock', 'Consolidating', 'Breaking-Out', 'MA-Signal', 'Volume', 'LTP', 'RSI', 'Trend', 'Pattern'])
         screeningDictionary = {'Stock': "", 'Consolidating': "",  'Breaking-Out': "",
@@ -78,14 +79,18 @@ class StockConsumer(multiprocessing.Process):
                     period = configManager.period
 
             if (self.stockDict.get(stock) is None) or (configManager.cacheEnabled is False) or self.isTradingTime or downloadOnly:
-                data = fetcher.fetchStockData(stock,
-                                              period,
-                                              configManager.duration,
-                                              self.proxyServer,
-                                              self.screenResultsCounter,
-                                              self.screenCounter,
-                                              totalSymbols,
-                                              tickerOption=tickerOption)
+                try:
+                    data = fetcher.fetchStockData(stock,
+                                                period,
+                                                configManager.duration,
+                                                self.proxyServer,
+                                                self.screenResultsCounter,
+                                                self.screenCounter,
+                                                totalSymbols,
+                                                backtestDate=backtestDate,
+                                                tickerOption=tickerOption)
+                except Exception as e:
+                    return screeningDictionary, saveDictionary
                 if configManager.cacheEnabled is True and not self.isTradingTime and (self.stockDict.get(stock) is None) or downloadOnly:
                     self.stockDict[stock] = data.to_dict('split')
                     if downloadOnly:
@@ -165,7 +170,7 @@ class StockConsumer(multiprocessing.Process):
                     isConfluence = screener.validateConfluence(stock, processedData, screeningDictionary, saveDictionary, percentage=insideBarToLookback)
                 else:
                     isInsideBar = screener.validateInsideBar(processedData, screeningDictionary, saveDictionary, chartPattern=respChartPattern, daysToLookback=insideBarToLookback)
-                
+
                 with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
                     if maLength is not None and executeOption == 6 and reversalOption == 6:
                         isNR = screener.validateNarrowRange(processedData, screeningDictionary, saveDictionary, nr=maLength)
@@ -261,6 +266,9 @@ class StockConsumer(multiprocessing.Process):
         except KeyError:
             pass
         except Exception as e:
+            if isDevVersion:
+                print("[!] Dev Traceback:")
+                traceback.print_exc()
             if printCounter:
                 print(colorText.FAIL +
                       ("\n[+] Exception Occured while Screening %s! Skipping this stock.." % stock) + colorText.END)

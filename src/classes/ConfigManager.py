@@ -8,6 +8,7 @@
 import sys
 import os
 import glob
+import re
 import configparser
 from datetime import date
 from classes.ColorText import colorText
@@ -195,3 +196,11 @@ class tools:
             return True
         except FileNotFoundError:
             return False
+        
+    # Get period as a numeric value
+    def getPeriodNumeric(self):
+        import re
+        pattern = re.compile(r'\d+')
+        result = [int(match.group()) for match in pattern.finditer(self.period)][0]
+        return result
+

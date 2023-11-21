@@ -12,6 +12,7 @@ from threading import Thread
 from time import sleep
 from math import floor
 import classes.ConfigManager as ConfigManager
+import classes.Utility as Utility
 
 st.set_page_config(layout="wide", page_title="Screeni-py", page_icon="📈")
 
@@ -92,12 +93,14 @@ def on_start_button_click():
 
     def dummy_call():
       try:
-          screenipy_main(execute_inputs=execute_inputs)
+          screenipy_main(execute_inputs=execute_inputs, isDevVersion=isDevVersion, backtestDate=backtestDate)
       except StopIteration:
           pass
       except requests.exceptions.RequestException:
           os.environ['SCREENIPY_REQ_ERROR'] = "TRUE"
-
+    
+    if Utility.tools.isBacktesting(backtestDate=backtestDate):
+      st.write(f'Running in :red[Backtesting Mode] for {str(backtestDate)} (Y-M-D)')
     t = Thread(target=dummy_call)
     t.start()
 
@@ -139,7 +142,7 @@ def nifty_predict(col):
       fetcher = Fetcher.tools(configManager)
       screener = Screener.tools(configManager)
       os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
-      prediction, trend, confidence = screener.getNiftyPrediction(
+      prediction, trend, confidence, data_used = screener.getNiftyPrediction(
           data=fetcher.fetchLatestNiftyDaily(proxyServer=proxyServer), 
           proxyServer=proxyServer
       )
@@ -151,6 +154,8 @@ def nifty_predict(col):
       col.info("Couldn't determine the Trend. Try again later!")
   col.warning('The AI prediction should be executed After 3 PM or Around the Closing hours as the Prediction Accuracy is based on the Closing price!\n\nThis is Just a Statistical Prediction and There are Chances of **False** Predictions!', icon='⚠️')
   col.info("What's New in **v3**?\n\nMachine Learning model (v3) now uses Nifty, Crude and Gold Historical prices to Predict the Gap!", icon='🆕')
+  col.markdown("**Following data is used to make above prediction:**")
+  col.dataframe(data_used)
       
 def find_similar_stocks(stockCode:str, candles:int):
   global execute_inputs
@@ -234,7 +239,7 @@ def get_extra_inputs(tickerOption, executeOption, c_index=None, c_criteria=None,
                         ).split(' ')[0])
         if select_pattern == 1 or select_pattern == 2:
             num_candles = c2.number_input('Lookback Candles', min_value=1, max_value=25, value=12, step=1, format="%d")
-            execute_inputs = [tickerOption, executeOption, select_pattern, num_candles, 'N']
+            execute_inputs = [tickerOption, executeOption, select_pattern, int(num_candles), 'N']
         elif select_pattern == 3:
             confluence_percentage = c2.number_input('MA Confluence %', min_value=0.1, max_value=5.0, value=1.0, step=0.1, format="%1.1f")/100.0
             execute_inputs = [tickerOption, executeOption, select_pattern, confluence_percentage, 'N']
@@ -277,67 +282,6 @@ with tab_screen:
           """,
           unsafe_allow_html=True)
 
-  ticker_tape_url = '''
-  <!-- TradingView Widget BEGIN -->
-  <div class="tradingview-widget-container">
-    <div class="tradingview-widget-container__widget"></div>
-    <div class="tradingview-widget-copyright"><a href="https://in.tradingview.com/" rel="noopener nofollow" target="_blank"><span class="blue-text">Track all markets on TradingView</span></a></div>
-    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
-    {
-    "symbols": [
-      {
-        "description": "NIFTY 50",
-        "proName": "NSE:NIFTY"
-      },
-      {
-        "description": "NIFTY BANK",
-        "proName": "NSE:BANKNIFTY"
-      },
-      {
-        "description": "NIFTY IT",
-        "proName": "NSE:CNXIT"
-      },
-      {
-        "description": "NIFTY PHARMA",
-        "proName": "NSE:CNXPHARMA"
-      },
-      {
-        "description": "NIFTY METAL",
-        "proName": "NSE:CNXMETAL"
-      },
-      {
-        "description": "NIFTY AUTO",
-        "proName": "NSE:CNXAUTO"
-      },
-      {
-        "description": "NIFTY ENERGY",
-        "proName": "NSE:CNXENERGY"
-      },
-      {
-        "description": "NIFTY MIDCAP",
-        "proName": "NSE:NIFTYMIDCAP50"
-      },
-      {
-        "description": "NIFTY SMALLCAP",
-        "proName": "NSE:CNXSMALLCAP"
-      },
-      {
-        "description": "SENSEX",
-        "proName": "BSE:SENSEX"
-      }
-    ],
-    "showSymbolLogo": true,
-    "colorTheme": "light",
-    "isTransparent": false,
-    "displayMode": "adaptive",
-    "locale": "in"
-  }
-    </script>
-  </div>
-  <!-- TradingView Widget END -->'''
-
-  # components.html(ticker_tape_url)
-
   list_index = [
     'All Stocks (Default)',
     # 'W > Screen stocks from my own Watchlist',
@@ -371,10 +315,17 @@ with tab_screen:
       '7 > Screen for the stocks making Chart Patterns',
   ]
 
-  c_index, c_criteria, c_button_start = st.columns((4,4,1))
+  configManager = ConfigManager.tools()
+  configManager.getConfig(parser=ConfigManager.parser)
+
+  c_index, c_datepick, c_criteria, c_button_start = st.columns((2,1,4,1))
 
   tickerOption = c_index.selectbox('Select Index', options=list_index).split(' ')
   tickerOption = str(12 if '>' not in tickerOption else int(tickerOption[0]) if tickerOption[0].isnumeric() else str(tickerOption[0]))
+  picked_date = c_datepick.date_input(label='Screen/Backtest For', max_value=datetime.date.today(), value=datetime.date.today())
+  if picked_date:
+     backtestDate = picked_date
+
   executeOption = str(c_criteria.selectbox('Select Screening Criteria', options=list_criteria).split(' ')[0])
 
   start_button = c_button_start.button('Start Screening', type='primary', key='start_button')

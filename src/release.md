@@ -7,12 +7,12 @@ Screeni-py is now on **YouTube** for additional help! - Thank You for your suppo
 
 ⚠️ **Executable files (.exe, .bin and .run) are now DEPRECATED! Please Switch to Docker**
 
-1. **Position Size Calculator** tab added for Better and Quick Risk Management!
-2. **Lorentzian Classification** (by @jdehorty) added for enhanced accuracy for your trades - - Try `Option > 6 > 7` 🤯
-3. **Artificial Intelligence v3 for Nifty 50 Prediction** - Predict Next day Gap-up/down using Nifty, Gold and Crude prices! - Try `Select Index for Screening > N`
-4. **US S&P 500** Index added for scanning US markets.
-5. **Search Similar Stocks** Added using Vector Similarity search - Try `Search Similar Stocks`.
-6. New Index - **F&O Stocks Only** Added for F&O traders with modified screening criterias.
+1. **Backtesting** Added for Screening Patterns to Develope and Test Strategies!
+2. **Position Size Calculator** tab added for Better and Quick Risk Management!
+3. **Lorentzian Classification** (by @jdehorty) added for enhanced accuracy for your trades - - Try `Option > 6 > 7` 🤯
+4. **Artificial Intelligence v3 for Nifty 50 Prediction** - Predict Next day Gap-up/down using Nifty, Gold and Crude prices! - Try `Select Index for Screening > N`
+5. **US S&P 500** Index added for scanning US markets.
+6. **Search Similar Stocks** Added using Vector Similarity search - Try `Search Similar Stocks`.
 7. New Screener **Buy at Trendline** added for Swing/Mid/Long term traders - Try `Option > 7 > 5`.
 
 ## Installation Guide
@@ -37,6 +37,10 @@ Screeni-py is now on **YouTube** for additional help! - Thank You for your suppo
 | ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) | `latest` | `docker pull joshipranjal/screeni-py:latest` | GUI WebApp | `docker run -p 8501:8501 joshipranjal/screeni-py:latest` |
 | ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) | `dev` | `docker pull joshipranjal/screeni-py:dev` | Command Line | `docker run -it --entrypoint /bin/bash joshipranjal/screeni-py:dev -c "run_screenipy.sh --cli"` |
 | ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) | `dev` | `docker pull joshipranjal/screeni-py:dev` | GUI WebApp | `docker run -p 8501:8501 joshipranjal/screeni-py:dev` |
+
+### Docker Issues? Troubleshooting Guide:
+
+Read this [troubleshooting guide](https://github.com/pranjal-joshi/Screeni-py/discussions/217) for Windows to fix most common Docker issues easily!
 
 **Why we shifted to Docker from the Good old EXEs?**
 

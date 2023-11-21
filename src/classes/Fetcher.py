@@ -11,6 +11,7 @@ import csv
 import requests
 import random
 import os
+import datetime
 import yfinance as yf
 import pandas as pd
 from nsetools import Nse
@@ -34,6 +35,22 @@ class tools:
     def __init__(self, configManager):
         self.configManager = configManager
         pass
+
+    def _getBacktestDate(self, backtest):
+        try:
+            end = backtest + datetime.timedelta(days=1)
+            if "d" in self.configManager.period:
+                delta = datetime.timedelta(days = self.configManager.getPeriodNumeric())
+            elif "wk" in self.configManager.period:
+                delta = datetime.timedelta(days = self.configManager.getPeriodNumeric() * 7)
+            elif "m" in self.configManager.period:
+                delta = datetime.timedelta(minutes = self.configManager.getPeriodNumeric())
+            elif "h" in self.configManager.period:
+                delta = datetime.timedelta(hours = self.configManager.getPeriodNumeric())
+            start = end - delta
+            return [start, end]
+        except:
+            return [None, None]
 
     def fetchCodes(self, tickerOption,proxyServer=None):
         listStockCodes = []
@@ -120,7 +137,7 @@ class tools:
         return listStockCodes
 
     # Fetch stock price data from Yahoo finance
-    def fetchStockData(self, stockCode, period, duration, proxyServer, screenResultsCounter, screenCounter, totalSymbols, printCounter=False, tickerOption=None):
+    def fetchStockData(self, stockCode, period, duration, proxyServer, screenResultsCounter, screenCounter, totalSymbols, backtestDate=None, printCounter=False, tickerOption=None):
         with SuppressOutput(suppress_stdout=True, suppress_stderr=True):
             append_exchange = ".NS"
             if tickerOption == 15:
@@ -131,7 +148,9 @@ class tools:
                 interval=duration,
                 proxy=proxyServer,
                 progress=False,
-                timeout=10
+                timeout=10,
+                start=self._getBacktestDate(backtest=backtestDate)[0],
+                end=self._getBacktestDate(backtest=backtestDate)[1]
             )
         if printCounter:
             sys.stdout.write("\r\033[K")
@@ -163,6 +182,7 @@ class tools:
                 tickers="GC=F",
                 period='5d',
                 interval='1d',
+                proxy=proxyServer,
                 progress=False,
                 timeout=10
             ).add_prefix(prefix='gold_')
@@ -170,6 +190,7 @@ class tools:
                     tickers="CL=F",
                     period='5d',
                     interval='1d',
+                    proxy=proxyServer,
                     progress=False,
                     timeout=10
                 ).add_prefix(prefix='crude_')
