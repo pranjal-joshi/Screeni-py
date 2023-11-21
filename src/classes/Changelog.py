@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.13"
+VERSION = "2.14"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -264,5 +264,8 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 1. Date based Backtesting Added for Screening
 2. Inside bar detection broken - bug fixed
 3. Auto enhanced debug on console in dev release
+
+[2.14]
+1. Dropdowns added for duration and period in configration tab
 
 ''' + colorText.END
