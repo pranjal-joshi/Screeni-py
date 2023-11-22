@@ -76,7 +76,7 @@ def on_config_change():
     configManager = ConfigManager.tools()
     configManager.period = period
     configManager.daysToLookback = daystolookback
-    configManager.duration = duartion
+    configManager.duration = duration
     configManager.minLTP, configManager.maxLTP = minprice, maxprice
     configManager.volumeRatio, configManager.consolidationPercentage = volumeratio, consolidationpercentage
     configManager.shuffle = shuffle
@@ -340,7 +340,6 @@ with tab_screen:
   with st.container():
     show_df_as_result_table()
         
-
 with tab_config:
   configManager = ConfigManager.tools()
   configManager.getConfig(parser=ConfigManager.parser)
@@ -358,9 +357,16 @@ with tab_config:
 
   ac, bc, cc = st.columns([1,1,1])
 
-  period = ac.text_input('Period', value=f'{configManager.period}', placeholder='300d / 52wk ')
+  period_options = ['15d','60d','300d','52wk','3y','5y','max']
+  duration_options = ['5m','15m','1h','4h','1d','1wk']
+
+  # period = ac.text_input('Period', value=f'{configManager.period}', placeholder='300d / 52wk ')
+  period = ac.selectbox('Period', options=period_options, index=period_options.index(configManager.period), placeholder='300d / 52wk')
   daystolookback = bc.number_input('Lookback Period (Number of Candles)', value=configManager.daysToLookback, step=1)
-  duartion = cc.text_input('Candle Duration', value=f'{configManager.duration}', placeholder='15m / 1d / 1wk')
+  # duration = cc.text_input('Candle Duration', value=f'{configManager.duration}', placeholder='15m / 1d / 1wk')
+  duration = cc.selectbox('Candle Duration', options=duration_options, index=duration_options.index(configManager.duration), placeholder='15m / 1d / 1wk')
+  if 'm' in duration or 'h' in duration:
+    cc.write('For Intraday duartion, Max :red[value of period <= 60d]')
 
   ac, bc = st.columns([1,1])
   minprice = ac.number_input('Minimum Price (Stocks below this will be ignored)', value=float(configManager.minLTP), step=0.1)
@@ -474,7 +480,6 @@ with tab_psc:
     elif price > 0 and percentage_sl > 0:
       qty = floor(risk_rs / actual_sl)
       oc.metric(label='Quantity', value=qty, delta=f'Max Loss: {(-1 * qty * actual_sl)}', delta_color='inverse', help='Trade this Quantity to prevent excessive unplanned losses')
-
 
 marquee_html = '''
 <!DOCTYPE html>
