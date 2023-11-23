@@ -414,6 +414,9 @@ class tools:
         data.insert(10,'maRev',maRev)
         data = data[::-1].head(3)
         if data.equals(data[(data.Close >= (data.maRev - (data.maRev*percentage))) & (data.Close <= (data.maRev + (data.maRev*percentage)))]) and data.head(1)['Close'].iloc[0] >= data.head(1)['maRev'].iloc[0]:
+            if self.configManager.stageTwo:
+                if data.head(1)['maRev'].iloc[0] < data.head(2)['maRev'].iloc[1] or data.head(2)['maRev'].iloc[1] < data.head(3)['maRev'].iloc[2] or data.head(1)['SMA'].iloc[0] < data.head(1)['LMA'].iloc[0]:
+                    return False
             screenDict['MA-Signal'] = colorText.BOLD + colorText.GREEN + f'Reversal-{maLength}MA' + colorText.END
             saveDict['MA-Signal'] = f'Reversal-{maLength}MA'
             return True

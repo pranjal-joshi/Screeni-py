@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.14"
+VERSION = "2.15"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -267,5 +267,8 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [2.14]
 1. Dropdowns added for duration and period in configration tab
+
+[2.15]
+1. MA Reversal improved for trend following (Inspired from Siddhart Bhanushali's 44 SMA)
 
 ''' + colorText.END

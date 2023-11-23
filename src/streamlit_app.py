@@ -210,7 +210,7 @@ def get_extra_inputs(tickerOption, executeOption, c_index=None, c_criteria=None,
                             ]
                         ).split(' ')[0])
         if select_reversal == 4:
-            ma_length = c2.number_input('MA Length', value=50, step=1, format="%d")
+            ma_length = c2.number_input('MA Length', value=44, step=1, format="%d")
             execute_inputs = [tickerOption, executeOption, select_reversal, ma_length, 'N']
         elif select_reversal == 6:
             range = c2.number_input('NR(x)',min_value=1, max_value=14, value=4, step=1, format="%d")
