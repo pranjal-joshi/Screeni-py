@@ -51,6 +51,27 @@ class tools:
             return [start, end]
         except:
             return [None, None]
+        
+    def _getDatesForBacktestReport(self, backtest):
+        dateDict = {}
+        try:
+            today = datetime.date.today()
+            dateDict['T+1d'] = backtest + datetime.timedelta(days=1) if backtest + datetime.timedelta(days=1) < today else None
+            dateDict['T+1wk'] = backtest + datetime.timedelta(weeks=1) if backtest + datetime.timedelta(weeks=1) < today else None
+            dateDict['T+1mo'] = backtest + datetime.timedelta(days=30) if backtest + datetime.timedelta(days=30) < today else None
+            dateDict['T+6mo'] = backtest + datetime.timedelta(days=180) if backtest + datetime.timedelta(days=180) < today else None
+            dateDict['T+1y'] = backtest + datetime.timedelta(days=365) if backtest + datetime.timedelta(days=365) < today else None
+            for key, val in dateDict.copy().items():
+                if val is not None:
+                    if val.weekday() == 5:  # 5 is Saturday, 6 is Sunday
+                        adjusted_date = val + datetime.timedelta(days=2)
+                        dateDict[key] = adjusted_date
+                    elif val.weekday() == 6: 
+                        adjusted_date = val + datetime.timedelta(days=1)
+                        dateDict[key] = adjusted_date
+        except:
+            pass
+        return dateDict
 
     def fetchCodes(self, tickerOption,proxyServer=None):
         listStockCodes = []
@@ -138,6 +159,7 @@ class tools:
 
     # Fetch stock price data from Yahoo finance
     def fetchStockData(self, stockCode, period, duration, proxyServer, screenResultsCounter, screenCounter, totalSymbols, backtestDate=None, printCounter=False, tickerOption=None):
+        dateDict = None
         with SuppressOutput(suppress_stdout=True, suppress_stderr=True):
             append_exchange = ".NS"
             if tickerOption == 15:
@@ -152,6 +174,25 @@ class tools:
                 start=self._getBacktestDate(backtest=backtestDate)[0],
                 end=self._getBacktestDate(backtest=backtestDate)[1]
             )
+            if backtestDate != datetime.date.today():
+                dateDict = self._getDatesForBacktestReport(backtest=backtestDate)
+                backtestData = yf.download(
+                    tickers=stockCode + append_exchange,
+                    interval='1d',
+                    proxy=proxyServer,
+                    progress=False,
+                    timeout=10,
+                    start=backtestDate - datetime.timedelta(days=1),
+                    end=backtestDate + datetime.timedelta(days=370)
+                )
+                for key, value in dateDict.copy().items():
+                    if value is not None:
+                        try:
+                            dateDict[key] = backtestData.loc[pd.Timestamp(value)]['Close']
+                        except KeyError:
+                            continue
+                dateDict['T+52wkH'] = backtestData['High'].max()
+                dateDict['T+52wkL'] = backtestData['Low'].min()
         if printCounter:
             sys.stdout.write("\r\033[K")
             try:
@@ -166,7 +207,7 @@ class tools:
                 return None
             print(colorText.BOLD + colorText.GREEN + "=> Done!" +
                   colorText.END, end='\r', flush=True)
-        return data
+        return data, dateDict
 
     # Get Daily Nifty 50 Index:
     def fetchLatestNiftyDaily(self, proxyServer=None):

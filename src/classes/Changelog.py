@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.16"
+VERSION = "2.17"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -274,4 +274,7 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 [2.16]
 1. Nifty Prediction NaN values handled gracefully with forward filling if data is absent
 2. Ticker 0 > Search by Stock name - re-enabled in GUI
+
+[2.17]
+1. Backtest Report column added for backtest screening runs
 ''' + colorText.END

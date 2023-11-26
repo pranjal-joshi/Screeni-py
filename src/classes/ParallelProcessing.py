@@ -80,7 +80,7 @@ class StockConsumer(multiprocessing.Process):
 
             if (self.stockDict.get(stock) is None) or (configManager.cacheEnabled is False) or self.isTradingTime or downloadOnly:
                 try:
-                    data = fetcher.fetchStockData(stock,
+                    data, backtestReport = fetcher.fetchStockData(stock,
                                                 period,
                                                 configManager.duration,
                                                 self.proxyServer,
@@ -197,6 +197,13 @@ class StockConsumer(multiprocessing.Process):
 
                 with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
                     isLorentzian = screener.validateLorentzian(fullData, screeningDictionary, saveDictionary, lookFor = maLength)
+
+                try:
+                    backtestReport = Utility.tools.calculateBacktestReport(data=processedData, backtestDict=backtestReport)
+                    screeningDictionary.update(backtestReport)
+                    saveDictionary.update(backtestReport)
+                except:
+                    pass
 
                 with self.screenResultsCounter.get_lock():
                     if executeOption == 0:
