@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.15"
+VERSION = "2.16"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -271,4 +271,7 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 [2.15]
 1. MA Reversal improved for trend following (Inspired from Siddhart Bhanushali's 44 SMA)
 
+[2.16]
+1. Nifty Prediction NaN values handled gracefully with forward filling if data is absent
+2. Ticker 0 > Search by Stock name - re-enabled in GUI
 ''' + colorText.END

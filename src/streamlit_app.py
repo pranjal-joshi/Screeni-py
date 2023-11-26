@@ -175,11 +175,8 @@ def get_extra_inputs(tickerOption, executeOption, c_index=None, c_criteria=None,
     if not tickerOption.isnumeric():
         execute_inputs = [tickerOption, 0, 'N']
     elif int(tickerOption) == 0 or tickerOption is None:
-        stock_codes = c_index.text_input('Enter Stock Code(s) (Multiple codes should be seperated by ,)', placeholder='SBIN, INFY, ITC')
-        if stock_codes:
-            execute_inputs = [tickerOption, executeOption, stock_codes, 'N']
-        else:
-            c_index.error("Stock codes can't be left blank!")
+        stock_codes = c_index.text_input('Enter Stock Code(s)', placeholder='SBIN, INFY, ITC')
+        execute_inputs = [tickerOption, executeOption, stock_codes, 'N']
     elif int(executeOption) >= 0 and int(executeOption) < 4:
         execute_inputs = [tickerOption, executeOption, 'N']
     elif int(executeOption) == 4:
@@ -287,7 +284,7 @@ with tab_screen:
     # 'W > Screen stocks from my own Watchlist',
     # 'N > Nifty Prediction using Artifical Intelligence (Use for Gap-Up/Gap-Down/BTST/STBT)',
     # 'E > Live Index Scan : 5 EMA for Intraday',
-    # '0 > Screen stocks by the stock names (NSE Stock Code)',
+    '0 > By Stock Names (NSE Stock Code)',
     '1 > Nifty 50',
     '2 > Nifty Next 50',
     '3 > Nifty 100',
