@@ -621,6 +621,7 @@ class tools:
             ### v2 Preprocessing
             for col in pkl['columns']:
                 data[col] = data[col].pct_change(fill_method=None) * 100
+            data = data.ffill().dropna()
             data = data.iloc[-1] 
             ###
             data = pkl['scaler'].transform([data])

@@ -204,6 +204,9 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
                     configManager.setConfig(ConfigManager.parser, default=True, showFileCreatedText=False)
                 try:
                     tickerOption, executeOption = int(execute_inputs[0]), int(execute_inputs[1])
+                    if tickerOption == 0:
+                        stockCode = execute_inputs[2].replace(" ", "")
+                        listStockCodes = stockCode.split(',')
                 except:
                     tickerOption, executeOption = str(execute_inputs[0]), int(execute_inputs[1])
                 if tickerOption == 13:
@@ -363,7 +366,8 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
                     configManager.stageTwo = False
                     configManager.minLTP = 0.1
                     configManager.maxLTP = 999999999
-                listStockCodes = fetcher.fetchStockCodes(tickerOption, proxyServer=proxyServer)
+                if (execute_inputs != [] and tickerOption != 0) or execute_inputs == []:
+                    listStockCodes = fetcher.fetchStockCodes(tickerOption, proxyServer=proxyServer)
         except urllib.error.URLError:
             print(colorText.BOLD + colorText.FAIL +
                   "\n\n[+] Oops! It looks like you don't have an Internet connectivity at the moment! Press any key to exit!" + colorText.END)
