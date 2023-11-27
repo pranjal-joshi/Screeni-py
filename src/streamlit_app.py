@@ -44,7 +44,7 @@ execute_inputs = []
 
 def show_df_as_result_table():
   try:
-    df = pd.read_pickle('last_screened_unformatted_results.pkl')
+    df:pd.DataFrame = pd.read_pickle('last_screened_unformatted_results.pkl')
     ac, bc = st.columns([6,1])
     ac.markdown(f'#### 🔍 Found {len(df)} Results')
     bc.download_button(
@@ -100,7 +100,7 @@ def on_start_button_click():
           os.environ['SCREENIPY_REQ_ERROR'] = "TRUE"
     
     if Utility.tools.isBacktesting(backtestDate=backtestDate):
-      st.write(f'Running in :red[Backtesting Mode] for {str(backtestDate)} (Y-M-D)')
+      st.write(f'Running in :red[**Backtesting Mode**] for *T = {str(backtestDate)}* (Y-M-D) : [Backtesting data is subjected to availability as per the API limits]')
     t = Thread(target=dummy_call)
     t.start()
 
@@ -175,8 +175,8 @@ def get_extra_inputs(tickerOption, executeOption, c_index=None, c_criteria=None,
     if not tickerOption.isnumeric():
         execute_inputs = [tickerOption, 0, 'N']
     elif int(tickerOption) == 0 or tickerOption is None:
-        stock_codes = c_index.text_input('Enter Stock Code(s)', placeholder='SBIN, INFY, ITC')
-        execute_inputs = [tickerOption, executeOption, stock_codes, 'N']
+        stock_codes:str = c_index.text_input('Enter Stock Code(s)', placeholder='SBIN, INFY, ITC')
+        execute_inputs = [tickerOption, executeOption, stock_codes.upper(), 'N']
     elif int(executeOption) >= 0 and int(executeOption) < 4:
         execute_inputs = [tickerOption, executeOption, 'N']
     elif int(executeOption) == 4:

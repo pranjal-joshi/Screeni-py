@@ -384,6 +384,20 @@ class tools:
             return False
         except:
             return False
+        
+    def calculateBacktestReport(data, backtestDict:dict):
+        try:
+            recent = data.head(1)['Close'].iloc[0]
+            for key, val in backtestDict.items():
+                if val is not None:
+                    try:
+                        backtestDict[key] = str(round((backtestDict[key]-recent)/recent*100,1)) + "%"
+                    except TypeError:
+                        backtestDict[key] = None
+                        continue
+        except:
+            pass
+        return backtestDict
 
 def isDocker():
     if 'SCREENIPY_DOCKER' in os.environ:

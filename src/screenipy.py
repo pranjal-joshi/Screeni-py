@@ -478,7 +478,8 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
                 matchedSaveResults = pd.concat([matchedSaveResults, saveResults[saveResults['Stock'].str.contains(stk)]], ignore_index=True)
             screenResults, saveResults = matchedScreenResults, matchedSaveResults
             
-
+        screenResults.dropna(axis=1, how='all', inplace=True)
+        saveResults.dropna(axis=1, how='all', inplace=True)
         screenResults.sort_values(by=['Stock'], ascending=True, inplace=True)
         saveResults.sort_values(by=['Stock'], ascending=True, inplace=True)
         screenResults.set_index('Stock', inplace=True)

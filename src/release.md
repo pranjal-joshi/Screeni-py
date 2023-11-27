@@ -7,7 +7,7 @@ Screeni-py is now on **YouTube** for additional help! - Thank You for your suppo
 
 ⚠️ **Executable files (.exe, .bin and .run) are now DEPRECATED! Please Switch to Docker**
 
-1. **Backtesting** Added for Screening Patterns to Develope and Test Strategies!
+1. **Backtesting Reports** Added for Screening Patterns to Develope and Test Strategies!
 2. **Position Size Calculator** tab added for Better and Quick Risk Management!
 3. **Lorentzian Classification** (by @jdehorty) added for enhanced accuracy for your trades - - Try `Option > 6 > 7` 🤯
 4. **Artificial Intelligence v3 for Nifty 50 Prediction** - Predict Next day Gap-up/down using Nifty, Gold and Crude prices! - Try `Select Index for Screening > N`
