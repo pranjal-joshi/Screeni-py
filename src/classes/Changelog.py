@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.17"
+VERSION = "2.18"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -277,4 +277,8 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [2.17]
 1. Backtest Report column added for backtest screening runs
+
+[2.18]
+1. Critical backtest bug fixed (dropna axis-1 removed from results)
+2. Clear stock cached data button added
 ''' + colorText.END

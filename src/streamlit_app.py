@@ -45,8 +45,15 @@ execute_inputs = []
 def show_df_as_result_table():
   try:
     df:pd.DataFrame = pd.read_pickle('last_screened_unformatted_results.pkl')
-    ac, bc = st.columns([6,1])
+    ac, cc, bc = st.columns([6,1,1])
     ac.markdown(f'#### 🔍 Found {len(df)} Results')
+    clear_cache_btn = cc.button(
+       label='Clear Cached Data',
+       use_container_width=True,
+    )
+    if clear_cache_btn:
+       os.system('rm stock_data_*.pkl')
+       st.toast('Stock Cache Deleted!', icon='🗑️')
     bc.download_button(
         label="Download Results",
         data=df.to_csv().encode('utf-8'),
@@ -101,6 +108,7 @@ def on_start_button_click():
     
     if Utility.tools.isBacktesting(backtestDate=backtestDate):
       st.write(f'Running in :red[**Backtesting Mode**] for *T = {str(backtestDate)}* (Y-M-D) : [Backtesting data is subjected to availability as per the API limits]')
+      st.write('Backtesting is :red[Not Supported] for Intraday timeframes')
     t = Thread(target=dummy_call)
     t.start()
 
@@ -177,6 +185,7 @@ def get_extra_inputs(tickerOption, executeOption, c_index=None, c_criteria=None,
     elif int(tickerOption) == 0 or tickerOption is None:
         stock_codes:str = c_index.text_input('Enter Stock Code(s)', placeholder='SBIN, INFY, ITC')
         execute_inputs = [tickerOption, executeOption, stock_codes.upper(), 'N']
+        return
     elif int(executeOption) >= 0 and int(executeOption) < 4:
         execute_inputs = [tickerOption, executeOption, 'N']
     elif int(executeOption) == 4:
@@ -272,6 +281,9 @@ with tab_screen:
                   .stButton>button {
                       height: 70px;
                   }
+                  .stDownloadButton>button {
+                      height: 70px;
+                  }
                   th {
                       text-align: left;
                   }
@@ -325,7 +337,7 @@ with tab_screen:
 
   executeOption = str(c_criteria.selectbox('Select Screening Criteria', options=list_criteria).split(' ')[0])
 
-  start_button = c_button_start.button('Start Screening', type='primary', key='start_button')
+  start_button = c_button_start.button('Start Screening', type='primary', key='start_button', use_container_width=True)
 
   get_extra_inputs(tickerOption=tickerOption, executeOption=executeOption, c_index=c_index, c_criteria=c_criteria, start_button=start_button)
 
@@ -495,7 +507,7 @@ marquee_html = '''
 	</style>
 </head>
 <body>
-	<marquee class="sampleMarquee" direction="left" scrollamount="7" behavior="scroll">Released in Development mode. This tool should be used only for analysis/study purposes. We do NOT provide any Buy/Sell advice for any Securities. Authors of this tool will not be held liable for any losses. Understand the Risks subjected with Markets before Investing.</marquee>
+	<marquee class="sampleMarquee" direction="left" scrollamount="7" behavior="scroll">This tool should be used only for Analysis/Study purposes. We do NOT provide any Buy/Sell advice for any Securities. Authors of this tool will not be held liable for any losses. Understand the Risks subjected with Markets before Investing.</marquee>
 </body>
 </html>
 '''

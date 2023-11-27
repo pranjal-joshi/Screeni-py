@@ -292,6 +292,7 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
               "[+] Press any key to Exit!" + colorText.END)
         sys.exit(0)
 
+    print(tickerOption)
     if tickerOption == 'W' or tickerOption == 'N' or tickerOption == 'E' or tickerOption == 'S' or (tickerOption >= 0 and tickerOption < 16):
         configManager.getConfig(ConfigManager.parser)
         try:
@@ -478,8 +479,6 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
                 matchedSaveResults = pd.concat([matchedSaveResults, saveResults[saveResults['Stock'].str.contains(stk)]], ignore_index=True)
             screenResults, saveResults = matchedScreenResults, matchedSaveResults
             
-        screenResults.dropna(axis=1, how='all', inplace=True)
-        saveResults.dropna(axis=1, how='all', inplace=True)
         screenResults.sort_values(by=['Stock'], ascending=True, inplace=True)
         saveResults.sort_values(by=['Stock'], ascending=True, inplace=True)
         screenResults.set_index('Stock', inplace=True)

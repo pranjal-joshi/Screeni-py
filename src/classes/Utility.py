@@ -388,13 +388,16 @@ class tools:
     def calculateBacktestReport(data, backtestDict:dict):
         try:
             recent = data.head(1)['Close'].iloc[0]
-            for key, val in backtestDict.items():
+            for key, val in backtestDict.copy().items():
                 if val is not None:
                     try:
                         backtestDict[key] = str(round((backtestDict[key]-recent)/recent*100,1)) + "%"
                     except TypeError:
-                        backtestDict[key] = None
+                        del backtestDict[key]
+                        # backtestDict[key] = None
                         continue
+                else:
+                    del backtestDict[key]
         except:
             pass
         return backtestDict
