@@ -13,6 +13,7 @@ from time import sleep
 from math import floor
 import classes.ConfigManager as ConfigManager
 import classes.Utility as Utility
+import classes.Fetcher as Fetcher
 
 st.set_page_config(layout="wide", page_title="Screeni-py", page_icon="📈")
 
@@ -62,9 +63,19 @@ def show_df_as_result_table():
         type='secondary',
         use_container_width=True
     )       
-    if execute_inputs[0] != '15':
+    if int(execute_inputs[0]) < 15:
       df.index = df.index.map(lambda x: "https://in.tradingview.com/chart?symbol=NSE%3A" + x)
       df.index = df.index.map(lambda x: f'<a href="{x}" target="_blank">{x.split("%3A")[-1]}</a>')
+    elif execute_inputs[0] == '16':
+      try:
+        fetcher = Fetcher.tools(configManager=ConfigManager.tools())
+        url_dict_reversed = {key.replace('^','').replace('.NS',''): value for key, value in fetcher.getAllNiftyIndices().items()}
+        url_dict_reversed = {v: k for k, v in url_dict_reversed.items()}
+        df.index = df.index.map(lambda x: "https://in.tradingview.com/chart?symbol=NSE%3A" + url_dict_reversed[x])
+        url_dict_reversed = {v: k for k, v in url_dict_reversed.items()}
+        df.index = df.index.map(lambda x: f'<a href="{x}" target="_blank">{url_dict_reversed[x.split("%3A")[-1]]}</a>')
+      except KeyError:
+         pass
     else:
       df.index = df.index.map(lambda x: "https://in.tradingview.com/chart?symbol=" + x)
       df.index = df.index.map(lambda x: f'<a href="{x}" target="_blank">{x.split("=")[-1]}</a>')
@@ -310,7 +321,8 @@ with tab_screen:
     '11 > Nifty Midcap 150',
     '13 > Newly Listed (IPOs in last 2 Year)',
     '14 > F&O Stocks Only',
-    '15 > US S&P 500'
+    '15 > US S&P 500',
+    '16 > Sectoral Indices (NSE)'
   ]
 
   list_criteria = [

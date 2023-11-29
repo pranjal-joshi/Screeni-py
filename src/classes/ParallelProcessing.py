@@ -18,6 +18,7 @@ from datetime import datetime
 import classes.Fetcher as Fetcher
 import classes.Screener as Screener
 import classes.Utility as Utility
+from copy import deepcopy
 from classes.CandlePatterns import CandlePatterns
 from classes.ColorText import colorText
 from classes.SuppressOutput import SuppressOutput
@@ -124,11 +125,18 @@ class StockConsumer(multiprocessing.Process):
             with self.screenCounter.get_lock():
                 self.screenCounter.value += 1
             if not processedData.empty:
+                urlStock = None
+                if tickerOption == 16:
+                    urlStock = deepcopy(stock).replace('^','').replace('.NS','')
+                    stock = fetcher.getAllNiftyIndices()[stock]
+                stock = stock.replace('^','').replace('.NS','')
+                urlStock = stock.replace('&','_') if urlStock is None else urlStock.replace('&','_')
                 screeningDictionary['Stock'] = colorText.BOLD + \
-                    colorText.BLUE + f'\x1B]8;;https://in.tradingview.com/chart?symbol=NSE%3A{stock}\x1B\\{stock}\x1B]8;;\x1B\\' + colorText.END if tickerOption != 15 \
+                    colorText.BLUE + f'\x1B]8;;https://in.tradingview.com/chart?symbol=NSE%3A{urlStock}\x1B\\{stock}\x1B]8;;\x1B\\' + colorText.END if tickerOption < 15 \
                     else colorText.BOLD + \
-                    colorText.BLUE + f'\x1B]8;;https://in.tradingview.com/chart?symbol={stock}\x1B\\{stock}\x1B]8;;\x1B\\' + colorText.END
+                    colorText.BLUE + f'\x1B]8;;https://in.tradingview.com/chart?symbol={urlStock}\x1B\\{stock}\x1B]8;;\x1B\\' + colorText.END
                 saveDictionary['Stock'] = stock
+
                 consolidationValue = screener.validateConsolidation(
                     processedData, screeningDictionary, saveDictionary, percentage=configManager.consolidationPercentage)
                 isMaReversal = screener.validateMovingAverages(
