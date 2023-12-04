@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.19"
+VERSION = "2.20"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -285,4 +285,6 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 [2.19]
 1. New Index (Group of Indices) `16 > Sectoral Indices` added
 
+[2.20]
+1. Bugfixes - Clear cache button random key added to fix re-rendering issues
 ''' + colorText.END
