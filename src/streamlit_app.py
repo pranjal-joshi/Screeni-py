@@ -1,3 +1,4 @@
+import random
 import streamlit as st
 import streamlit.components.v1 as components
 import requests
@@ -51,6 +52,7 @@ def show_df_as_result_table():
     clear_cache_btn = cc.button(
        label='Clear Cached Data',
        use_container_width=True,
+       key=random.randint(1,999999999),
     )
     if clear_cache_btn:
        os.system('rm stock_data_*.pkl')
@@ -63,7 +65,7 @@ def show_df_as_result_table():
         type='secondary',
         use_container_width=True
     )       
-    if int(execute_inputs[0]) < 15:
+    if type(execute_inputs[0]) == str or int(execute_inputs[0]) < 15:
       df.index = df.index.map(lambda x: "https://in.tradingview.com/chart?symbol=NSE%3A" + x)
       df.index = df.index.map(lambda x: f'<a href="{x}" target="_blank">{x.split("%3A")[-1]}</a>')
     elif execute_inputs[0] == '16':
