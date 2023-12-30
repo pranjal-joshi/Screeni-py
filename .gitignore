@@ -9,3 +9,4 @@ stock*.pkl
 results*.pkl
 *.spec
 .DS_Store
+.history/
