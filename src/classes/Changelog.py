@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.20"
+VERSION = "2.21"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -287,4 +287,7 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [2.20]
 1. Bugfixes - Clear cache button random key added to fix re-rendering issues
+
+[2.21]
+1. Dependency updated - `advanced-ta` lib for bugfixes and performance improvement in Lorentzian Classifier
 ''' + colorText.END
