@@ -61,7 +61,7 @@ class StockConsumer(multiprocessing.Process):
             sys.exit(0)
 
     def screenStocks(self, tickerOption, executeOption, reversalOption, maLength, daysForLowestVolume, minRSI, maxRSI, respChartPattern, insideBarToLookback, totalSymbols,
-                     configManager, fetcher, screener, candlePatterns, stock, newlyListedOnly, downloadOnly, vectorSearch, isDevVersion, backtestDate, printCounter=False):
+                     configManager, fetcher, screener:Screener.tools, candlePatterns, stock, newlyListedOnly, downloadOnly, vectorSearch, isDevVersion, backtestDate, printCounter=False):
         screenResults = pd.DataFrame(columns=[
             'Stock', 'Consolidating', 'Breaking-Out', 'MA-Signal', 'Volume', 'LTP', 'RSI', 'Trend', 'Pattern'])
         screeningDictionary = {'Stock': "", 'Consolidating': "",  'Breaking-Out': "",
@@ -192,6 +192,8 @@ class StockConsumer(multiprocessing.Process):
                     isVSA = screener.validateVolumeSpreadAnalysis(processedData, screeningDictionary, saveDictionary)
                 if maLength is not None and executeOption == 6 and reversalOption == 4:
                     isMaSupport = screener.findReversalMA(fullData, screeningDictionary, saveDictionary, maLength)
+                if executeOption == 6 and reversalOption == 8:
+                    isRsiReversal = screener.findRSICrossingMA(fullData, screeningDictionary, saveDictionary)
 
                 isVCP = False
                 if respChartPattern == 4:
@@ -251,6 +253,9 @@ class StockConsumer(multiprocessing.Process):
                             self.screenResultsCounter.value += 1
                             return screeningDictionary, saveDictionary
                         elif reversalOption == 7 and isLorentzian:
+                            self.screenResultsCounter.value += 1
+                            return screeningDictionary, saveDictionary
+                        elif reversalOption == 8 and isRsiReversal:
                             self.screenResultsCounter.value += 1
                             return screeningDictionary, saveDictionary
                     if executeOption == 7 and isLtpValid:

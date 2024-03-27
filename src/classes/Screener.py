@@ -421,6 +421,23 @@ class tools:
             saveDict['MA-Signal'] = f'Reversal-{maLength}MA'
             return True
         return False
+    
+    # Find stock showing RSI crossing with RSI 9 SMA
+    def findRSICrossingMA(self, data, screenDict, saveDict, maLength=9):
+        data = data[::-1]
+        maRsi = ScreenerTA.MA(data['RSI'], timeperiod=maLength)
+        data.insert(10,'maRsi',maRsi)
+        data = data[::-1].head(3)
+        if data['maRsi'].iloc[0] <= data['RSI'].iloc[0] and data['maRsi'].iloc[1] > data['RSI'].iloc[1]:
+            screenDict['MA-Signal'] = colorText.BOLD + colorText.GREEN + f'RSI-MA-Buy' + colorText.END
+            saveDict['MA-Signal'] = f'RSI-MA-Buy'
+            return True
+        elif data['maRsi'].iloc[0] >= data['RSI'].iloc[0] and data['maRsi'].iloc[1] < data['RSI'].iloc[1]:
+            screenDict['MA-Signal'] = colorText.BOLD + colorText.GREEN + f'RSI-MA-Sell' + colorText.END
+            saveDict['MA-Signal'] = f'RSI-MA-Sell'
+            return True
+        return False
+       
 
     # Find IPO base
     def validateIpoBase(self, stock, data, screenDict, saveDict, percentage=0.3):

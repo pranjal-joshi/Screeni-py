@@ -236,9 +236,10 @@ class tools:
     5 > Screen for Volume Spread Analysis (Bullish VSA Reversal)
     6 > Screen for Narrow Range (NRx) Reversal
     7 > Screen for Reversal using Lorentzian Classifier (Machine Learning based indicator)
+    8 > Screen for Reversal using RSI MA Crossing
     0 > Cancel
 [+] Select option: """ + colorText.END))
-            if resp >= 0 and resp <= 7:
+            if resp >= 0 and resp <= 8:
                 if resp == 4:
                     try:
                         maLength = int(input(colorText.BOLD + colorText.WARN +
@@ -262,6 +263,9 @@ class tools:
                     except ValueError:
                         print(colorText.BOLD + colorText.FAIL + '\n[!] Invalid Input! Select valid Signal Type!\n' + colorText.END)
                         raise ValueError
+                elif resp == 8:
+                    maLength = 9
+                    return resp, maLength
                 return resp, None
             raise ValueError
         except ValueError:
