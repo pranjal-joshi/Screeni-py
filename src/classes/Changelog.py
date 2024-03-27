@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.21"
+VERSION = "2.22"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -290,4 +290,7 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [2.21]
 1. Dependency updated - `advanced-ta` lib for bugfixes and performance improvement in Lorentzian Classifier
+
+[2.22]
+1. RSI and 9 SMA of RSI based reversal added - Momentum based execution strategy.
 ''' + colorText.END

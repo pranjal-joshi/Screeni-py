@@ -40,7 +40,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 pytest pytest-mock
         pip install -r requirements.txt
-        pip install --no-deps advanced-ta
+        # pip install --no-deps advanced-ta
 
     - name: Lint with flake8
       run: |

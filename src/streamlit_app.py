@@ -225,7 +225,8 @@ def get_extra_inputs(tickerOption, executeOption, c_index=None, c_criteria=None,
                                 '4 > Reversal at Moving Average (Bullish Reversal)',
                                 '5 > Volume Spread Analysis (Bullish VSA Reversal)',
                                 '6 > Narrow Range (NRx) Reversal',
-                                '7 > Lorentzian Classifier (Machine Learning based indicator)'
+                                '7 > Lorentzian Classifier (Machine Learning based indicator)',
+                                '8 > RSI Crossing with 9 SMA of RSI itself'
                             ]
                         ).split(' ')[0])
         if select_reversal == 4:
