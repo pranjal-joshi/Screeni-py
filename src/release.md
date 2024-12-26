@@ -7,6 +7,7 @@ Screeni-py is now on **YouTube** for additional help! - Thank You for your suppo
 
 ⚠️ **Executable files (.exe, .bin and .run) are now DEPRECATED! Please Switch to Docker**
 
+1. Fixed Breakout Screening for **F&O Stocks** (Changed Data Source to Zerodha Kite from NSE website)
 1. **RSI** based **Reversal** using *9 SMA* of RSI - Try `Option > 6 > 8`
 2. **NSE Indices** added to find Sectoral opportunities - Try Index `16 > Sectoral Indices` 
 3. **Backtesting Reports** Added for Screening Patterns to Develope and Test Strategies!
