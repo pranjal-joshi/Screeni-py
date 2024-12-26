@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.22"
+VERSION = "2.23"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -293,4 +293,7 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [2.22]
 1. RSI and 9 SMA of RSI based reversal added - Momentum based execution strategy.
+
+[2.23]
+1. Changed Data Source for F&O Stocks - Using Zerodha Kite instead of Broken NSE Website
 ''' + colorText.END

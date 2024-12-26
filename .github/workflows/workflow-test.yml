@@ -28,7 +28,7 @@ jobs:
         python-version: 3.11.6
 
     - name: Restore Dependencies from Cache
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: ~\AppData\Local\pip\Cache
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
@@ -121,7 +121,7 @@ jobs:
         echo ${{steps.create_pr.outputs.pr_number}} >> pr.txt
 
     - name: Save PR Log File
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: PR_Log.txt
         path: pr.txt
