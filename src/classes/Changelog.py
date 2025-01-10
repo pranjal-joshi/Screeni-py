@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.23"
+VERSION = "2.24"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -296,4 +296,7 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [2.23]
 1. Changed Data Source for F&O Stocks - Using Zerodha Kite instead of Broken NSE Website
+
+[2.24]
+1. Added Filters to Result Table (Special Thanks to https://github.com/koalyptus/TableFilter)
 ''' + colorText.END

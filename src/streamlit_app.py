@@ -12,6 +12,9 @@ from pathlib import Path
 from threading import Thread
 from time import sleep
 from math import floor
+import threading
+from http.server import SimpleHTTPRequestHandler
+from socketserver import TCPServer
 import classes.ConfigManager as ConfigManager
 import classes.Utility as Utility
 import classes.Fetcher as Fetcher
@@ -32,6 +35,31 @@ try:
     proxyServer = urllib.request.getproxies()['http']
 except KeyError:
     proxyServer = ""
+
+# Start webserver to serve static files - js/css
+def start_static_file_server():
+
+  class ThreadedHTTPServer(TCPServer):
+      allow_reuse_address = True  # Allow immediate reuse of the address
+
+  server = ThreadedHTTPServer(("0.0.0.0", 8000), SimpleHTTPRequestHandler)
+
+  def serve():
+      with server: 
+          print("Static File WebServer started on port 8000")
+          server.serve_forever()
+
+  server_thread = threading.Thread(target=serve, daemon=True)
+  server_thread.start()
+  return server
+
+try:
+  staticFileServer = start_static_file_server()
+except OSError as e:
+  if e.errno == 98:
+    pass
+  else:
+     raise(e)
 
 isDevVersion, guiUpdateMessage = None, None
 
@@ -84,8 +112,37 @@ def show_df_as_result_table():
     df['Stock'] = df.index
     stock_column = df.pop('Stock')  # Remove 'Age' column and store it separately
     df.insert(0, 'Stock', stock_column)
-    st.write(df.to_html(escape=False, index=False, index_names=False), unsafe_allow_html=True)
-    st.write(' ')
+    st.components.v1.html(f"""
+      {df.to_html(escape=False, index=False, index_names=False, table_id='resultTable')}
+      <script src="http://localhost:8000/static/tablefilter/tablefilter.js"></script>
+      <script>
+        var filtersConfig = {{
+            base_path: 'http://localhost:8000/static/tablefilter/',
+            col_0: 'none',
+            col_2: 'none',
+            col_5: 'checklist',
+            col_7: 'checklist',
+            col_8: 'checklist',
+            sticky_headers: true,
+            popup_filters: true,
+            auto_filter: {{
+                delay: 1000 //ms
+            }},
+            state: {{
+                types: ['local_storage'],				// Possible values: 'local_storage' 'hash' or 'cookie'  
+                filters: true,						// Persist filters values, enabled by default  
+            }},
+            rows_counter: {{
+                text: 'Filtered Stocks: ' 
+            }},
+            btn_reset: true,
+            status_bar: true,
+            msg_filter: 'Filtering Stocks...',
+        }};
+        var tf = new TableFilter(document.querySelector('#resultTable'), filtersConfig);
+        tf.init();
+      </script>
+    """, height=500, scrolling=True)
   except FileNotFoundError:
     st.error('Last Screened results are not available at the moment')
   except Exception as e:
