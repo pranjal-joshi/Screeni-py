@@ -53,6 +53,7 @@ ENV SCREENIPY_DOCKER = TRUE
 
 ENV SCREENIPY_GUI = TRUE
 
+EXPOSE 8000
 EXPOSE 8501
 
 HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health
