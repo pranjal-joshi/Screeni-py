@@ -3,9 +3,6 @@
 # Created             :   17/08/2023
 # Description         :   Dockerfile to build Screeni-py image for GUI release
 
-# FROM ubuntu:latest as base
-# FROM tensorflow/tensorflow:2.9.2 as base
-# FROM python:3.10.6-slim as base
 FROM python:3.11.6-slim-bookworm as base
 
 ARG DEBIAN_FRONTEND=noninteractive
@@ -29,16 +26,6 @@ ENV PATH="/opt/program:${PATH}"
 WORKDIR /opt/program
 
 RUN chmod +x *
-
-# Removed build ta-lib from source as we're using [pip3 install TA-Lib-Precompiled] for faster docker build
-
-# WORKDIR /opt/program/.github/dependencies/
-# RUN tar -xzf ta-lib-0.4.0-src.tar.gz
-
-# WORKDIR /opt/program/.github/dependencies/ta-lib/
-# RUN ./configure --prefix=/usr --build=$(uname -m)-unknown-linux-gnu
-# RUN make
-# RUN make install
 
 WORKDIR /opt/program/
 RUN python3 -m pip install --upgrade pip
