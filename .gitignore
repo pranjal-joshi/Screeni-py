@@ -10,3 +10,4 @@ results*.pkl
 *.spec
 .DS_Store
 .history/
+*.code-workspace
