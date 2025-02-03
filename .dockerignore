@@ -9,6 +9,5 @@ test
 **/*.md
 **/*.spec
 Dockerfile
-LICENSE
 Makefile
 *.code-workspace
