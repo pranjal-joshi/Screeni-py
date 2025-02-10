@@ -3,60 +3,61 @@
 # Created             :   17/08/2023
 # Description         :   Dockerfile to build Screeni-py image for GUI release
 
-# FROM ubuntu:latest as base
-# FROM tensorflow/tensorflow:2.9.2 as base
-# FROM python:3.10.6-slim as base
-FROM python:3.11.6-slim-bookworm as base
+FROM python:3.11.6-slim-bookworm AS base
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install -y software-properties-common
-
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    git \
-    vim nano wget curl \
-    && \
+    git vim nano wget curl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* 
 
-ENV LANG C.UTF-8
+ENV LANG=C.UTF-8 \
+    PYTHONUNBUFFERED=TRUE \
+    PYTHONDONTWRITEBYTECODE=TRUE \
+    SCREENIPY_DOCKER=TRUE \
+    SCREENIPY_GUI=TRUE \
+    PATH=/opt/program:$PATH
 
-ADD . /opt/program/
+##############
+# Build Phase
+##############
+FROM base AS build
 
-ENV PATH="/opt/program:${PATH}"
+ARG PIP_DISABLE_PIP_VERSION_CHECK=1
+ARG PIP_NO_CACHE_DIR=1
 
 WORKDIR /opt/program
 
-RUN chmod +x *
+RUN python3 -m venv /venv
+ENV PATH=/venv/bin:$PATH
 
-# Removed build ta-lib from source as we're using [pip3 install TA-Lib-Precompiled] for faster docker build
+COPY requirements.txt .
 
-# WORKDIR /opt/program/.github/dependencies/
-# RUN tar -xzf ta-lib-0.4.0-src.tar.gz
+RUN --mount=type=cache,target=/root/.cache/pip pip3 install -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip3 install --no-deps advanced-ta
 
-# WORKDIR /opt/program/.github/dependencies/ta-lib/
-# RUN ./configure --prefix=/usr --build=$(uname -m)-unknown-linux-gnu
-# RUN make
-# RUN make install
+##############
+# Package Phase
+##############
+FROM base AS app
 
-WORKDIR /opt/program/
-RUN python3 -m pip install --upgrade pip
+COPY --from=build /venv /venv
+ENV PATH=/venv/bin:$PATH
 
-RUN pip3 install -r "requirements.txt"
-RUN pip3 install --no-deps advanced-ta
+WORKDIR /opt/program
 
-ENV PYTHONUNBUFFERED=TRUE
-ENV PYTHONDONTWRITEBYTECODE=TRUE
+COPY . .
 
-ENV SCREENIPY_DOCKER = TRUE
-
-ENV SCREENIPY_GUI = TRUE
+RUN chmod +x ./*
 
 EXPOSE 8000
+
 EXPOSE 8501
 
 HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health
 
-WORKDIR /opt/program/src/
+WORKDIR /opt/program/src
+
 ENTRYPOINT ["streamlit", "run", "streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+# ENTRYPOINT ["tail", "-f", "/dev/null"]

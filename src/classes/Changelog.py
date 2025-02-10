@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.24"
+VERSION = "2.25"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -299,4 +299,7 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [2.24]
 1. Added Filters to Result Table (Special Thanks to https://github.com/koalyptus/TableFilter)
+
+[2.25]
+1. Reduced docker image size by 50% (Special Thanks to https://github.com/smitpsanghavi)
 ''' + colorText.END
