@@ -1,0 +1,13 @@
+.git
+.github
+actions-data-download
+patterns
+screenshots
+test
+.dockerignore
+.gitignore
+**/*.md
+**/*.spec
+Dockerfile
+Makefile
+*.code-workspace
