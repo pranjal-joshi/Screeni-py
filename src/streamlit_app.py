@@ -323,6 +323,15 @@ def get_extra_inputs(tickerOption, executeOption, c_index=None, c_criteria=None,
         else:
             execute_inputs = [tickerOption, executeOption, select_pattern, 'N']
 
+header_padding = """
+        <style>
+        header {
+        padding-bottom: 16px;
+        }
+        </style>
+        """
+st.markdown(header_padding, unsafe_allow_html=True)
+
 ac, bc = st.columns([13,1])
 
 ac.title('📈 Screeni-py')
