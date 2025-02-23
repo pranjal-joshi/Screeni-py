@@ -220,8 +220,12 @@ class tools:
                 progress=False,
                 timeout=10,
                 start=self._getBacktestDate(backtest=backtestDate)[0],
-                end=self._getBacktestDate(backtest=backtestDate)[1]
+                end=self._getBacktestDate(backtest=backtestDate)[1],
+                auto_adjust=False
             )
+            # For df backward compatibility towards yfinance 0.2.32
+            data = self.makeDataBackwardCompatible(data)
+            # end
             if backtestDate != datetime.date.today():
                 dateDict = self._getDatesForBacktestReport(backtest=backtestDate)
                 backtestData = yf.download(
@@ -260,6 +264,7 @@ class tools:
     # Get Daily Nifty 50 Index:
     def fetchLatestNiftyDaily(self, proxyServer=None):
         data = yf.download(
+                auto_adjust=False,
                 tickers="^NSEI",
                 period='5d',
                 interval='1d',
@@ -268,6 +273,7 @@ class tools:
                 timeout=10
             )
         gold = yf.download(
+                auto_adjust=False,
                 tickers="GC=F",
                 period='5d',
                 interval='1d',
@@ -276,6 +282,7 @@ class tools:
                 timeout=10
             ).add_prefix(prefix='gold_')
         crude = yf.download(
+                    auto_adjust=False,
                     tickers="CL=F",
                     period='5d',
                     interval='1d',
@@ -283,12 +290,16 @@ class tools:
                     progress=False,
                     timeout=10
                 ).add_prefix(prefix='crude_')
+        data = self.makeDataBackwardCompatible(data)
+        gold = self.makeDataBackwardCompatible(gold, column_prefix='gold_')
+        crude = self.makeDataBackwardCompatible(crude, column_prefix='crude_')
         data = pd.concat([data, gold, crude], axis=1)
         return data
 
     # Get Data for Five EMA strategy
     def fetchFiveEmaData(self, proxyServer=None):
         nifty_sell = yf.download(
+                auto_adjust=False,
                 tickers="^NSEI",
                 period='5d',
                 interval='5m',
@@ -297,6 +308,7 @@ class tools:
                 timeout=10
             )
         banknifty_sell = yf.download(
+                auto_adjust=False,
                 tickers="^NSEBANK",
                 period='5d',
                 interval='5m',
@@ -305,6 +317,7 @@ class tools:
                 timeout=10
             )
         nifty_buy = yf.download(
+                auto_adjust=False,
                 tickers="^NSEI",
                 period='5d',
                 interval='15m',
@@ -313,6 +326,7 @@ class tools:
                 timeout=10
             )
         banknifty_buy = yf.download(
+                auto_adjust=False,
                 tickers="^NSEBANK",
                 period='5d',
                 interval='15m',
@@ -320,6 +334,10 @@ class tools:
                 progress=False,
                 timeout=10
             )
+        nifty_buy = self.makeDataBackwardCompatible(nifty_buy)
+        banknifty_buy = self.makeDataBackwardCompatible(banknifty_buy)
+        nifty_sell = self.makeDataBackwardCompatible(nifty_sell)
+        banknifty_sell = self.makeDataBackwardCompatible(banknifty_sell)
         return nifty_buy, banknifty_buy, nifty_sell, banknifty_sell
 
     # Load stockCodes from the watchlist.xlsx
@@ -351,4 +369,20 @@ class tools:
             print(colorText.BOLD + colorText.BLUE +
                   f'[+] watchlist_template.xlsx created in {os.getcwd()} as a referance template.' + colorText.END)
             return None
+        return data
+    
+    def makeDataBackwardCompatible(self, data:pd.DataFrame, column_prefix:str=None) -> pd.DataFrame:
+        data = data.droplevel(level=1, axis=1)
+        data = data.rename_axis(None, axis=1)
+        column_prefix = '' if column_prefix is None else column_prefix
+        data = data[
+            [
+                f'{column_prefix}Open', 
+                f'{column_prefix}High', 
+                f'{column_prefix}Low', 
+                f'{column_prefix}Close', 
+                f'{column_prefix}Adj Close', 
+                f'{column_prefix}Volume'
+            ]
+        ]
         return data
