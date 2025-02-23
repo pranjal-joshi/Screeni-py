@@ -8,6 +8,7 @@
 import sys
 import os
 import glob
+import re
 import configparser
 from datetime import date
 from classes.ColorText import colorText
@@ -57,8 +58,8 @@ class tools:
                        str(self.consolidationPercentage))
             parser.set('config', 'shuffle', 'y')
             parser.set('config', 'cacheStockData', 'y')
-            parser.set('config', 'onlyStageTwoStocks', 'y')
-            parser.set('config', 'useEMA', 'n')
+            parser.set('config', 'onlyStageTwoStocks', 'y' if self.stageTwo else 'n')
+            parser.set('config', 'useEMA', 'y' if self.useEMA else 'n')
             try:
                 fp = open('screenipy.ini', 'w')
                 parser.write(fp)
@@ -157,8 +158,12 @@ class tools:
                     self.cacheEnabled = True
                 if 'n' not in str(parser.get('config', 'onlyStageTwoStocks')).lower():
                     self.stageTwo = True
+                else:
+                    self.stageTwo = False
                 if 'y' not in str(parser.get('config', 'useEMA')).lower():
                     self.useEMA = False
+                else:
+                    self.useEMA = True
             except configparser.NoOptionError:
                 input(colorText.BOLD + colorText.FAIL +
                       '[+] Screenipy requires user configuration again. Press enter to continue..' + colorText.END)
@@ -191,3 +196,11 @@ class tools:
             return True
         except FileNotFoundError:
             return False
+        
+    # Get period as a numeric value
+    def getPeriodNumeric(self):
+        import re
+        pattern = re.compile(r'\d+')
+        result = [int(match.group()) for match in pattern.finditer(self.period)][0]
+        return result
+

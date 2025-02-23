@@ -5,8 +5,6 @@
  *  Description         :   Class for managing misc and utility methods
 '''
 
-from decimal import DivisionByZero
-from genericpath import isfile
 import os
 import sys
 import platform
@@ -41,6 +39,7 @@ art = colorText.GREEN + '''
 ''' + colorText.END
 
 lastScreened = 'last_screened_results.pkl'
+lastScreenedUnformatted = 'last_screened_unformatted_results.pkl'
 
 # Class for managing misc and utility methods
 
@@ -72,14 +71,18 @@ class tools:
         input('')
 
     # Save last screened result to pickle file
-    def setLastScreenedResults(df):
+    def setLastScreenedResults(df, unformatted=False):
         try:
-            df.sort_values(by=['Stock'], ascending=True, inplace=True)
-            df.to_pickle(lastScreened)
+            if not unformatted:
+                df.sort_values(by=['Stock'], ascending=True, inplace=True)
+                df.to_pickle(lastScreened)
+            else:
+                df.sort_values(by=['Stock'], ascending=True, inplace=True)
+                df.to_pickle(lastScreenedUnformatted)
         except IOError:
-            input(colorText.BOLD + colorText.FAIL +
+            print(colorText.BOLD + colorText.FAIL +
                   '[+] Failed to save recently screened result table on disk! Skipping..' + colorText.END)
-
+            
     # Load last screened result to pickle file
     def getLastScreenedResults():
         try:
@@ -197,6 +200,8 @@ class tools:
 
     # Save screened results to excel
     def promptSaveResults(df):
+        if isDocker() or isGui():  # Skip export to excel inside docker
+            return
         try:
             response = str(input(colorText.BOLD + colorText.WARN +
                                  '[>] Do you want to save the results in excel file? [Y/N]: ')).upper()
@@ -230,9 +235,11 @@ class tools:
     4 > Screen for Reversal at Moving Average (Bullish Reversal)
     5 > Screen for Volume Spread Analysis (Bullish VSA Reversal)
     6 > Screen for Narrow Range (NRx) Reversal
+    7 > Screen for Reversal using Lorentzian Classifier (Machine Learning based indicator)
+    8 > Screen for Reversal using RSI MA Crossing
     0 > Cancel
 [+] Select option: """ + colorText.END))
-            if resp >= 0 and resp <= 6:
+            if resp >= 0 and resp <= 8:
                 if resp == 4:
                     try:
                         maLength = int(input(colorText.BOLD + colorText.WARN +
@@ -250,6 +257,15 @@ class tools:
                     except ValueError:
                         print(colorText.BOLD + colorText.FAIL + '\n[!] Invalid Input! NR timeframe should be single integer value!\n' + colorText.END)
                         raise ValueError
+                elif resp == 7:
+                    try:
+                        return resp, 1
+                    except ValueError:
+                        print(colorText.BOLD + colorText.FAIL + '\n[!] Invalid Input! Select valid Signal Type!\n' + colorText.END)
+                        raise ValueError
+                elif resp == 8:
+                    maLength = 9
+                    return resp, maLength
                 return resp, None
             raise ValueError
         except ValueError:
@@ -281,6 +297,19 @@ class tools:
             input(colorText.BOLD + colorText.FAIL +
                   "\n[+] Invalid Option Selected. Press Any Key to Continue..." + colorText.END)
             return (None, None)
+        
+    # Prompt for Similar stock search
+    def promptSimilarStockSearch():
+        try:
+            stockCode = str(input(colorText.BOLD + colorText.WARN +
+                                    "\n[+] Enter the Name of the stock to search similar stocks for: " + colorText.END)).upper()
+            candles = int(input(colorText.BOLD + colorText.WARN +
+                                    "\n[+] How many candles (TimeFrame) to look back for similarity? : " + colorText.END))
+            return stockCode, candles
+        except ValueError:
+            input(colorText.BOLD + colorText.FAIL +
+                "\n[+] Invalid Option Selected. Press Any Key to Continue..." + colorText.END)
+            return None, None
 
     def getProgressbarStyle():
         bar = 'smooth'
@@ -291,10 +320,10 @@ class tools:
         return bar, spinner
 
     def getNiftyModel(proxyServer=None):
-        files = ['nifty_model_v2.h5', 'nifty_model_v2.pkl']
+        files = ['nifty_model_v3.h5', 'nifty_model_v3.pkl']
         urls = [
-            "https://raw.github.com/pranjal-joshi/Screeni-py/new-features/src/ml/nifty_model_v2.h5",
-            "https://raw.github.com/pranjal-joshi/Screeni-py/new-features/src/ml/nifty_model_v2.pkl"
+            f"https://raw.github.com/pranjal-joshi/Screeni-py/new-features/src/ml/{files[0]}",
+            f"https://raw.github.com/pranjal-joshi/Screeni-py/new-features/src/ml/{files[1]}"
         ]
         if os.path.isfile(files[0]) and os.path.isfile(files[1]):
             file_age = (time.time() - os.path.getmtime(files[0]))/604800
@@ -314,7 +343,7 @@ class tools:
                     resp = requests.get(file_url, stream=True)
                 if resp.status_code == 200:
                     print(colorText.BOLD + colorText.GREEN +
-                            "[+] Downloading AI model (v2) for Nifty predictions, Please Wait.." + colorText.END)
+                            "[+] Downloading AI model (v3) for Nifty predictions, Please Wait.." + colorText.END)
                     try:
                         chunksize = 1024*1024*1
                         filesize = int(int(resp.headers.get('content-length'))/chunksize)
@@ -351,3 +380,38 @@ class tools:
         for i in range(beeps):
             print('\a')
             sleep(delay)
+
+    def isBacktesting(backtestDate):
+        try:
+            if datetime.date.today() != backtestDate:
+                return True
+            return False
+        except:
+            return False
+        
+    def calculateBacktestReport(data, backtestDict:dict):
+        try:
+            recent = data.head(1)['Close'].iloc[0]
+            for key, val in backtestDict.copy().items():
+                if val is not None:
+                    try:
+                        backtestDict[key] = str(round((backtestDict[key]-recent)/recent*100,1)) + "%"
+                    except TypeError:
+                        del backtestDict[key]
+                        # backtestDict[key] = None
+                        continue
+                else:
+                    del backtestDict[key]
+        except:
+            pass
+        return backtestDict
+
+def isDocker():
+    if 'SCREENIPY_DOCKER' in os.environ:
+        return True
+    return False
+
+def isGui():
+    if 'SCREENIPY_GUI' in os.environ:
+        return True
+    return False

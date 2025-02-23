@@ -12,11 +12,13 @@ import numpy as np
 import sys
 import os
 import pytz
+import traceback
 from queue import Empty
 from datetime import datetime
 import classes.Fetcher as Fetcher
 import classes.Screener as Screener
 import classes.Utility as Utility
+from copy import deepcopy
 from classes.CandlePatterns import CandlePatterns
 from classes.ColorText import colorText
 from classes.SuppressOutput import SuppressOutput
@@ -58,8 +60,8 @@ class StockConsumer(multiprocessing.Process):
         except Exception as e:
             sys.exit(0)
 
-    def screenStocks(self, executeOption, reversalOption, maLength, daysForLowestVolume, minRSI, maxRSI, respChartPattern, insideBarToLookback, totalSymbols,
-                     configManager, fetcher, screener, candlePatterns, stock, newlyListedOnly, downloadOnly, printCounter=False):
+    def screenStocks(self, tickerOption, executeOption, reversalOption, maLength, daysForLowestVolume, minRSI, maxRSI, respChartPattern, insideBarToLookback, totalSymbols,
+                     configManager, fetcher, screener:Screener.tools, candlePatterns, stock, newlyListedOnly, downloadOnly, vectorSearch, isDevVersion, backtestDate, printCounter=False):
         screenResults = pd.DataFrame(columns=[
             'Stock', 'Consolidating', 'Breaking-Out', 'MA-Signal', 'Volume', 'LTP', 'RSI', 'Trend', 'Pattern'])
         screeningDictionary = {'Stock': "", 'Consolidating': "",  'Breaking-Out': "",
@@ -78,13 +80,18 @@ class StockConsumer(multiprocessing.Process):
                     period = configManager.period
 
             if (self.stockDict.get(stock) is None) or (configManager.cacheEnabled is False) or self.isTradingTime or downloadOnly:
-                data = fetcher.fetchStockData(stock,
-                                              period,
-                                              configManager.duration,
-                                              self.proxyServer,
-                                              self.screenResultsCounter,
-                                              self.screenCounter,
-                                              totalSymbols)
+                try:
+                    data, backtestReport = fetcher.fetchStockData(stock,
+                                                period,
+                                                configManager.duration,
+                                                self.proxyServer,
+                                                self.screenResultsCounter,
+                                                self.screenCounter,
+                                                totalSymbols,
+                                                backtestDate=backtestDate,
+                                                tickerOption=tickerOption)
+                except Exception as e:
+                    return screeningDictionary, saveDictionary
                 if configManager.cacheEnabled is True and not self.isTradingTime and (self.stockDict.get(stock) is None) or downloadOnly:
                     self.stockDict[stock] = data.to_dict('split')
                     if downloadOnly:
@@ -105,6 +112,11 @@ class StockConsumer(multiprocessing.Process):
 
             fullData, processedData = screener.preprocessData(
                 data, daysToLookback=configManager.daysToLookback)
+            
+            if type(vectorSearch) != bool and type(vectorSearch) and vectorSearch[2] == True:
+                executeOption = 0
+                with self.screenCounter.get_lock():
+                    screener.addVector(fullData, stock, vectorSearch[1])
 
             if newlyListedOnly:
                 if not screener.validateNewlyListed(fullData, period):
@@ -113,9 +125,18 @@ class StockConsumer(multiprocessing.Process):
             with self.screenCounter.get_lock():
                 self.screenCounter.value += 1
             if not processedData.empty:
+                urlStock = None
+                if tickerOption == 16:
+                    urlStock = deepcopy(stock).replace('^','').replace('.NS','')
+                    stock = fetcher.getAllNiftyIndices()[stock]
+                stock = stock.replace('^','').replace('.NS','')
+                urlStock = stock.replace('&','_') if urlStock is None else urlStock.replace('&','_')
                 screeningDictionary['Stock'] = colorText.BOLD + \
-                     colorText.BLUE + f'\x1B]8;;https://in.tradingview.com/chart?symbol=NSE%3A{stock}\x1B\\{stock}\x1B]8;;\x1B\\' + colorText.END
+                    colorText.BLUE + f'\x1B]8;;https://in.tradingview.com/chart?symbol=NSE%3A{urlStock}\x1B\\{stock}\x1B]8;;\x1B\\' + colorText.END if tickerOption < 15 \
+                    else colorText.BOLD + \
+                    colorText.BLUE + f'\x1B]8;;https://in.tradingview.com/chart?symbol={urlStock}\x1B\\{stock}\x1B]8;;\x1B\\' + colorText.END
                 saveDictionary['Stock'] = stock
+
                 consolidationValue = screener.validateConsolidation(
                     processedData, screeningDictionary, saveDictionary, percentage=configManager.consolidationPercentage)
                 isMaReversal = screener.validateMovingAverages(
@@ -143,8 +164,10 @@ class StockConsumer(multiprocessing.Process):
                 except np.RankWarning:
                     screeningDictionary['Trend'] = 'Unknown'
                     saveDictionary['Trend'] = 'Unknown'
-                isCandlePattern = candlePatterns.findPattern(
-                    processedData, screeningDictionary, saveDictionary)
+
+                with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
+                    isCandlePattern = candlePatterns.findPattern(
+                        processedData, screeningDictionary, saveDictionary)
                 
                 isConfluence = False
                 isInsideBar = False
@@ -155,7 +178,7 @@ class StockConsumer(multiprocessing.Process):
                     isConfluence = screener.validateConfluence(stock, processedData, screeningDictionary, saveDictionary, percentage=insideBarToLookback)
                 else:
                     isInsideBar = screener.validateInsideBar(processedData, screeningDictionary, saveDictionary, chartPattern=respChartPattern, daysToLookback=insideBarToLookback)
-                
+
                 with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
                     if maLength is not None and executeOption == 6 and reversalOption == 6:
                         isNR = screener.validateNarrowRange(processedData, screeningDictionary, saveDictionary, nr=maLength)
@@ -169,6 +192,8 @@ class StockConsumer(multiprocessing.Process):
                     isVSA = screener.validateVolumeSpreadAnalysis(processedData, screeningDictionary, saveDictionary)
                 if maLength is not None and executeOption == 6 and reversalOption == 4:
                     isMaSupport = screener.findReversalMA(fullData, screeningDictionary, saveDictionary, maLength)
+                if executeOption == 6 and reversalOption == 8:
+                    isRsiReversal = screener.findRSICrossingMA(fullData, screeningDictionary, saveDictionary)
 
                 isVCP = False
                 if respChartPattern == 4:
@@ -179,6 +204,16 @@ class StockConsumer(multiprocessing.Process):
                 if executeOption == 7 and respChartPattern == 5:
                     with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
                         isBuyingTrendline = screener.findTrendlines(fullData, screeningDictionary, saveDictionary)
+
+                with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
+                    isLorentzian = screener.validateLorentzian(fullData, screeningDictionary, saveDictionary, lookFor = maLength)
+
+                try:
+                    backtestReport = Utility.tools.calculateBacktestReport(data=processedData, backtestDict=backtestReport)
+                    screeningDictionary.update(backtestReport)
+                    saveDictionary.update(backtestReport)
+                except:
+                    pass
 
                 with self.screenResultsCounter.get_lock():
                     if executeOption == 0:
@@ -198,11 +233,11 @@ class StockConsumer(multiprocessing.Process):
                         return screeningDictionary, saveDictionary
                     if executeOption == 6 and isLtpValid:
                         if reversalOption == 1:
-                            if saveDictionary['Pattern'] in CandlePatterns.reversalPatternsBullish or isMaReversal > 0:
+                            if saveDictionary['Pattern'] in CandlePatterns.reversalPatternsBullish or isMaReversal > 0 or 'buy' in saveDictionary['Pattern'].lower():
                                 self.screenResultsCounter.value += 1
                                 return screeningDictionary, saveDictionary
                         elif reversalOption == 2:
-                            if saveDictionary['Pattern'] in CandlePatterns.reversalPatternsBearish or isMaReversal < 0:
+                            if saveDictionary['Pattern'] in CandlePatterns.reversalPatternsBearish or isMaReversal < 0 or 'sell' in saveDictionary['Pattern'].lower():
                                 self.screenResultsCounter.value += 1
                                 return screeningDictionary, saveDictionary
                         elif reversalOption == 3 and isMomentum:
@@ -215,6 +250,12 @@ class StockConsumer(multiprocessing.Process):
                             self.screenResultsCounter.value += 1
                             return screeningDictionary, saveDictionary
                         elif reversalOption == 6 and isNR:
+                            self.screenResultsCounter.value += 1
+                            return screeningDictionary, saveDictionary
+                        elif reversalOption == 7 and isLorentzian:
+                            self.screenResultsCounter.value += 1
+                            return screeningDictionary, saveDictionary
+                        elif reversalOption == 8 and isRsiReversal:
                             self.screenResultsCounter.value += 1
                             return screeningDictionary, saveDictionary
                     if executeOption == 7 and isLtpValid:
@@ -245,6 +286,9 @@ class StockConsumer(multiprocessing.Process):
         except KeyError:
             pass
         except Exception as e:
+            if isDevVersion:
+                print("[!] Dev Traceback:")
+                traceback.print_exc()
             if printCounter:
                 print(colorText.FAIL +
                       ("\n[+] Exception Occured while Screening %s! Skipping this stock.." % stock) + colorText.END)

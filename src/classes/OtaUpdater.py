@@ -6,6 +6,7 @@
 '''
 
 from classes.ColorText import colorText
+from classes.Utility import isDocker, isGui
 import requests
 import os
 import platform
@@ -84,13 +85,15 @@ rm updater.sh
         md = requests.get(url)
         txt = md.text
         txt = txt.split("New?")[1]
-        txt = txt.split("## Downloads")[0]
+        # txt = txt.split("## Downloads")[0]
+        txt = txt.split("## Installation Guide")[0]
         txt = txt.replace('**','').replace('`','').strip()
         return (txt+"\n")
 
     # Check for update and download if available
     def checkForUpdate(proxyServer, VERSION="1.0"):
         OTAUpdater.checkForUpdate.url = None
+        guiUpdateMessage = ""
         try:
             resp = None
             now = float(VERSION)
@@ -98,6 +101,8 @@ rm updater.sh
                 resp = requests.get("https://api.github.com/repos/pranjal-joshi/Screeni-py/releases/latest",proxies={'https':proxyServer})
             else:
                 resp = requests.get("https://api.github.com/repos/pranjal-joshi/Screeni-py/releases/latest")
+            # Disabling Exe check as Executables are deprecated v2.03 onwards
+            '''
             if 'Windows' in platform.system():
                 OTAUpdater.checkForUpdate.url = resp.json()['assets'][1]['browser_download_url']
                 size = int(resp.json()['assets'][1]['size']/(1024*1024))
@@ -107,7 +112,8 @@ rm updater.sh
             else:
                 OTAUpdater.checkForUpdate.url = resp.json()['assets'][0]['browser_download_url']
                 size = int(resp.json()['assets'][0]['size']/(1024*1024))
-            if(float(resp.json()['tag_name']) > now):
+            # if(float(resp.json()['tag_name']) > now):
+            if(float(resp.json()['tag_name']) > now and not isDocker()):    # OTA not applicable if we're running in docker!
                 print(colorText.BOLD + colorText.WARN + "[+] What's New in this Update?\n" + OTAUpdater.showWhatsNew() + colorText.END)
                 action = str(input(colorText.BOLD + colorText.WARN + ('\n[+] New Software update (v%s) available. Download Now (Size: %dMB)? [Y/N]: ' % (str(resp.json()['tag_name']),size)))).lower()
                 if(action == 'y'):
@@ -121,12 +127,22 @@ rm updater.sh
                     except Exception as e:
                         print(colorText.BOLD + colorText.WARN + '[+] Error occured while updating!' + colorText.END)
                         raise(e)
+            '''
+            if(float(resp.json()['tag_name']) > now and not isDocker()):
+                print(colorText.BOLD + colorText.FAIL + "[+] Executables are now DEPRECATED!\nFollow instructions given at https://github.com/pranjal-joshi/Screeni-py to switch to Docker.\n" + colorText.END)
+            elif(float(resp.json()['tag_name']) > now and isDocker()):    # OTA not applicable if we're running in docker!
+                print(colorText.BOLD + colorText.FAIL + ('\n[+] New Software update (v%s) available.\n[+] Run `docker pull joshipranjal/screeni-py:latest` to update your docker to the latest version!\n' % (str(resp.json()['tag_name']))) + colorText.END)
+                print(colorText.BOLD + colorText.WARN + "[+] What's New in this Update?\n" + OTAUpdater.showWhatsNew() + colorText.END)
+                if isGui():
+                    guiUpdateMessage = f"New Software update (v{resp.json()['tag_name']}) available - Watch this [**YouTube Video**](https://youtu.be/T41m13iMyJc) for additional help or Update by running following command:\n\n**`docker pull joshipranjal/screeni-py:latest`**"
             elif(float(resp.json()['tag_name']) < now):
                 print(colorText.BOLD + colorText.FAIL + ('[+] This version (v%s) is in Development mode and unreleased!' % VERSION) + colorText.END)
-                return OTAUpdater.developmentVersion
+                if isGui():
+                    guiUpdateMessage = f"This version (v{VERSION}) is in Development mode and unreleased!"
+                return OTAUpdater.developmentVersion, guiUpdateMessage
         except Exception as e:
             print(colorText.BOLD + colorText.FAIL + "[+] Failure while checking update!" + colorText.END)
             print(e)
             if OTAUpdater.checkForUpdate.url != None:
                 print(colorText.BOLD + colorText.BLUE + ("[+] Download update manually from %s\n" % OTAUpdater.checkForUpdate.url) + colorText.END)
-        return
+        return None, guiUpdateMessage

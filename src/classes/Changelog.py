@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "1.44"
+VERSION = "2.26"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -196,5 +196,114 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 [1.44]
 1. Migrated ta-lib dependency to pandas_ta
 
---- END ---
+[1.45]
+1. Minor bug fixes after dependency change
+
+[1.46]
+1. TA-Lib reanabled. Dockerized for better distribution of the tool
+
+
+[2.00]
+1. Streamlit UI (WebApp) added
+2. Multi-Arch Docker support enabled
+
+[2.01]
+1. Docker build fixed - Versioning critical bug fixed for further OTA updates
+
+[2.02]
+1. Newly Listed (IPO) index critical bug fixed
+2. OTA Updates fixed for GUI
+3. Cosmetic improvements
+4. YouTube Video added to docs
+
+[2.03]
+1. AI based Nifty-50 Gap up/down prediction added to GUI
+2. Cosmetic updates and minor bug-fixes
+3. Search Similar Stock Added
+4. Executables Deprecated now onwards
+
+[2.04]
+1. OTA update fixed - caching added in GUI
+2. Moved to TA-Lib-Precompiled (0.4.25)
+3. Progressbar added for screening to GUI
+4. Documentation updated
+
+[2.05]
+1. Download Results button added
+2. Configuration save bug fixed for checkboxes
+3. Attempted to changed Docker DNS
+
+
+[2.06]
+1. Links added with cosmetic upgrade
+2. Docs updated
+
+[2.07]
+1. US S&P 500 Index added - Try Index `15 > US S&P 500`
+2. Minor improvemnets
+
+[2.08]
+1. Nifty Prediction enhanced - New AI model uses Crude and Gold data for Gap Prediction
+
+[2.09]
+1. Dependencies bumped to pandas-2.1.2 scikit-learn-1.3.2 for (pip install advanced-ta) compatibility
+2. Added Lorentzian Classifier based screening criteria - Try Option `6 > Reversal signals and 7 > Lorentzian Classification` (Extending Gratitude towards Justin Dehorty and Loki Arya for Open-Sourcing this one ❤️)
+3. MA-Confluence bug fixed
+
+[2.10]
+1. Position Size Calculator added as a new tab
+
+[2.11]
+1. Nifty Prediction issue fixed - Model is now trained on CPU instead of Apple-M1 GPU
+
+[2.12]
+1. Cosmetic Updates for Position Size Calculator
+2. Python base bumped to 3.11.6-slim-bookworm
+
+[2.13]
+1. Date based Backtesting Added for Screening
+2. Inside bar detection broken - bug fixed
+3. Auto enhanced debug on console in dev release
+
+[2.14]
+1. Dropdowns added for duration and period in configration tab
+
+[2.15]
+1. MA Reversal improved for trend following (Inspired from Siddhart Bhanushali's 44 SMA)
+
+[2.16]
+1. Nifty Prediction NaN values handled gracefully with forward filling if data is absent
+2. Ticker 0 > Search by Stock name - re-enabled in GUI
+
+[2.17]
+1. Backtest Report column added for backtest screening runs
+
+[2.18]
+1. Critical backtest bug fixed (dropna axis-1 removed from results)
+2. Clear stock cached data button added
+
+[2.19]
+1. New Index (Group of Indices) `16 > Sectoral Indices` added
+
+[2.20]
+1. Bugfixes - Clear cache button random key added to fix re-rendering issues
+
+[2.21]
+1. Dependency updated - `advanced-ta` lib for bugfixes and performance improvement in Lorentzian Classifier
+
+[2.22]
+1. RSI and 9 SMA of RSI based reversal added - Momentum based execution strategy.
+
+[2.23]
+1. Changed Data Source for F&O Stocks - Using Zerodha Kite instead of Broken NSE Website
+
+[2.24]
+1. Added Filters to Result Table (Special Thanks to https://github.com/koalyptus/TableFilter)
+
+[2.25]
+1. Reduced docker image size by 50% (Special Thanks to https://github.com/smitpsanghavi)
+
+[2.26]
+1. Bugfixes - yfinance package updated to 0.2.54 to fix Yahoo Finance API issue
+2. Minor Improvements to maintain backward compatibility of the yfinance df
 ''' + colorText.END

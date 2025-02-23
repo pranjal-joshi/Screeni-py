@@ -9,16 +9,24 @@ import sys
 import math
 import numpy as np
 import pandas as pd
-# import talib
 import joblib
 import keras
+import time
 import classes.Utility as Utility
+from copy import copy
+from advanced_ta import LorentzianClassification
+from classes.Utility import isGui
 from sklearn.preprocessing import StandardScaler
 from scipy.signal import argrelextrema
 from scipy.stats import linregress
 from classes.ColorText import colorText
 from classes.SuppressOutput import SuppressOutput
 from classes.ScreenipyTA import ScreenerTA
+try:
+    import chromadb
+    CHROMA_AVAILABLE = True
+except:
+    CHROMA_AVAILABLE = False
 
 
 # Exception for newly listed stocks with candle nos < daysToLookback
@@ -42,27 +50,27 @@ class tools:
     # Private method to find candle type
     # True = Bullish, False = Bearish
     def getCandleType(self, dailyData):
-        return bool(dailyData['Close'][0] >= dailyData['Open'][0])
+        return bool(dailyData['Close'].iloc[0] >= dailyData['Open'].iloc[0])
             
 
     # Preprocess the acquired data
-    def preprocessData(self, data, daysToLookback=None):
+    def preprocessData(self, data:pd.DataFrame, daysToLookback=None):
         if daysToLookback is None:
             daysToLookback = self.configManager.daysToLookback
         if self.configManager.useEMA:
             sma = ScreenerTA.EMA(data['Close'],timeperiod=50)
             lma = ScreenerTA.EMA(data['Close'],timeperiod=200)
-            data.insert(6,'SMA',sma)
-            data.insert(7,'LMA',lma)
+            data.insert(len(data.columns),'SMA',sma)
+            data.insert(len(data.columns),'LMA',lma)
         else:
             sma = data.rolling(window=50).mean()
             lma = data.rolling(window=200).mean()
-            data.insert(6,'SMA',sma['Close'])
-            data.insert(7,'LMA',lma['Close'])
+            data.insert(len(data.columns),'SMA',sma['Close'])
+            data.insert(len(data.columns),'LMA',lma['Close'])
         vol = data.rolling(window=20).mean()
         rsi = ScreenerTA.RSI(data['Close'], timeperiod=14)
-        data.insert(8,'VolMA',vol['Volume'])
-        data.insert(9,'RSI',rsi)
+        data.insert(len(data.columns),'VolMA',vol['Volume'])
+        data.insert(len(data.columns),'RSI',rsi)
         data = data[::-1]               # Reverse the dataframe
         # data = data.fillna(0)
         # data = data.replace([np.inf, -np.inf], 0)
@@ -80,7 +88,7 @@ class tools:
         data = data.replace([np.inf, -np.inf], 0)
         recent = data.head(1)
 
-        pct_change = (data[::-1]['Close'].pct_change() * 100).iloc[-1]
+        pct_change = (data[::-1]['Close'].pct_change(fill_method=None) * 100).iloc[-1]
         if pct_change > 0.2:
             pct_change = colorText.GREEN + (" (%.1f%%)" % pct_change) + colorText.END
         elif pct_change < -0.2:
@@ -88,7 +96,7 @@ class tools:
         else:
             pct_change = colorText.WARN + (" (%.1f%%)" % pct_change) + colorText.END
             
-        ltp = round(recent['Close'][0],2)
+        ltp = round(recent['Close'].iloc[0],2)
         saveDict['LTP'] = str(ltp)
         verifyStageTwo = True
         if self.configManager.stageTwo and len(data) > 250:
@@ -120,22 +128,22 @@ class tools:
         data = data.fillna(0)
         data = data.replace([np.inf, -np.inf], 0)
         recent = data.head(1)
-        if(recent['SMA'][0] > recent['LMA'][0] and recent['Close'][0] > recent['SMA'][0]):
+        if(recent['SMA'].iloc[0] > recent['LMA'].iloc[0] and recent['Close'].iloc[0] > recent['SMA'].iloc[0]):
             screenDict['MA-Signal'] = colorText.BOLD + colorText.GREEN + 'Bullish' + colorText.END
             saveDict['MA-Signal'] = 'Bullish'
-        elif(recent['SMA'][0] < recent['LMA'][0]):
+        elif(recent['SMA'].iloc[0] < recent['LMA'].iloc[0]):
             screenDict['MA-Signal'] = colorText.BOLD + colorText.FAIL + 'Bearish' + colorText.END
             saveDict['MA-Signal'] = 'Bearish'
-        elif(recent['SMA'][0] == 0):
+        elif(recent['SMA'].iloc[0] == 0):
             screenDict['MA-Signal'] = colorText.BOLD + colorText.WARN + 'Unknown' + colorText.END
             saveDict['MA-Signal'] = 'Unknown'
         else:
             screenDict['MA-Signal'] = colorText.BOLD + colorText.WARN + 'Neutral' + colorText.END
             saveDict['MA-Signal'] = 'Neutral'
 
-        smaDev = data['SMA'][0] * maRange / 100
-        lmaDev = data['LMA'][0] * maRange / 100
-        open, high, low, close, sma, lma = data['Open'][0], data['High'][0], data['Low'][0], data['Close'][0], data['SMA'][0], data['LMA'][0]
+        smaDev = data['SMA'].iloc[0] * maRange / 100
+        lmaDev = data['LMA'].iloc[0] * maRange / 100
+        open, high, low, close, sma, lma = data['Open'].iloc[0], data['High'].iloc[0], data['Low'].iloc[0], data['Close'].iloc[0], data['SMA'].iloc[0], data['LMA'].iloc[0]
         maReversal = 0
         # Taking Support 50
         if close > sma and low <= (sma + smaDev):
@@ -188,11 +196,11 @@ class tools:
         data = data.fillna(0)
         data = data.replace([np.inf, -np.inf], 0)
         recent = data.head(1)
-        if recent['VolMA'][0] == 0: # Handles Divide by 0 warning
+        if recent['VolMA'].iloc[0] == 0: # Handles Divide by 0 warning
             saveDict['Volume'] = "Unknown"
             screenDict['Volume'] = colorText.BOLD + colorText.WARN + "Unknown" + colorText.END
             return True
-        ratio = round(recent['Volume'][0]/recent['VolMA'][0],2)
+        ratio = round(recent['Volume'].iloc[0]/recent['VolMA'].iloc[0],2)
         saveDict['Volume'] = str(ratio)+"x"
         if(ratio >= volumeRatio and ratio != np.nan and (not math.isinf(ratio)) and (ratio != 20)):
             screenDict['Volume'] = colorText.BOLD + colorText.GREEN + str(ratio) + "x" + colorText.END
@@ -208,7 +216,7 @@ class tools:
         data = data[1:]
         hs = round(data.describe()['High']['max'],2)
         hc = round(data.describe()['Close']['max'],2)
-        rc = round(recent['Close'][0],2)
+        rc = round(recent['Close'].iloc[0],2)
         if np.isnan(hc) or np.isnan(hs):
             saveDict['Breaking-Out'] = 'BO: Unknown'
             screenDict['Breaking-Out'] = colorText.BOLD + colorText.WARN + 'BO: Unknown' + colorText.END
@@ -246,6 +254,7 @@ class tools:
     # Validate 'Inside Bar' structure for recent days
     def validateInsideBar(self, data, screenDict, saveDict, chartPattern=1, daysToLookback=5):
         orgData = data
+        daysToLookback = int(daysToLookback)
         for i in range(daysToLookback, round(daysToLookback*0.5)-1, -1):
             if i == 2:
                 return 0        # Exit if only last 2 candles are left
@@ -279,7 +288,7 @@ class tools:
             daysForLowestVolume = 30
         data = data.head(daysForLowestVolume)
         recent = data.head(1)
-        if((recent['Volume'][0] <= data.describe()['Volume']['min']) and recent['Volume'][0] != np.nan):
+        if((recent['Volume'].iloc[0] <= data.describe()['Volume']['min']) and recent['Volume'].iloc[0] != np.nan):
             return True
         return False
 
@@ -287,7 +296,7 @@ class tools:
     def validateRSI(self, data, screenDict, saveDict, minRSI, maxRSI):
         data = data.fillna(0)
         data = data.replace([np.inf, -np.inf], 0)
-        rsi = int(data.head(1)['RSI'][0])
+        rsi = int(data.head(1)['RSI'].iloc[0])
         saveDict['RSI'] = rsi
         if(rsi >= minRSI and rsi <= maxRSI) and (rsi <= 70 and rsi >= 30):
             screenDict['RSI'] = colorText.BOLD + colorText.GREEN + str(rsi) + colorText.END
@@ -381,7 +390,7 @@ class tools:
             volDesc = data.sort_values(by=['Volume'], ascending=False)
             try:
                 if data.equals(openDesc) and data.equals(closeDesc) and data.equals(volDesc):
-                    if (data['Open'][0].item() >= data['Close'][1].item()) and (data['Open'][1].item() >= data['Close'][2].item()):
+                    if (data['Open'].iloc[0].item() >= data['Close'].iloc[1].item()) and (data['Open'].iloc[1].item() >= data['Close'].iloc[2].item()):
                         screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + 'Momentum Gainer' + colorText.END
                         saveDict['Pattern'] = 'Momentum Gainer'
                         return True
@@ -402,18 +411,38 @@ class tools:
             maRev = ScreenerTA.EMA(data['Close'],timeperiod=maLength)
         else:
             maRev = ScreenerTA.MA(data['Close'],timeperiod=maLength)
-        data.insert(10,'maRev',maRev)
+        data.insert(len(data.columns),'maRev',maRev)
         data = data[::-1].head(3)
-        if data.equals(data[(data.Close >= (data.maRev - (data.maRev*percentage))) & (data.Close <= (data.maRev + (data.maRev*percentage)))]) and data.head(1)['Close'][0] >= data.head(1)['maRev'][0]:
+        if data.equals(data[(data.Close >= (data.maRev - (data.maRev*percentage))) & (data.Close <= (data.maRev + (data.maRev*percentage)))]) and data.head(1)['Close'].iloc[0] >= data.head(1)['maRev'].iloc[0]:
+            if self.configManager.stageTwo:
+                if data.head(1)['maRev'].iloc[0] < data.head(2)['maRev'].iloc[1] or data.head(2)['maRev'].iloc[1] < data.head(3)['maRev'].iloc[2] or data.head(1)['SMA'].iloc[0] < data.head(1)['LMA'].iloc[0]:
+                    return False
             screenDict['MA-Signal'] = colorText.BOLD + colorText.GREEN + f'Reversal-{maLength}MA' + colorText.END
             saveDict['MA-Signal'] = f'Reversal-{maLength}MA'
             return True
         return False
+    
+    # Find stock showing RSI crossing with RSI 9 SMA
+    def findRSICrossingMA(self, data, screenDict, saveDict, maLength=9):
+        data = data[::-1]
+        maRsi = ScreenerTA.MA(data['RSI'], timeperiod=maLength)
+        data.insert(len(data.columns),'maRsi',maRsi)
+        data = data[::-1].head(3)
+        if data['maRsi'].iloc[0] <= data['RSI'].iloc[0] and data['maRsi'].iloc[1] > data['RSI'].iloc[1]:
+            screenDict['MA-Signal'] = colorText.BOLD + colorText.GREEN + f'RSI-MA-Buy' + colorText.END
+            saveDict['MA-Signal'] = f'RSI-MA-Buy'
+            return True
+        elif data['maRsi'].iloc[0] >= data['RSI'].iloc[0] and data['maRsi'].iloc[1] < data['RSI'].iloc[1]:
+            screenDict['MA-Signal'] = colorText.BOLD + colorText.GREEN + f'RSI-MA-Sell' + colorText.END
+            saveDict['MA-Signal'] = f'RSI-MA-Sell'
+            return True
+        return False
+       
 
     # Find IPO base
     def validateIpoBase(self, stock, data, screenDict, saveDict, percentage=0.3):
-        listingPrice = data[::-1].head(1)['Open'][0]
-        currentPrice = data.head(1)['Close'][0]
+        listingPrice = data[::-1].head(1)['Open'].iloc[0]
+        currentPrice = data.head(1)['Close'].iloc[0]
         ATH = data.describe()['High']['max']
         if ATH > (listingPrice + (listingPrice * percentage)):
             return False
@@ -430,9 +459,9 @@ class tools:
     # Find Conflucence
     def validateConfluence(self, stock, data, screenDict, saveDict, percentage=0.1):
         recent = data.head(1)
-        if(abs(recent['SMA'][0] - recent['LMA'][0]) <= (recent['SMA'][0] * percentage)):
-            difference = round(abs(recent['SMA'][0] - recent['LMA'][0])/recent['Close'][0] * 100,2)
-            if recent['SMA'][0] >= recent['LMA'][0]:
+        if(abs(recent['SMA'].iloc[0] - recent['LMA'].iloc[0]) <= (recent['SMA'].iloc[0] * percentage)):
+            difference = round(abs(recent['SMA'].iloc[0] - recent['LMA'].iloc[0])/recent['Close'].iloc[0] * 100,2)
+            if recent['SMA'].iloc[0] >= recent['LMA'].iloc[0]:
                 screenDict['MA-Signal'] = colorText.BOLD + colorText.GREEN + f'Confluence ({difference}%)' + colorText.END
                 saveDict['MA-Signal'] = f'Confluence ({difference}%)'
             else:
@@ -445,7 +474,7 @@ class tools:
     def validateNewlyListed(self, data, daysToLookback):
         daysToLookback = int(daysToLookback[:-1])
         recent = data.head(1)
-        if len(data) < daysToLookback and (recent['Close'][0] != np.nan and recent['Close'][0] > 0):
+        if len(data) < daysToLookback and (recent['Close'].iloc[0] != np.nan and recent['Close'].iloc[0] > 0):
             return True
         return False
 
@@ -477,10 +506,10 @@ class tools:
         data['Support'] = slope * data['Number'] + intercept
         now = data.tail(1)
 
-        limit_upper = now['Support'][0].item() + (now['Support'][0].item() * percentage)
-        limit_lower = now['Support'][0].item() - (now['Support'][0].item() * percentage)
+        limit_upper = now['Support'].iloc[0].item() + (now['Support'].iloc[0].item() * percentage)
+        limit_lower = now['Support'].iloc[0].item() - (now['Support'].iloc[0].item() * percentage)
 
-        if limit_lower < now['Close'][0].item() < limit_upper and slope > 0.15:
+        if limit_lower < now['Close'].iloc[0].item() < limit_upper and slope > 0.15:
             screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + 'Trendline-Support' + colorText.END
             saveDict['Pattern'] = 'Trendline-Support'
             return True
@@ -512,12 +541,12 @@ class tools:
             now_candle = data.head(1)
             rangeData['Range'] = abs(rangeData['Close'] - rangeData['Open'])
             recent = rangeData.head(1)
-            if recent['Range'][0] == rangeData.describe()['Range']['min']:
-                if self.getCandleType(recent) and now_candle['Close'][0] >= recent['Close'][0]:
+            if recent['Range'].iloc[0] == rangeData.describe()['Range']['min']:
+                if self.getCandleType(recent) and now_candle['Close'].iloc[0] >= recent['Close'].iloc[0]:
                     screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + f'Buy-NR{nr}' + colorText.END
                     saveDict['Pattern'] = f'Buy-NR{nr}'
                     return True
-                elif not self.getCandleType(recent) and now_candle['Close'][0] <= recent['Close'][0]:
+                elif not self.getCandleType(recent) and now_candle['Close'].iloc[0] <= recent['Close'].iloc[0]:
                     screenDict['Pattern'] = colorText.BOLD + colorText.FAIL + f'Sell-NR{nr}' + colorText.END
                     saveDict['Pattern'] = f'Sell-NR{nr}'
                     return True
@@ -526,11 +555,29 @@ class tools:
             rangeData = data.head(nr)
             rangeData['Range'] = abs(rangeData['Close'] - rangeData['Open'])
             recent = rangeData.head(1)
-            if recent['Range'][0] == rangeData.describe()['Range']['min']:
+            if recent['Range'].iloc[0] == rangeData.describe()['Range']['min']:
                 screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + f'NR{nr}' + colorText.END
                 saveDict['Pattern'] = f'NR{nr}'
                 return True
             return False
+
+    # Validate Lorentzian Classification signal  
+    def validateLorentzian(self, data, screenDict, saveDict, lookFor=1):
+        # lookFor: 1-Any, 2-Buy, 3-Sell
+        data = data[::-1]               # Reverse the dataframe
+        data = data.rename(columns={'Open':'open', 'Close':'close', 'High':'high', 'Low':'low', 'Volume':'volume'})
+        lc = LorentzianClassification(data=data)
+        if lc.df.iloc[-1]['isNewBuySignal']:
+            screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + f'Lorentzian-Buy' + colorText.END
+            saveDict['Pattern'] = f'Lorentzian-Buy'
+            if lookFor != 3:
+                return True
+        elif lc.df.iloc[-1]['isNewSellSignal']:
+            screenDict['Pattern'] = colorText.BOLD + colorText.FAIL + f'Lorentzian-Sell' + colorText.END
+            saveDict['Pattern'] = f'Lorentzian-Sell'
+            if lookFor != 2:
+                return True
+        return False
 
     # Validate VPC
     def validateVCP(self, data, screenDict, saveDict, stockName=None, window=3, percentageFromTop=3):
@@ -560,7 +607,7 @@ class tools:
                 lowPointsOrg = lowPoints
                 lowPoints.sort(reverse=True)
                 lowPointsSorted = lowPoints
-                ltp = data.head(1)['Close'][0]
+                ltp = data.head(1)['Close'].iloc[0]
                 if lowPointsOrg == lowPointsSorted and  ltp < highestTop and ltp > lowPoints[0]:
                     screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + f'VCP (BO: {highestTop})' + colorText.END
                     saveDict['Pattern'] = f'VCP (BO: {highestTop})'
@@ -573,14 +620,25 @@ class tools:
     def getNiftyPrediction(self, data, proxyServer):
         import warnings 
         warnings.filterwarnings("ignore")
+        # Disable GPUs as this causes wrong preds in Docker
+        import tensorflow as tf
+        physical_devices = tf.config.list_physical_devices('GPU')
+        try:
+          tf.config.set_visible_devices([], 'GPU')
+          visible_devices = tf.config.get_visible_devices()
+          for device in visible_devices:
+            assert device.device_type != 'GPU'
+        except:
+          pass
+        #
         model, pkl = Utility.tools.getNiftyModel(proxyServer=proxyServer)
+        datacopy = copy(data[pkl['columns']])
         with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
             data = data[pkl['columns']]
             ### v2 Preprocessing
-            data['High'] = data['High'].pct_change() * 100
-            data['Low'] = data['Low'].pct_change() * 100
-            data['Open'] = data['Open'].pct_change() * 100
-            data['Close'] = data['Close'].pct_change() * 100
+            for col in pkl['columns']:
+                data[col] = data[col].pct_change(fill_method=None) * 100
+            data = data.ffill().dropna()
             data = data.iloc[-1] 
             ###
             data = pkl['scaler'].transform([data])
@@ -592,9 +650,11 @@ class tools:
             out = colorText.BOLD + colorText.GREEN + "BULLISH" + colorText.END + colorText.BOLD
             sug = "Stay Bullish!"
         if not Utility.tools.isClosingHour():
-            print(colorText.BOLD + colorText.WARN + "Note: The AI prediction should be executed After 3 PM or Near to Closing time as the Prediction Accuracy is based on the Closing price!" + colorText.END)
+            print(colorText.BOLD + colorText.WARN + "Note: The AI prediction should be executed After 3 PM Around the Closing hours as the Prediction Accuracy is based on the Closing price!" + colorText.END)
         print(colorText.BOLD + colorText.BLUE + "\n" + "[+] Nifty AI Prediction -> " + colorText.END + colorText.BOLD + "Market may Open {} next day! {}".format(out, sug) + colorText.END)
         print(colorText.BOLD + colorText.BLUE + "\n" + "[+] Nifty AI Prediction -> " + colorText.END + "Probability/Strength of Prediction = {}%".format(Utility.tools.getSigmoidConfidence(pred[0])))
+        if isGui():
+            return pred, 'BULLISH' if pred <= 0.5 else 'BEARISH', Utility.tools.getSigmoidConfidence(pred[0]), pd.DataFrame(datacopy.iloc[-1]).T
         return pred
 
     def monitorFiveEma(self, proxyServer, fetcher, result_df, last_signal, risk_reward = 3):
@@ -640,11 +700,11 @@ class tools:
                 last_signal[data_list[cnt]] = final
             elif data_list[cnt] in last_signal:
                 try:
-                    condition = last_signal[data_list[cnt]][0]['SL'][0]
+                    condition = last_signal[data_list[cnt]][0]['SL'].iloc[0]
                 except KeyError:
-                    condition = last_signal[data_list[cnt]]['SL'][0]
+                    condition = last_signal[data_list[cnt]]['SL'].iloc[0]
                 # if last_signal[data_list[cnt]] is not final:          # Debug - Shows all conditions
-                if condition != final['SL'][0]:
+                if condition != final['SL'].iloc[0]:
                     # Do something with results
                     try:
                         result_df = pd.concat([
@@ -668,7 +728,27 @@ class tools:
         result_df.drop_duplicates(keep='last', inplace=True)
         result_df.sort_values(by='Time', inplace=True)
         return result_df[::-1]
-            
+    
+    # Add data to vector database
+    def addVector(self, data, stockCode, daysToLookback):
+        data = data[::-1] # Reinverting preprocessedData for pct_change
+        data = data.pct_change(fill_method=None)
+        # data = data[::-1]     # Do we need to invert again? No we dont - See operation after flatten
+        data = data[['Open', 'High', 'Low', 'Close']]
+        data = data.reset_index(drop=True)
+        data = data.dropna()
+        data = data.to_numpy().flatten().tolist()
+        data = data[(-4 * daysToLookback):]     # Keep only OHLC * daysToLookback samples
+        if len(data) == (4 * daysToLookback):
+            chroma_client = chromadb.PersistentClient(path="./chromadb_store/")
+            collection = chroma_client.get_or_create_collection(name="nse_stocks")
+            collection.upsert(
+                embeddings=[data],
+                documents=[stockCode],
+                ids=[stockCode]
+            )
+            return data
+
 
     '''
     # Find out trend for days to lookback

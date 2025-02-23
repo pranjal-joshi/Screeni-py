@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-# Pyinstaller compile Windows: pyinstaller --onefile --icon=src\icon.ico src\screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas --hidden-import alive-progress
-# Pyinstaller compile Linux  : pyinstaller --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas --hidden-import alive-progress
+# Pyinstaller compile Windows: pyinstaller --onefile --icon=src\icon.ico src\screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas --hidden-import alive-progress --hidden-import chromadb
+# Pyinstaller compile Linux  : pyinstaller --onefile --icon=src/icon.ico src/screenipy.py  --hidden-import cmath --hidden-import talib.stream --hidden-import numpy --hidden-import pandas --hidden-import alive-progress --hidden-import chromadb
 
 # Keep module imports prior to classes
 import os
@@ -17,16 +17,22 @@ from classes.OtaUpdater import OTAUpdater
 from classes.CandlePatterns import CandlePatterns
 from classes.ParallelProcessing import StockConsumer
 from classes.Changelog import VERSION
+from classes.Utility import isDocker, isGui
 from alive_progress import alive_bar
 import argparse
 import urllib
 import numpy as np
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, date
 from time import sleep
 from tabulate import tabulate
 import multiprocessing
 multiprocessing.freeze_support()
+try:
+    import chromadb
+    CHROMA_AVAILABLE = True
+except:
+    CHROMA_AVAILABLE = False
 
 # Argument Parsing for test purpose
 argParser = argparse.ArgumentParser()
@@ -50,6 +56,9 @@ loadedStockData = False
 loadCount = 0
 maLength = None
 newlyListedOnly = False
+vectorSearch = False
+
+CHROMADB_PATH = "chromadb_store/"
 
 configManager = ConfigManager.tools()
 fetcher = Fetcher.tools(configManager)
@@ -62,6 +71,15 @@ try:
 except KeyError:
     proxyServer = ""
 
+# Clear chromadb store initially
+if CHROMA_AVAILABLE:
+    chroma_client = chromadb.PersistentClient(path=CHROMADB_PATH)
+    try:
+        chroma_client.delete_collection("nse_stocks")
+    except:
+        pass
+
+
 # Manage Execution flow
 
 
@@ -73,13 +91,14 @@ def initExecution():
      W > Screen stocks from my own Watchlist
      N > Nifty Prediction using Artifical Intelligence (Use for Gap-Up/Gap-Down/BTST/STBT)
      E > Live Index Scan : 5 EMA for Intraday
+     S > Search for Similar Stocks (forming Similar Chart Pattern)
 
      0 > Screen stocks by the stock names (NSE Stock Code)
      1 > Nifty 50               2 > Nifty Next 50           3 > Nifty 100
      4 > Nifty 200              5 > Nifty 500               6 > Nifty Smallcap 50
      7 > Nifty Smallcap 100     8 > Nifty Smallcap 250      9 > Nifty Midcap 50
     10 > Nifty Midcap 100      11 > Nifty Midcap 150       13 > Newly Listed (IPOs in last 2 Year)
-    14 > F&O Stocks Only 
+    14 > F&O Stocks Only       15 > US S&P 500             16 > Sectoral Indices (NSE)
     Enter > All Stocks (default) ''' + colorText.END
           )
     try:
@@ -93,7 +112,7 @@ def initExecution():
             tickerOption = tickerOption.upper()
         else:
             tickerOption = int(tickerOption)
-            if(tickerOption < 0 or tickerOption > 14):
+            if(tickerOption < 0 or tickerOption > 16):
                 raise ValueError
             elif tickerOption == 13:
                 newlyListedOnly = True
@@ -107,7 +126,7 @@ def initExecution():
         Utility.tools.clearScreen()
         return initExecution()
 
-    if tickerOption == 'N' or tickerOption == 'E':
+    if tickerOption == 'N' or tickerOption == 'E' or tickerOption == 'S':
         return tickerOption, 0
 
     if tickerOption and tickerOption != 'W':
@@ -151,13 +170,13 @@ def initExecution():
     return tickerOption, executeOption
 
 # Main function
-def main(testing=False, testBuild=False, downloadOnly=False):
-    global screenCounter, screenResultsCounter, stockDict, loadedStockData, keyboardInterruptEvent, loadCount, maLength, newlyListedOnly
+def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list = [], isDevVersion=None, backtestDate=date.today()):
+    global screenCounter, screenResultsCounter, stockDict, loadedStockData, keyboardInterruptEvent, loadCount, maLength, newlyListedOnly, vectorSearch
     screenCounter = multiprocessing.Value('i', 1)
     screenResultsCounter = multiprocessing.Value('i', 0)
     keyboardInterruptEvent = multiprocessing.Manager().Event()
 
-    if stockDict is None:
+    if stockDict is None or Utility.tools.isBacktesting(backtestDate=backtestDate):
         stockDict = multiprocessing.Manager().dict()
         loadCount = 0
 
@@ -180,56 +199,100 @@ def main(testing=False, testBuild=False, downloadOnly=False):
         tickerOption, executeOption = 12, 2
     else:
         try:
-            tickerOption, executeOption = initExecution()
+            if execute_inputs != []:
+                if not configManager.checkConfigFile():
+                    configManager.setConfig(ConfigManager.parser, default=True, showFileCreatedText=False)
+                try:
+                    tickerOption, executeOption = int(execute_inputs[0]), int(execute_inputs[1])
+                    if tickerOption == 0:
+                        stockCode = execute_inputs[2].replace(" ", "")
+                        listStockCodes = stockCode.split(',')
+                except:
+                    tickerOption, executeOption = str(execute_inputs[0]), int(execute_inputs[1])
+                if tickerOption == 13:
+                    newlyListedOnly = True
+                    tickerOption = 12
+            else:
+                tickerOption, executeOption = initExecution()
         except KeyboardInterrupt:
-            input(colorText.BOLD + colorText.FAIL +
-                "[+] Press any key to Exit!" + colorText.END)
+            if execute_inputs == [] and not isGui():
+                input(colorText.BOLD + colorText.FAIL +
+                    "[+] Press any key to Exit!" + colorText.END)
             sys.exit(0)
 
     if executeOption == 4:
         try:
-            daysForLowestVolume = int(input(colorText.BOLD + colorText.WARN +
+            if execute_inputs != []:
+                daysForLowestVolume = int(execute_inputs[2])
+            else:
+                daysForLowestVolume = int(input(colorText.BOLD + colorText.WARN +
                                             '\n[+] The Volume should be lowest since last how many candles? '))
         except ValueError:
             print(colorText.END)
             print(colorText.BOLD + colorText.FAIL +
                   '[+] Error: Non-numeric value entered! Screening aborted.' + colorText.END)
-            input('')
-            main()
+            if not isGui():
+                input('')
+                main()
         print(colorText.END)
     if executeOption == 5:
-        minRSI, maxRSI = Utility.tools.promptRSIValues()
+        if execute_inputs != []:
+            minRSI, maxRSI = int(execute_inputs[2]), int(execute_inputs[3])
+        else:
+            minRSI, maxRSI = Utility.tools.promptRSIValues()
         if (not minRSI and not maxRSI):
             print(colorText.BOLD + colorText.FAIL +
                   '\n[+] Error: Invalid values for RSI! Values should be in range of 0 to 100. Screening aborted.' + colorText.END)
-            input('')
-            main()
+            if not isGui():
+                input('')
+                main()
     if executeOption == 6:
-        reversalOption, maLength = Utility.tools.promptReversalScreening()
+        if execute_inputs != []:
+            reversalOption = int(execute_inputs[2])
+            try:
+                 maLength = int(execute_inputs[3])
+            except ValueError:
+                pass
+        else:
+            reversalOption, maLength = Utility.tools.promptReversalScreening()
         if reversalOption is None or reversalOption == 0:
-            main()
+            if not isGui():
+                main()
     if executeOption == 7:
-        respChartPattern, insideBarToLookback = Utility.tools.promptChartPatterns()
+        if execute_inputs != []:
+            respChartPattern = int(execute_inputs[2])
+            try:
+                insideBarToLookback = float(execute_inputs[3])
+            except ValueError:
+                pass
+        else:
+            respChartPattern, insideBarToLookback = Utility.tools.promptChartPatterns()
         if insideBarToLookback is None:
-            main()
+            if not isGui():
+                main()
     if executeOption == 8:
         configManager.setConfig(ConfigManager.parser)
-        main()
+        if not isGui():
+            main()
     if executeOption == 9:
         configManager.showConfigFile()
-        main()
+        if not isGui():
+            main()
     if executeOption == 10:
         Utility.tools.getLastScreenedResults()
-        main()
+        if not isGui():
+            main()
     if executeOption == 11:
         Utility.tools.showDevInfo()
-        main()
+        if not isGui():
+            main()
     if executeOption == 12:
-        input(colorText.BOLD + colorText.FAIL +
+        if not isGui():
+            input(colorText.BOLD + colorText.FAIL +
               "[+] Press any key to Exit!" + colorText.END)
         sys.exit(0)
 
-    if tickerOption == 'W' or tickerOption == 'N' or tickerOption == 'E' or (tickerOption >= 0 and tickerOption < 15):
+    if tickerOption == 'W' or tickerOption == 'N' or tickerOption == 'E' or tickerOption == 'S' or (tickerOption >= 0 and tickerOption < 17):
         configManager.getConfig(ConfigManager.parser)
         try:
             if tickerOption == 'W':
@@ -240,6 +303,15 @@ def main(testing=False, testBuild=False, downloadOnly=False):
                     sys.exit(0)
             elif tickerOption == 'N':
                 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+                import tensorflow as tf
+                physical_devices = tf.config.list_physical_devices('GPU')
+                try:
+                    tf.config.set_visible_devices([], 'GPU')
+                    visible_devices = tf.config.get_visible_devices()
+                    for device in visible_devices:
+                        assert device.device_type != 'GPU'
+                except:
+                    pass
                 prediction = screener.getNiftyPrediction(
                     data=fetcher.fetchLatestNiftyDaily(proxyServer=proxyServer), 
                     proxyServer=proxyServer
@@ -274,21 +346,36 @@ def main(testing=False, testBuild=False, downloadOnly=False):
                         sleep(60)
                         first_scan = False
                 except KeyboardInterrupt:
-                    input('\nPress any key to Continue...\n')
+                    if not isGui():
+                        input('\nPress any key to Continue...\n')
                     return
+            elif tickerOption == 'S':
+                if not CHROMA_AVAILABLE:
+                    print(colorText.BOLD + colorText.FAIL +
+                  "\n\n[+] ChromaDB not available in your environment! You can't use this feature!\n" + colorText.END)
+                else:
+                    if execute_inputs != []:
+                        stockCode, candles = execute_inputs[2], execute_inputs[3]
+                    else:
+                        stockCode, candles = Utility.tools.promptSimilarStockSearch()
+                    vectorSearch = [stockCode, candles, True]
+                    tickerOption, executeOption = 12, 1
+                    listStockCodes = fetcher.fetchStockCodes(tickerOption, proxyServer=proxyServer)
             else:
                 if tickerOption == 14:    # Override config for F&O Stocks
                     configManager.stageTwo = False
                     configManager.minLTP = 0.1
                     configManager.maxLTP = 999999999
-                listStockCodes = fetcher.fetchStockCodes(tickerOption, proxyServer=proxyServer)
+                if (execute_inputs != [] and tickerOption != 0) or execute_inputs == []:
+                    listStockCodes = fetcher.fetchStockCodes(tickerOption, proxyServer=proxyServer)
         except urllib.error.URLError:
             print(colorText.BOLD + colorText.FAIL +
                   "\n\n[+] Oops! It looks like you don't have an Internet connectivity at the moment! Press any key to exit!" + colorText.END)
-            input('')
+            if not isGui():
+                input('')
             sys.exit(0)
 
-        if not Utility.tools.isTradingTime() and configManager.cacheEnabled and not loadedStockData and not testing:
+        if not Utility.tools.isTradingTime() and configManager.cacheEnabled and not loadedStockData and not testing and not Utility.tools.isBacktesting(backtestDate=backtestDate):
             Utility.tools.loadStockData(stockDict, configManager, proxyServer)
             loadedStockData = True
         loadCount = len(stockDict)
@@ -296,8 +383,8 @@ def main(testing=False, testBuild=False, downloadOnly=False):
         print(colorText.BOLD + colorText.WARN +
               "[+] Starting Stock Screening.. Press Ctrl+C to stop!\n")
 
-        items = [(executeOption, reversalOption, maLength, daysForLowestVolume, minRSI, maxRSI, respChartPattern, insideBarToLookback, len(listStockCodes),
-                  configManager, fetcher, screener, candlePatterns, stock, newlyListedOnly, downloadOnly)
+        items = [(tickerOption, executeOption, reversalOption, maLength, daysForLowestVolume, minRSI, maxRSI, respChartPattern, insideBarToLookback, len(listStockCodes),
+                  configManager, fetcher, screener, candlePatterns, stock, newlyListedOnly, downloadOnly, vectorSearch, isDevVersion, backtestDate)
                  for stock in listStockCodes]
 
         tasks_queue = multiprocessing.JoinableQueue()
@@ -320,10 +407,8 @@ def main(testing=False, testBuild=False, downloadOnly=False):
                 tasks_queue.put(item)
                 result = results_queue.get()
                 if result is not None:
-                    screenResults = screenResults.append(
-                        result[0], ignore_index=True)
-                    saveResults = saveResults.append(
-                        result[1], ignore_index=True)
+                    screenResults = pd.concat([screenResults, pd.DataFrame([result[0]])], ignore_index=True)
+                    saveResults = pd.concat([saveResults, pd.DataFrame([result[1]])], ignore_index=True)
                     if testing or (testBuild and len(screenResults) > 2):
                         break
         else:
@@ -333,18 +418,18 @@ def main(testing=False, testBuild=False, downloadOnly=False):
             for _ in range(multiprocessing.cpu_count()):
                 tasks_queue.put(None)
             try:
-                numStocks = len(listStockCodes)
+                numStocks, totalStocks = len(listStockCodes), len(listStockCodes)
+                os.environ['SCREENIPY_TOTAL_STOCKS'] = str(totalStocks)
                 print(colorText.END+colorText.BOLD)
                 bar, spinner = Utility.tools.getProgressbarStyle()
                 with alive_bar(numStocks, bar=bar, spinner=spinner) as progressbar:
                     while numStocks:
                         result = results_queue.get()
                         if result is not None:
-                            screenResults = screenResults.append(
-                                result[0], ignore_index=True)
-                            saveResults = saveResults.append(
-                                result[1], ignore_index=True)
+                            screenResults = pd.concat([screenResults, pd.DataFrame([result[0]])], ignore_index=True)
+                            saveResults = pd.concat([saveResults, pd.DataFrame([result[1]])], ignore_index=True)
                         numStocks -= 1
+                        os.environ['SCREENIPY_SCREEN_COUNTER'] = str(int((totalStocks-numStocks)/totalStocks*100))
                         progressbar.text(colorText.BOLD + colorText.GREEN +
                                          f'Found {screenResultsCounter.value} Stocks' + colorText.END)
                         progressbar()
@@ -375,6 +460,24 @@ def main(testing=False, testBuild=False, downloadOnly=False):
             except Exception as e:
                 break
 
+        if CHROMA_AVAILABLE and type(vectorSearch) == list and vectorSearch[2]:
+            chroma_client = chromadb.PersistentClient(path=CHROMADB_PATH)
+            collection = chroma_client.get_collection(name="nse_stocks")
+            query_embeddings= collection.get(ids = [stockCode], include=["embeddings"])["embeddings"]
+            results = collection.query(
+                query_embeddings=query_embeddings,
+                n_results=4
+            )['ids'][0]
+            try:
+                results.remove(stockCode)
+            except ValueError:
+                pass
+            matchedScreenResults, matchedSaveResults = pd.DataFrame(columns=screenResults.columns), pd.DataFrame(columns=saveResults.columns)
+            for stk in results:
+                matchedScreenResults = pd.concat([matchedScreenResults, screenResults[screenResults['Stock'].str.contains(stk)]], ignore_index=True)
+                matchedSaveResults = pd.concat([matchedSaveResults, saveResults[saveResults['Stock'].str.contains(stk)]], ignore_index=True)
+            screenResults, saveResults = matchedScreenResults, matchedSaveResults
+            
         screenResults.sort_values(by=['Stock'], ascending=True, inplace=True)
         saveResults.sort_values(by=['Stock'], ascending=True, inplace=True)
         screenResults.set_index('Stock', inplace=True)
@@ -398,21 +501,24 @@ def main(testing=False, testBuild=False, downloadOnly=False):
 
         print(colorText.BOLD + colorText.GREEN +
                   f"[+] Found {len(screenResults)} Stocks." + colorText.END)
-        if configManager.cacheEnabled and not Utility.tools.isTradingTime() and not testing:
+        if configManager.cacheEnabled and not Utility.tools.isTradingTime() and not testing and not Utility.tools.isBacktesting(backtestDate=backtestDate):
             print(colorText.BOLD + colorText.GREEN +
                   "[+] Caching Stock Data for future use, Please Wait... " + colorText.END, end='')
             Utility.tools.saveStockData(
                 stockDict, configManager, loadCount)
 
         Utility.tools.setLastScreenedResults(screenResults)
+        Utility.tools.setLastScreenedResults(saveResults, unformatted=True)
         if not testBuild and not downloadOnly:
             Utility.tools.promptSaveResults(saveResults)
             print(colorText.BOLD + colorText.WARN +
                 "[+] Note: Trend calculation is based on number of days recent to screen as per your configuration." + colorText.END)
             print(colorText.BOLD + colorText.GREEN +
                 "[+] Screening Completed! Press Enter to Continue.." + colorText.END)
-            input('')
+            if not isGui():
+                input('')
         newlyListedOnly = False
+        vectorSearch = False
 
 
 if __name__ == "__main__":
@@ -436,4 +542,4 @@ if __name__ == "__main__":
                 raise(e)
             input(colorText.BOLD + colorText.FAIL +
                 "[+] Press any key to Exit!" + colorText.END)
-            sys.exit(0)
+            sys.exit(1)
