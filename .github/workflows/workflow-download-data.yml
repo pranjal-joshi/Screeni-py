@@ -48,8 +48,8 @@ jobs:
         git config user.name github-actions
         git config user.email github-actions@github.com
         git checkout actions-data-download
-        git add actions-data-download/stock_data_*.pkl --force
-        git commit -m "GitHub Action Workflow - Market Data Download (Default Config)"
+        git add --all
+        git diff --cached --quiet || git commit -m "GitHub Action Workflow - Market Data Download (Default Config)"
         git push
 
     - name: Squash Commits (Python)
