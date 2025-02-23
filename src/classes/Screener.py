@@ -54,23 +54,23 @@ class tools:
             
 
     # Preprocess the acquired data
-    def preprocessData(self, data, daysToLookback=None):
+    def preprocessData(self, data:pd.DataFrame, daysToLookback=None):
         if daysToLookback is None:
             daysToLookback = self.configManager.daysToLookback
         if self.configManager.useEMA:
             sma = ScreenerTA.EMA(data['Close'],timeperiod=50)
             lma = ScreenerTA.EMA(data['Close'],timeperiod=200)
-            data.insert(6,'SMA',sma)
-            data.insert(7,'LMA',lma)
+            data.insert(len(data.columns),'SMA',sma)
+            data.insert(len(data.columns),'LMA',lma)
         else:
             sma = data.rolling(window=50).mean()
             lma = data.rolling(window=200).mean()
-            data.insert(6,'SMA',sma['Close'])
-            data.insert(7,'LMA',lma['Close'])
+            data.insert(len(data.columns),'SMA',sma['Close'])
+            data.insert(len(data.columns),'LMA',lma['Close'])
         vol = data.rolling(window=20).mean()
         rsi = ScreenerTA.RSI(data['Close'], timeperiod=14)
-        data.insert(8,'VolMA',vol['Volume'])
-        data.insert(9,'RSI',rsi)
+        data.insert(len(data.columns),'VolMA',vol['Volume'])
+        data.insert(len(data.columns),'RSI',rsi)
         data = data[::-1]               # Reverse the dataframe
         # data = data.fillna(0)
         # data = data.replace([np.inf, -np.inf], 0)
@@ -411,7 +411,7 @@ class tools:
             maRev = ScreenerTA.EMA(data['Close'],timeperiod=maLength)
         else:
             maRev = ScreenerTA.MA(data['Close'],timeperiod=maLength)
-        data.insert(10,'maRev',maRev)
+        data.insert(len(data.columns),'maRev',maRev)
         data = data[::-1].head(3)
         if data.equals(data[(data.Close >= (data.maRev - (data.maRev*percentage))) & (data.Close <= (data.maRev + (data.maRev*percentage)))]) and data.head(1)['Close'].iloc[0] >= data.head(1)['maRev'].iloc[0]:
             if self.configManager.stageTwo:
@@ -426,7 +426,7 @@ class tools:
     def findRSICrossingMA(self, data, screenDict, saveDict, maLength=9):
         data = data[::-1]
         maRsi = ScreenerTA.MA(data['RSI'], timeperiod=maLength)
-        data.insert(10,'maRsi',maRsi)
+        data.insert(len(data.columns),'maRsi',maRsi)
         data = data[::-1].head(3)
         if data['maRsi'].iloc[0] <= data['RSI'].iloc[0] and data['maRsi'].iloc[1] > data['RSI'].iloc[1]:
             screenDict['MA-Signal'] = colorText.BOLD + colorText.GREEN + f'RSI-MA-Buy' + colorText.END

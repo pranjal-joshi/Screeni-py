@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.25"
+VERSION = "2.26"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -302,4 +302,8 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [2.25]
 1. Reduced docker image size by 50% (Special Thanks to https://github.com/smitpsanghavi)
+
+[2.26]
+1. Bugfixes - yfinance package updated to 0.2.54 to fix Yahoo Finance API issue
+2. Minor Improvements to maintain backward compatibility of the yfinance df
 ''' + colorText.END
