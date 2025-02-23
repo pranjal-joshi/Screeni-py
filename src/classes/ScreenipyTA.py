@@ -18,42 +18,42 @@ class ScreenerTA:
         try:
             return talib.ema(close,timeperiod)
         except Exception as e:
-            return talib.EMA(close,timeperiod)
+            return talib.EMA(close.to_numpy().reshape(-1),timeperiod)
 
     @staticmethod
     def SMA(close, timeperiod):
         try:
             return talib.sma(close,timeperiod)
         except Exception as e:
-            return talib.SMA(close,timeperiod)
+            return talib.SMA(close.to_numpy().reshape(-1),timeperiod)
         
     @staticmethod
     def MA(close, timeperiod):
         try:
             return talib.ma(close,timeperiod)
         except Exception as e:
-            return talib.MA(close,timeperiod)
+            return talib.MA(close.to_numpy().reshape(-1),timeperiod)
 
     @staticmethod
     def MACD(close, fast, slow, signal):
         try:
             return talib.macd(close,fast,slow,signal)
         except Exception as e:
-            return talib.MACD(close,fast,slow,signal)
+            return talib.MACD(close.to_numpy().reshape(-1),fast.to_numpy().reshape(-1),slow.to_numpy().reshape(-1),signal.to_numpy().reshape(-1))
 
     @staticmethod
     def RSI(close, timeperiod):
         try:
             return talib.rsi(close,timeperiod)
         except Exception as e:
-            return talib.RSI(close,timeperiod)
+            return talib.RSI(close.to_numpy().reshape(-1),timeperiod)
     
     @staticmethod
     def CCI(high, low, close, timeperiod):
         try:
             return talib.cci(high, low, close,timeperiod)
         except Exception as e:
-            return talib.CCI(high, low, close,timeperiod)
+            return talib.CCI(high.to_numpy().reshape(-1), low.to_numpy().reshape(-1), close.to_numpy().reshape(-1),timeperiod)
     
    
     @staticmethod
@@ -62,7 +62,7 @@ class ScreenerTA:
             try:
                 return talib.cdl_pattern(open,high,low,close,'morningstar').tail(1).values[0][0] != 0
             except Exception as e:
-                return talib.CDLMORNINGSTAR(open,high,low,close).tail(1).item() != 0
+                return talib.CDLMORNINGSTAR(open.to_numpy().reshape(-1), high.to_numpy().reshape(-1), low.to_numpy().reshape(-1) ,close.to_numpy().reshape(-1)).tail(1).item() != 0
         except AttributeError:
             return False
 
@@ -72,7 +72,7 @@ class ScreenerTA:
             try:
                 return talib.cdl_pattern(open,high,low,close,'morningdojistar').tail(1).values[0][0] != 0
             except Exception as e:
-                return talib.CDLMORNINGDOJISTAR(open,high,low,close).tail(1).item() != 0
+                return talib.CDLMORNINGDOJISTAR(open.to_numpy().reshape(-1), high.to_numpy().reshape(-1), low.to_numpy().reshape(-1) ,close.to_numpy().reshape(-1)).tail(1).item() != 0
         except AttributeError:
             return False
     
@@ -82,7 +82,7 @@ class ScreenerTA:
             try:
                 return talib.cdl_pattern(open,high,low,close,'eveningstar').tail(1).values[0][0] != 0
             except Exception as e:
-                return talib.CDLEVENINGSTAR(open,high,low,close).tail(1).item() != 0
+                return talib.CDLEVENINGSTAR(open.to_numpy().reshape(-1), high.to_numpy().reshape(-1), low.to_numpy().reshape(-1) ,close.to_numpy().reshape(-1)).tail(1).item() != 0
         except AttributeError:
             return False
     
@@ -92,7 +92,7 @@ class ScreenerTA:
             try:
                 return talib.cdl_pattern(open,high,low,close,'eveningdojistar').tail(1).values[0][0] != 0
             except Exception as e:
-                return talib.CDLEVENINGDOJISTAR(open,high,low,close).tail(1).item() != 0
+                return talib.CDLEVENINGDOJISTAR(open.to_numpy().reshape(-1), high.to_numpy().reshape(-1), low.to_numpy().reshape(-1) ,close.to_numpy().reshape(-1)).tail(1).item() != 0
         except AttributeError:
             return False
     
@@ -102,7 +102,7 @@ class ScreenerTA:
             try:
                 return talib.cdl_pattern(open,high,low,close,'ladderbottom').tail(1).values[0][0] != 0
             except Exception as e:
-                return talib.CDLLADDERBOTTOM(open,high,low,close).tail(1).item() != 0
+                return talib.CDLLADDERBOTTOM(open.to_numpy().reshape(-1), high.to_numpy().reshape(-1), low.to_numpy().reshape(-1) ,close.to_numpy().reshape(-1)).tail(1).item() != 0
         except AttributeError:
             return False
     
@@ -112,7 +112,7 @@ class ScreenerTA:
             try:
                 return talib.cdl_pattern(open,high,low,close,'3linestrike').tail(1).values[0][0] != 0
             except Exception as e:
-                return talib.CDL3LINESTRIKE(open,high,low,close).tail(1).item() != 0
+                return talib.CDL3LINESTRIKE(open.to_numpy().reshape(-1), high.to_numpy().reshape(-1), low.to_numpy().reshape(-1) ,close.to_numpy().reshape(-1)).tail(1).item() != 0
         except AttributeError:
             return False
     
@@ -122,7 +122,7 @@ class ScreenerTA:
             try:
                 return talib.cdl_pattern(open,high,low,close,'3blackcrows').tail(1).values[0][0] != 0
             except Exception as e:
-                return talib.CDL3BLACKCROWS(open,high,low,close).tail(1).item() != 0
+                return talib.CDL3BLACKCROWS(open.to_numpy().reshape(-1), high.to_numpy().reshape(-1), low.to_numpy().reshape(-1) ,close.to_numpy().reshape(-1)).tail(1).item() != 0
         except AttributeError:
             return False
     
@@ -132,7 +132,7 @@ class ScreenerTA:
             try:
                 return talib.cdl_pattern(open,high,low,close,'3inside').tail(1).values[0][0] != 0
             except Exception as e:
-                return talib.CDL3INSIDE(open,high,low,close).tail(1).item() != 0
+                return talib.CDL3INSIDE(open.to_numpy().reshape(-1), high.to_numpy().reshape(-1), low.to_numpy().reshape(-1) ,close.to_numpy().reshape(-1)).tail(1).item() != 0
         except AttributeError:
             return False
     
@@ -142,7 +142,7 @@ class ScreenerTA:
             try:
                 return talib.cdl_pattern(open,high,low,close,'3outside').tail(1).values[0][0]
             except Exception as e:
-                return talib.CDL3OUTSIDE(open,high,low,close).tail(1).item() != 0
+                return talib.CDL3OUTSIDE(open.to_numpy().reshape(-1), high.to_numpy().reshape(-1), low.to_numpy().reshape(-1) ,close.to_numpy().reshape(-1)).tail(1).item() != 0
         except AttributeError:
             return False
     
@@ -152,7 +152,7 @@ class ScreenerTA:
             try:
                 return talib.cdl_pattern(open,high,low,close,'3whitesoldiers').tail(1).values[0][0] != 0
             except Exception as e:
-                return talib.CDL3WHITESOLDIERS(open,high,low,close).tail(1).item() != 0
+                return talib.CDL3WHITESOLDIERS(open.to_numpy().reshape(-1), high.to_numpy().reshape(-1), low.to_numpy().reshape(-1) ,close.to_numpy().reshape(-1)).tail(1).item() != 0
         except AttributeError:
             return False
     
@@ -162,7 +162,7 @@ class ScreenerTA:
             try:
                 return talib.cdl_pattern(open,high,low,close,'harami').tail(1).values[0][0] != 0
             except Exception as e:
-                return talib.CDLHARAMI(open,high,low,close).tail(1).item() != 0
+                return talib.CDLHARAMI(open.to_numpy().reshape(-1), high.to_numpy().reshape(-1), low.to_numpy().reshape(-1) ,close.to_numpy().reshape(-1)).tail(1).item() != 0
         except AttributeError:
             return False
     
@@ -172,7 +172,7 @@ class ScreenerTA:
             try:
                 return talib.cdl_pattern(open,high,low,close,'haramicross').tail(1).values[0][0] != 0
             except Exception as e:
-                return talib.CDLHARAMICROSS(open,high,low,close).tail(1).item() != 0
+                return talib.CDLHARAMICROSS(open.to_numpy().reshape(-1), high.to_numpy().reshape(-1), low.to_numpy().reshape(-1) ,close.to_numpy().reshape(-1)).tail(1).item() != 0
         except AttributeError:
             return False
     
@@ -182,7 +182,7 @@ class ScreenerTA:
             try:
                 return talib.cdl_pattern(open,high,low,close,'marubozu').tail(1).values[0][0] != 0
             except Exception as e:
-                return talib.CDLMARUBOZU(open,high,low,close).tail(1).item() != 0
+                return talib.CDLMARUBOZU(open.to_numpy().reshape(-1), high.to_numpy().reshape(-1), low.to_numpy().reshape(-1) ,close.to_numpy().reshape(-1)).tail(1).item() != 0
         except AttributeError:
             return False
     
@@ -192,7 +192,7 @@ class ScreenerTA:
             try:
                 return talib.cdl_pattern(open,high,low,close,'hangingman').tail(1).values[0][0] != 0
             except Exception as e:
-                return talib.CDLHANGINGMAN(open,high,low,close).tail(1).item() != 0
+                return talib.CDLHANGINGMAN(open.to_numpy().reshape(-1), high.to_numpy().reshape(-1), low.to_numpy().reshape(-1) ,close.to_numpy().reshape(-1)).tail(1).item() != 0
         except AttributeError:
             return False
     
@@ -202,7 +202,7 @@ class ScreenerTA:
             try:
                 return talib.cdl_pattern(open,high,low,close,'hammer').tail(1).values[0][0] != 0
             except Exception as e:
-                return talib.CDLHAMMER(open,high,low,close).tail(1).item() != 0
+                return talib.CDLHAMMER(open.to_numpy().reshape(-1), high.to_numpy().reshape(-1), low.to_numpy().reshape(-1) ,close.to_numpy().reshape(-1)).tail(1).item() != 0
         except AttributeError:
             return False
     
@@ -212,7 +212,7 @@ class ScreenerTA:
             try:
                 return talib.cdl_pattern(open,high,low,close,'invertedhammer').tail(1).values[0][0] != 0
             except Exception as e:
-                return talib.CDLINVERTEDHAMMER(open,high,low,close).tail(1).item() != 0
+                return talib.CDLINVERTEDHAMMER(open.to_numpy().reshape(-1), high.to_numpy().reshape(-1), low.to_numpy().reshape(-1) ,close.to_numpy().reshape(-1)).tail(1).item() != 0
         except AttributeError:
             return False
     
@@ -222,7 +222,7 @@ class ScreenerTA:
             try:
                 return talib.cdl_pattern(open,high,low,close,'shootingstar').tail(1).values[0][0] != 0
             except Exception as e:
-                return talib.CDLSHOOTINGSTAR(open,high,low,close).tail(1).item() != 0
+                return talib.CDLSHOOTINGSTAR(open.to_numpy().reshape(-1), high.to_numpy().reshape(-1), low.to_numpy().reshape(-1) ,close.to_numpy().reshape(-1)).tail(1).item() != 0
         except AttributeError:
             return False
     
@@ -232,7 +232,7 @@ class ScreenerTA:
             try:
                 return talib.cdl_pattern(open,high,low,close,'dragonflydoji').tail(1).values[0][0] != 0
             except Exception as e:
-                return talib.CDLDRAGONFLYDOJI(open,high,low,close).tail(1).item() != 0
+                return talib.CDLDRAGONFLYDOJI(open.to_numpy().reshape(-1), high.to_numpy().reshape(-1), low.to_numpy().reshape(-1) ,close.to_numpy().reshape(-1)).tail(1).item() != 0
         except AttributeError:
             return False
     
@@ -242,7 +242,7 @@ class ScreenerTA:
             try:
                 return talib.cdl_pattern(open,high,low,close,'gravestonedoji').tail(1).values[0][0] != 0
             except Exception as e:
-                return talib.CDLGRAVESTONEDOJI(open,high,low,close).tail(1).item() != 0
+                return talib.CDLGRAVESTONEDOJI(open.to_numpy().reshape(-1), high.to_numpy().reshape(-1), low.to_numpy().reshape(-1) ,close.to_numpy().reshape(-1)).tail(1).item() != 0
         except AttributeError:
             return False
     
@@ -252,7 +252,7 @@ class ScreenerTA:
             try:
                 return talib.cdl_pattern(open,high,low,close,'doji').tail(1).values[0][0] != 0
             except Exception as e:
-                return talib.CDLDOJI(open,high,low,close).tail(1).item() != 0
+                return talib.CDLDOJI(open.to_numpy().reshape(-1), high.to_numpy().reshape(-1), low.to_numpy().reshape(-1) ,close.to_numpy().reshape(-1)).tail(1).item() != 0
         except AttributeError:
             return False
         
@@ -263,7 +263,7 @@ class ScreenerTA:
             try:
                 return talib.cdl_pattern(open,high,low,close,'engulfing').tail(1).values[0][0]
             except Exception as e:
-                return talib.CDLENGULFING(open,high,low,close).tail(1).item() != 0
+                return talib.CDLENGULFING(open.to_numpy().reshape(-1), high.to_numpy().reshape(-1), low.to_numpy().reshape(-1) ,close.to_numpy().reshape(-1)).tail(1).item() != 0
         except AttributeError:
             return False
         
