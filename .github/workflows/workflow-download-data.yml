@@ -21,14 +21,14 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         ref: actions-data-download
 
-    - name: Set up Python 3.9.4
-      uses: actions/setup-python@v2
+    - name: Set up Python 3.11.6
+      uses: actions/setup-python@v4
       with:
-        python-version: 3.9.4
+        python-version: 3.11.6
 
     # - name: Restore Dependencies from Cache
     #   uses: actions/cache@v2
