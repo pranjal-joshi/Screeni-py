@@ -22,6 +22,8 @@ from scipy.stats import linregress
 from classes.ColorText import colorText
 from classes.SuppressOutput import SuppressOutput
 from classes.ScreenipyTA import ScreenerTA
+from .institutional_activity import integrate_institutional_activity
+
 try:
     import chromadb
     CHROMA_AVAILABLE = True
@@ -798,3 +800,57 @@ class tools:
             return False
     '''
     
+
+# Added Promoter and Institutional Activity Tracking
+
+import requests
+import pandas as pd
+from bs4 import BeautifulSoup
+
+def fetch_promoter_activity(stock_symbol):
+    """Scrape Screener.in to fetch promoter buying/selling activity."""
+    url = f"https://www.screener.in/company/{stock_symbol}/consolidated/"
+    headers = {"User-Agent": "Mozilla/5.0"}
+    
+    try:
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        
+        soup = BeautifulSoup(response.text, "html.parser")
+        table = soup.find("table", class_="ranges-table")
+        
+        if table:
+            rows = table.find_all("tr")
+            for row in rows:
+                cols = row.find_all("td")
+                if "Promoter" in cols[0].text:
+                    latest = float(cols[1].text.replace("%", ""))
+                    previous = float(cols[2].text.replace("%", ""))
+                    change = round(latest - previous, 2)
+                    return {"Stock": stock_symbol, "Promoter Change": f"{change}%", "Amount (Cr)": "N/A"}
+    
+    except requests.RequestException as e:
+        print(f"Error fetching data for {stock_symbol}: {e}")
+    
+    return {"Stock": stock_symbol, "Promoter Change": "N/A", "Amount (Cr)": "N/A"}
+
+def fetch_fii_dii_data():
+    """Placeholder for FII/DII inflow data."""
+    return {"FII Inflow (Cr)": 800, "DII Inflow (Cr)": 500}
+
+def integrate_institutional_activity(existing_df, stock_symbol):
+    """Integrate institutional activity data into existing stock analysis."""
+    promoter_data = fetch_promoter_activity(stock_symbol)
+    fii_dii_data = fetch_fii_dii_data()
+
+    data = {
+        "Stock": stock_symbol,
+        "Promoter Change": promoter_data["Promoter Change"],
+        "Promoter Amount (Cr)": promoter_data["Amount (Cr)"],
+        "FII Inflow (Cr)": fii_dii_data["FII Inflow (Cr)"],
+        "DII Inflow (Cr)": fii_dii_data["DII Inflow (Cr)"]
+    }
+
+    institutional_df = pd.DataFrame([data])
+    merged_df = pd.merge(existing_df, institutional_df, on="Stock", how="left")
+    return merged_df
