@@ -20,7 +20,7 @@ retrying
 scipy==1.11.2
 TA-Lib-Precompiled
 tabulate
-yfinance==0.2.60
+yfinance==0.2.65
 alive-progress==1.6.2
 Pillow
 scikit-learn==1.3.2
