@@ -1,0 +1,11 @@
+[flake8]
+exclude =
+    .venv,
+    .git,
+    __pycache__,
+    src/ml/,
+    src/static/,
+    *.egg-info,
+    dist,
+    build
+max-line-length = 127
