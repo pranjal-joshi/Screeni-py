@@ -7,7 +7,7 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.29"
+VERSION = "2.30"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
 [1.00 - Beta]
@@ -315,4 +315,13 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [2.29]
 1. Bugfixes - yfinance package downgraded to 0.2.61
+
+[2.30]
+1. AI-Native workflow added with OpenAI Agents harness and Kite MCP integration
+2. SQLite-based persistence replacing pickle files (auto-migration included)
+3. 14 screener function tools for AI-driven stock analysis
+4. 4 built-in agent personas: SwingTrader, DayTrader, OptionBuyer, ValueScreener
+5. Streamlit UI with AI Native tab, Plotly OHLC + RSI charts
+6. APScheduler-based cron for scheduled scans and Kite MCP heartbeat monitoring
+7. Classic mode fully preserved - zero breaking changes
 ''' + colorText.END
