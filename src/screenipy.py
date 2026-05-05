@@ -41,7 +41,7 @@ argParser.add_argument('-d', '--download', action='store_true', help='Only Downl
 argParser.add_argument('-v', action='store_true')        # Dummy Arg for pytest -v
 argParser.add_argument('--mode', choices=['classic', 'ai'], default=None, help='Workflow mode: classic or ai')
 argParser.add_argument('--agent', type=str, default=None, help='Agent persona name for AI mode (e.g. swing_trader)')
-args = argParser.parse_args()
+args, _ = argParser.parse_known_args()  # parse_known_args ignores Streamlit's own CLI args (--server.port, etc.)
 
 # Try Fixing bug with this symbol
 TEST_STKCODE = "SBIN"
