@@ -3,7 +3,7 @@
 # Created             :   17/08/2023
 # Description         :   Dockerfile to build Screeni-py image for GUI release
 
-FROM python:3.11-slim-bookworm AS base
+FROM python:3.13-slim-bookworm AS base
 
 ARG DEBIAN_FRONTEND=noninteractive
 

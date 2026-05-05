@@ -187,6 +187,5 @@ def test_option_14(mocker):
 
 
 def test_if_changelog_version_changed():
-    global last_release
     v = changelog.split(']')[-2].split('[')[-1]
     assert float(v) > float(last_release)

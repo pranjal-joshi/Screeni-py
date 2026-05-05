@@ -164,7 +164,6 @@ def on_config_change():
     st.toast('Configuration Saved', icon='💾')
 
 def on_start_button_click():
-    global execute_inputs
     if isDevVersion != None:
       st.info(f'Received inputs (Debug only): {execute_inputs}')
 

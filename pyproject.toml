@@ -2,7 +2,7 @@
 name = "screenipy"
 version = "2.29.0"
 description = "An open-source NSE stock screener"
-requires-python = ">=3.11"
+requires-python = ">=3.13"
 dependencies = [
     "numpy",
     "appdirs",
