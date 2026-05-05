@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # Project             :   Screenipy
 # Author              :   Pranjal Joshi
 # Created             :   17/08/2023
@@ -45,7 +46,7 @@ RUN uv pip install --python /venv/bin/python --no-deps advanced-ta pandas-ta-rem
 
 # Patch advanced-ta Classifier.py: np.NaN was removed in NumPy 2.0 (advanced-ta still uses it as of 0.1.8)
 # advanced-ta is installed --no-deps to bypass its numpy<2.0.0 constraint, so we must fix the one broken call site.
-RUN python3 -c "
+RUN python3 << 'EOF'
 import pathlib, sys
 cf = next(pathlib.Path('/venv').rglob('LorentzianClassification/Classifier.py'), None)
 if cf is None: sys.exit('Classifier.py not found')
@@ -54,7 +55,7 @@ patched = txt.replace('np.NaN', 'np.nan')
 cf.write_text(patched)
 changed = txt.count('np.NaN')
 print(f'Patched {changed} occurrences of np.NaN -> np.nan in {cf}')
-"
+EOF
 
 ##############
 # Package Phase
