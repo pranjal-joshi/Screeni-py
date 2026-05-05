@@ -112,7 +112,7 @@ def show_df_as_result_table():
     df['Stock'] = df.index
     stock_column = df.pop('Stock')  # Remove 'Age' column and store it separately
     df.insert(0, 'Stock', stock_column)
-    st.components.v1.html(f"""
+    st.iframe(f"""
       {df.to_html(escape=False, index=False, index_names=False, table_id='resultTable')}
       <script src="http://localhost:8000/static/tablefilter/tablefilter.js"></script>
       <script>
