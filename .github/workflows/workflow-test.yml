@@ -48,6 +48,7 @@ jobs:
         uv sync --group dev
         uv pip install ta
         uv pip install --no-deps advanced-ta
+        uv pip install --no-deps pandas-ta-remake
 
     - name: Lint with flake8
       run: |

@@ -31,8 +31,8 @@ dependencies = [
     "httpx",
     "ta-lib",
     "ta",
-    "advanced-ta",
-    "pandas-ta-remake",
+    # advanced-ta and pandas-ta-remake installed via uv pip --no-deps (numpy conflict)
+    # they are in requirements.txt for Docker
     "mplfinance==0.12.9b7",
     "num2words",
     "chromadb>=1.0.0",

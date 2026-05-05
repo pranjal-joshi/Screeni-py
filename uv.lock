@@ -2224,24 +2224,6 @@ wheels = [
 ]
 
 [[package]]
-name = "pandas-ta-remake"
-version = "1.0.4"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "numpy" },
-    { name = "pandas" },
-    { name = "python-dateutil" },
-    { name = "pytz" },
-    { name = "setuptools" },
-    { name = "six" },
-    { name = "tzdata" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/8e/c0/1b3777a95bd3c1987fdd4171233f4e6ee62c391f145f5cd3d29d926c7ab5/pandas_ta_remake-1.0.4.tar.gz", hash = "sha256:e58301f26fd4d94704519ecc5ad629432ae82c4652fd3b5710868de79e88562b", size = 137615, upload-time = "2025-01-12T14:44:29.701Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/13/c7/7b26d1f30f1258b04353951785ab1ec246ee023e4b6a60fad0430b89a32c/pandas_ta_remake-1.0.4-py3-none-any.whl", hash = "sha256:84ada1019de2834b28e1b863bff898077b95f9faa2342499617fe622d6ade08c", size = 237814, upload-time = "2025-01-12T14:44:28.128Z" },
-]
-
-[[package]]
 name = "peewee"
 version = "4.0.5"
 source = { registry = "https://pypi.org/simple" }
@@ -3163,7 +3145,6 @@ dependencies = [
     { name = "openai-agents" },
     { name = "openpyxl" },
     { name = "pandas" },
-    { name = "pandas-ta-remake" },
     { name = "pillow" },
     { name = "plotly" },
     { name = "progress" },
@@ -3208,7 +3189,6 @@ requires-dist = [
     { name = "openai-agents" },
     { name = "openpyxl" },
     { name = "pandas", specifier = ">=2.1.2,<3" },
-    { name = "pandas-ta-remake" },
     { name = "pillow" },
     { name = "plotly" },
     { name = "progress" },
