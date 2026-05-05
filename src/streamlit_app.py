@@ -347,7 +347,19 @@ telegram_url = "https://user-images.githubusercontent.com/6128978/217814499-7934
 bc.divider()
 bc.image(telegram_url, width=96)
 
-tab_screen, tab_similar, tab_nifty, tab_config, tab_psc, tab_about = st.tabs(['Screen Stocks', 'Search Similar Stocks', 'Nifty-50 Gap Prediction', 'Configuration', 'Position Size Calculator', 'About'])
+tab_screen, tab_ai, tab_similar, tab_nifty, tab_config, tab_psc, tab_about = st.tabs(['📊 Classic Screen', '🤖 AI Native', 'Search Similar Stocks', 'Nifty-50 Gap Prediction', 'Configuration', 'Position Size Calculator', 'About'])
+
+with tab_ai:
+  try:
+    import sys, os
+    _src = os.path.dirname(os.path.abspath(__file__))
+    if _src not in sys.path:
+      sys.path.insert(0, _src)
+    from ui.ai_native_tab import render as render_ai
+    render_ai()
+  except Exception as _ai_e:
+    st.error(f'AI Native tab error: {_ai_e}')
+    st.info('Install required packages: pip install openai-agents pyyaml')
 
 with tab_screen:
   st.markdown("""

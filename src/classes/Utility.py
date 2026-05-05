@@ -70,8 +70,17 @@ class tools:
               "[+] Download latest software from https://github.com/pranjal-joshi/Screeni-py/releases/latest" + colorText.END)
         input('')
 
-    # Save last screened result to pickle file
+    # Save last screened result to pickle file (primary: SQLite, backup: pickle)
     def setLastScreenedResults(df, unformatted=False):
+        # Primary: save to SQLite
+        try:
+            from classes.Database import ScreeniDatabase
+            db = ScreeniDatabase()
+            criteria = 'last_screened_unformatted' if unformatted else 'last_screened'
+            db.save_scan_results(criteria=criteria, index_name='last_screened', results_df=df)
+        except Exception as e:
+            pass  # SQLite failure is non-fatal
+        # Backup: keep pickle
         try:
             if not unformatted:
                 df.sort_values(by=['Stock'], ascending=True, inplace=True)
@@ -83,10 +92,23 @@ class tools:
             print(colorText.BOLD + colorText.FAIL +
                   '[+] Failed to save recently screened result table on disk! Skipping..' + colorText.END)
             
-    # Load last screened result to pickle file
+    # Load last screened result from SQLite (primary) or pickle (fallback)
     def getLastScreenedResults():
+        df = None
+        # Primary: try SQLite
         try:
-            df = pd.read_pickle(lastScreened)
+            from classes.Database import ScreeniDatabase
+            db = ScreeniDatabase()
+            df = db.get_last_scan_results(criteria='last_screened')
+        except Exception:
+            pass
+        # Fallback: try pickle
+        if df is None:
+            try:
+                df = pd.read_pickle(lastScreened)
+            except FileNotFoundError:
+                pass
+        if df is not None:
             print(colorText.BOLD + colorText.GREEN +
                   '\n[+] Showing recently screened results..\n' + colorText.END)
             print(tabulate(df, headers='keys', tablefmt='psql'))
@@ -94,7 +116,7 @@ class tools:
                   "[+] Note: Trend calculation is based on number of recent days to screen as per your configuration." + colorText.END)
             input(colorText.BOLD + colorText.GREEN +
                   '[+] Press any key to continue..' + colorText.END)
-        except FileNotFoundError:
+        else:
             print(colorText.BOLD + colorText.FAIL +
                   '[+] Failed to load recently screened result table from disk! Skipping..' + colorText.END)
 

@@ -39,6 +39,8 @@ argParser = argparse.ArgumentParser()
 argParser.add_argument('-t', '--testbuild', action='store_true', help='Run in test-build mode', required=False)
 argParser.add_argument('-d', '--download', action='store_true', help='Only Download Stock data in .pkl file', required=False)
 argParser.add_argument('-v', action='store_true')        # Dummy Arg for pytest -v
+argParser.add_argument('--mode', choices=['classic', 'ai'], default=None, help='Workflow mode: classic or ai')
+argParser.add_argument('--agent', type=str, default=None, help='Agent persona name for AI mode (e.g. swing_trader)')
 args = argParser.parse_args()
 
 # Try Fixing bug with this symbol
@@ -526,7 +528,86 @@ if __name__ == "__main__":
     isDevVersion = OTAUpdater.checkForUpdate(proxyServer, VERSION)
     if not configManager.checkConfigFile():
         configManager.setConfig(ConfigManager.parser, default=True, showFileCreatedText=False)
-    if args.testbuild:
+
+    # Determine workflow mode
+    workflow_mode = args.mode
+    if workflow_mode is None:
+        try:
+            import yaml
+            _yaml_candidates = [
+                os.path.join(os.path.dirname(__file__), '..', 'screenipy.yaml'),
+                os.path.join(os.path.dirname(__file__), 'screenipy.yaml'),
+                'screenipy.yaml',
+            ]
+            for _yp in _yaml_candidates:
+                _yp = os.path.abspath(_yp)
+                if os.path.exists(_yp):
+                    with open(_yp) as _yf:
+                        _ycfg = yaml.safe_load(_yf)
+                    workflow_mode = _ycfg.get('workflow', {}).get('default_mode', 'classic')
+                    break
+        except Exception:
+            pass
+        if workflow_mode is None:
+            workflow_mode = 'classic'
+
+    if workflow_mode == 'ai' and not isGui():
+        # AI-native CLI mode
+        try:
+            from agents.agent_loader import AgentLoader
+            from agents.screeni_agent import ScreeniAgent
+            from agents.llm_config import load_llm_config, ScreeniConfigError
+
+            loader = AgentLoader()
+            all_personas = loader.load_all()
+
+            if not all_personas:
+                print(colorText.BOLD + colorText.FAIL + '[!] No agent personas found. Check src/agents/personas/' + colorText.END)
+                sys.exit(1)
+
+            persona = None
+            if args.agent:
+                persona = loader.load(args.agent)
+                if not persona:
+                    print(colorText.BOLD + colorText.FAIL + f'[!] Persona "{args.agent}" not found.' + colorText.END)
+                    print(loader.summary())
+                    sys.exit(1)
+            else:
+                print(loader.summary())
+                persona_names = [p.get('name', '?') for p in all_personas]
+                print(colorText.BOLD + colorText.GREEN + '\nEnter persona name: ' + colorText.END, end='')
+                choice = input().strip()
+                persona = loader.load(choice)
+                if not persona:
+                    print(colorText.BOLD + colorText.FAIL + f'[!] Persona "{choice}" not found.' + colorText.END)
+                    sys.exit(1)
+
+            try:
+                llm_cfg = load_llm_config()
+            except ScreeniConfigError as e:
+                print(colorText.BOLD + colorText.FAIL + f'[!] Config error: {e}' + colorText.END)
+                sys.exit(1)
+
+            agent = ScreeniAgent(persona, llm_cfg)
+            print(colorText.BOLD + colorText.GREEN + f'\n[+] Running {persona.get("name")} agent. Type your query (or "exit" to quit).' + colorText.END)
+
+            while True:
+                print(colorText.BOLD + colorText.WARN + '\n> ' + colorText.END, end='')
+                query = input().strip()
+                if query.lower() in ('exit', 'quit', 'q'):
+                    break
+                if not query:
+                    continue
+                result = agent.run_sync(query)
+                print(colorText.BOLD + colorText.GREEN + '\n[Agent Response]' + colorText.END)
+                print(result)
+
+        except ImportError as e:
+            print(colorText.BOLD + colorText.FAIL + f'[!] AI mode requires additional packages: {e}' + colorText.END)
+            print('[!] Install with: pip install openai-agents pyyaml')
+            sys.exit(1)
+
+    elif args.testbuild:
         print(colorText.BOLD + colorText.FAIL +"[+] Started in TestBuild mode!" + colorText.END)
         main(testBuild=True)
     elif args.download:
