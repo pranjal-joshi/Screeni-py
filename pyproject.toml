@@ -31,6 +31,7 @@ dependencies = [
     "httpx",
     "ta-lib",
     "ta",
+    "advanced-ta",
     "pandas-ta-remake",
     "mplfinance==0.12.9b7",
     "num2words",
