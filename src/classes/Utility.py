@@ -337,7 +337,7 @@ class tools:
         spinner = 'waves'
         if 'Windows' in platform.platform():
             bar = 'classic2'
-            spinner = 'dots_recur'
+            spinner = 'dots_waves'
         return bar, spinner
 
 

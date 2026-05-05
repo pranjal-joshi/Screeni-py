@@ -205,9 +205,6 @@ class StockConsumer(multiprocessing.Process):
                     with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
                         isBuyingTrendline = screener.findTrendlines(fullData, screeningDictionary, saveDictionary)
 
-                with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
-                    isLorentzian = screener.validateLorentzian(fullData, screeningDictionary, saveDictionary, lookFor = maLength)
-
                 try:
                     backtestReport = Utility.tools.calculateBacktestReport(data=processedData, backtestDict=backtestReport)
                     screeningDictionary.update(backtestReport)

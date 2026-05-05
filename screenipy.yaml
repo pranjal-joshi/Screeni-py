@@ -1,19 +1,11 @@
-llm:
-  provider: openai           # openai | anthropic | openai-compatible
-  model: gpt-4o
-  base_url: null             # For openai-compatible endpoints (Ollama, LiteLLM, etc.)
-  api_key_env: SCREENIPY_API_KEY
-
 kite_mcp:
-  url: https://mcp.kite.trade/mcp
   enabled: true
-
-workflow:
-  default_mode: classic      # classic | ai
-
+  url: https://mcp.kite.trade/mcp
+llm:
+  api_key_env: SCREENIPY_API_KEY
+  base_url: https://litellm-preprod.energyexemplar.com/v1
+  model: claude-haiku-4-5
+  provider: openai-compatible
 schedule: []
-# Example:
-# schedule:
-#   - cron: "15 9 * * 1-5"
-#     agent: swing_trader
-#     notify: null
+workflow:
+  default_mode: classic

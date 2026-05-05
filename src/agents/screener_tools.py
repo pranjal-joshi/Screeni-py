@@ -86,17 +86,26 @@ def _run_screen(ticker_option: int, execute_option: int, **extra_args) -> list:
         save_results = pd.DataFrame()
 
         # We use a simplified serial loop for agent context (avoids multiprocessing complexity)
+        import multiprocessing
+        import datetime
+        _screen_counter = multiprocessing.Value('i', 0)
+        _results_counter = multiprocessing.Value('i', 0)
+
         for symbol in stock_list[:50]:  # Limit for agent responsiveness
             try:
-                stock_data = fetcher.fetchStockData(
+                stock_data_tuple = fetcher.fetchStockData(
                     symbol,
                     configManager.period,
                     configManager.duration,
-                    proxyServer="",
-                    screenResultsCounter=None,
-                    screenCounter=None,
+                    proxyServer=None,
+                    screenResultsCounter=_results_counter,
+                    screenCounter=_screen_counter,
                     totalSymbols=len(stock_list),
+                    backtestDate=datetime.date.today(),
                 )
+                if stock_data_tuple is None:
+                    continue
+                stock_data, _ = stock_data_tuple
                 if stock_data is None or stock_data.empty:
                     continue
 
@@ -136,10 +145,6 @@ def _run_screen(ticker_option: int, execute_option: int, **extra_args) -> list:
                     window = extra_args.get('window', 3)
                     pct_top = extra_args.get('pct_from_top', 3.0)
                     if not screener.validateVCP(full_data, screen_dict, save_dict, stockName=symbol, window=window, percentageFromTop=pct_top):
-                        passed = False
-                elif execute_option == 8:  # Lorentzian
-                    look_for = extra_args.get('look_for', 1)
-                    if not screener.validateLorentzian(full_data, screen_dict, save_dict, lookFor=look_for):
                         passed = False
                 elif execute_option == 9:  # Momentum
                     if not screener.validateMomentum(trimmed_data, screen_dict, save_dict):

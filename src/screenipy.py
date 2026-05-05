@@ -128,7 +128,7 @@ def initExecution():
         Utility.tools.clearScreen()
         return initExecution()
 
-    if tickerOption == 'N' or tickerOption == 'E' or tickerOption == 'S':
+    if tickerOption == 'N' or tickerOption == 'E':
         return tickerOption, 0
 
     if tickerOption and tickerOption != 'W':
@@ -294,7 +294,7 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
               "[+] Press any key to Exit!" + colorText.END)
         sys.exit(0)
 
-    if tickerOption == 'W' or tickerOption == 'N' or tickerOption == 'E' or tickerOption == 'S' or (tickerOption >= 0 and tickerOption < 17):
+    if tickerOption == 'W' or tickerOption == 'N' or tickerOption == 'E' or (tickerOption >= 0 and tickerOption < 17):
         configManager.getConfig(ConfigManager.parser)
         try:
             if tickerOption == 'W':
@@ -335,18 +335,6 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
                     if not isGui():
                         input('\nPress any key to Continue...\n')
                     return
-            elif tickerOption == 'S':
-                if not CHROMA_AVAILABLE:
-                    print(colorText.BOLD + colorText.FAIL +
-                  "\n\n[+] ChromaDB not available in your environment! You can't use this feature!\n" + colorText.END)
-                else:
-                    if execute_inputs != []:
-                        stockCode, candles = execute_inputs[2], execute_inputs[3]
-                    else:
-                        stockCode, candles = Utility.tools.promptSimilarStockSearch()
-                    vectorSearch = [stockCode, candles, True]
-                    tickerOption, executeOption = 12, 1
-                    listStockCodes = fetcher.fetchStockCodes(tickerOption, proxyServer=proxyServer)
             else:
                 if tickerOption == 14:    # Override config for F&O Stocks
                     configManager.stageTwo = False

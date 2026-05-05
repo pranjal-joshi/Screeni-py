@@ -116,7 +116,7 @@ class ScreeniAgent:
         model_name = self.llm_config.get('model', 'gpt-4o')
         base_url = self.llm_config.get('base_url')
 
-        # Set API key env var for the agents SDK
+        # Set API key / configure OpenAI client for the agents SDK
         if provider == 'openai':
             os.environ['OPENAI_API_KEY'] = api_key
             model = _build_openai_model(self.llm_config)
@@ -125,10 +125,40 @@ class ScreeniAgent:
             # Use litellm prefix for anthropic compatibility
             model = _build_anthropic_model(self.llm_config)
         elif provider == 'openai-compatible':
-            os.environ['OPENAI_API_KEY'] = api_key
-            if base_url:
-                os.environ['OPENAI_BASE_URL'] = base_url
+            # Must use a custom OpenAI client so the base_url is actually respected;
+            # setting OPENAI_BASE_URL alone is not enough if the SDK already cached a client.
+            try:
+                from openai import AsyncOpenAI
+                _custom_client = AsyncOpenAI(api_key=api_key or 'none', base_url=base_url)
+                set_default_openai_client = getattr(_agents_pkg, 'set_default_openai_client', None)
+                if set_default_openai_client:
+                    set_default_openai_client(_custom_client)
+                else:
+                    os.environ['OPENAI_API_KEY'] = api_key or 'none'
+                    if base_url:
+                        os.environ['OPENAI_BASE_URL'] = base_url
+                # Force the SDK to use the /v1/chat/completions endpoint instead of
+                # the newer /v1/responses endpoint — most OpenAI-compatible proxies
+                # (LiteLLM, Ollama, etc.) only support chat completions.
+                set_default_openai_api = getattr(_agents_pkg, 'set_default_openai_api', None)
+                if set_default_openai_api:
+                    set_default_openai_api('chat_completions')
+            except Exception as _e:
+                logger.warning(f"Could not set custom OpenAI client: {_e}")
+                os.environ['OPENAI_API_KEY'] = api_key or 'none'
+                if base_url:
+                    os.environ['OPENAI_BASE_URL'] = base_url
             model = _build_openai_compatible_model(self.llm_config)
+            # Disable openai-agents tracing — it tries to POST to api.openai.com
+            # which will always fail (and log errors) when using a non-OpenAI endpoint.
+            try:
+                _disable_tracing = getattr(_agents_pkg, 'set_tracing_disabled', None)
+                if _disable_tracing:
+                    _disable_tracing(True)
+                else:
+                    os.environ['OPENAI_AGENTS_DISABLE_TRACING'] = '1'
+            except Exception:
+                os.environ['OPENAI_AGENTS_DISABLE_TRACING'] = '1'
         else:
             os.environ['OPENAI_API_KEY'] = api_key
             model = model_name
@@ -149,17 +179,20 @@ class ScreeniAgent:
         if persona_index and 'index' not in instructions.lower():
             instructions = f"{instructions}\n\nDefault index: {persona_index}"
 
-        # Add Kite MCP if configured
+        # Add Kite MCP if configured — only when running in a proper async context
+        # (MCP servers require connect() via async-with; skip in sync/Streamlit runs)
         mcp_servers = []
         kite_cfg = load_kite_config()
         if kite_cfg.get('enabled') and kite_cfg.get('url'):
             try:
-                from agents.mcp import MCPServerStreamableHttp
-                kite_server = MCPServerStreamableHttp(url=kite_cfg['url'])
+                from agents.mcp import MCPServerStreamableHttp, MCPServerStreamableHttpParams
+                kite_server = MCPServerStreamableHttp(
+                    MCPServerStreamableHttpParams({'url': kite_cfg['url']})
+                )
                 mcp_servers.append(kite_server)
-                logger.info(f"Kite MCP enabled: {kite_cfg['url']}")
+                logger.info(f"Kite MCP configured: {kite_cfg['url']}")
             except Exception as e:
-                logger.warning(f"Could not initialize Kite MCP server: {e}")
+                logger.warning(f"Could not configure Kite MCP server: {e}")
 
         # Create the agent
         kwargs = {
@@ -180,33 +213,61 @@ class ScreeniAgent:
     async def run(self, query: str) -> str:
         """
         Run the agent asynchronously with the given query.
-        
-        Args:
-            query: Natural language query for the agent
-            
-        Returns:
-            Agent response as string
+        Handles MCP server lifecycle if any are configured.
         """
         try:
-            result = await Runner.run(self._agent, query)
-            return result.final_output
+            mcp_servers = getattr(self._agent, 'mcp_servers', []) or []
+            connected_servers = []
+            if mcp_servers:
+                # Connect each MCP server; only keep ones that connected successfully
+                for srv in mcp_servers:
+                    try:
+                        await srv.connect()
+                        connected_servers.append(srv)
+                    except Exception as e:
+                        logger.warning(f"MCP connect failed, skipping: {e}")
+                # Swap agent's mcp_servers to only the connected ones so Runner
+                # doesn't attempt a second connect() on already-failed servers.
+                try:
+                    self._agent.mcp_servers = connected_servers
+                except Exception:
+                    pass
+            try:
+                result = await Runner.run(self._agent, query)
+                return result.final_output
+            finally:
+                for srv in connected_servers:
+                    try:
+                        await srv.cleanup()
+                    except Exception:
+                        pass
         except Exception as e:
             logger.error(f"Agent run failed: {e}")
             return f"Error: {e}"
 
     def run_sync(self, query: str) -> str:
         """
-        Run the agent synchronously.
-        
-        Args:
-            query: Natural language query for the agent
-            
-        Returns:
-            Agent response as string
+        Run the agent synchronously from any context — including inside Streamlit
+        (which runs under a Tornado event loop). Spawns a dedicated thread with its
+        own event loop so asyncio.run() never conflicts with an existing loop.
         """
-        try:
-            result = Runner.run_sync(self._agent, query)
-            return result.final_output
-        except Exception as e:
-            logger.error(f"Agent run_sync failed: {e}")
-            return f"Error: {e}"
+        import concurrent.futures
+
+        result_holder = {}
+
+        def _run_in_thread():
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                result_holder['result'] = loop.run_until_complete(self.run(query))
+            except Exception as e:
+                logger.error(f"Agent run_sync thread failed: {e}")
+                result_holder['result'] = f"Error: {e}"
+            finally:
+                loop.close()
+
+        t = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+        future = t.submit(_run_in_thread)
+        future.result()  # blocks until done, propagates exceptions
+        t.shutdown(wait=False)
+        return result_holder.get('result', 'Error: no result returned')

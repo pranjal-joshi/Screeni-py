@@ -13,9 +13,7 @@ import joblib
 import time
 import classes.Utility as Utility
 from copy import copy
-from advanced_ta import LorentzianClassification
 from classes.Utility import isGui
-from sklearn.preprocessing import StandardScaler
 from scipy.signal import argrelextrema
 from scipy.stats import linregress
 from classes.ColorText import colorText
@@ -51,7 +49,6 @@ class tools:
     def getCandleType(self, dailyData):
         return bool(dailyData['Close'].iloc[0] >= dailyData['Open'].iloc[0])
             
-
     # Preprocess the acquired data
     def preprocessData(self, data:pd.DataFrame, daysToLookback=None):
         if daysToLookback is None:
@@ -432,7 +429,7 @@ class tools:
             saveDict['MA-Signal'] = f'RSI-MA-Buy'
             return True
         elif data['maRsi'].iloc[0] >= data['RSI'].iloc[0] and data['maRsi'].iloc[1] < data['RSI'].iloc[1]:
-            screenDict['MA-Signal'] = colorText.BOLD + colorText.GREEN + f'RSI-MA-Sell' + colorText.END
+            screenDict['MA-Signal'] = colorText.BOLD + colorText.FAIL + f'RSI-MA-Sell' + colorText.END
             saveDict['MA-Signal'] = f'RSI-MA-Sell'
             return True
         return False
@@ -532,7 +529,7 @@ class tools:
         '''
         return False
 
-
+    
     # Find NRx range for Reversal
     def validateNarrowRange(self, data, screenDict, saveDict, nr=4):
         if Utility.tools.isTradingTime():
@@ -559,24 +556,6 @@ class tools:
                 saveDict['Pattern'] = f'NR{nr}'
                 return True
             return False
-
-    # Validate Lorentzian Classification signal  
-    def validateLorentzian(self, data, screenDict, saveDict, lookFor=1):
-        # lookFor: 1-Any, 2-Buy, 3-Sell
-        data = data[::-1]               # Reverse the dataframe
-        data = data.rename(columns={'Open':'open', 'Close':'close', 'High':'high', 'Low':'low', 'Volume':'volume'})
-        lc = LorentzianClassification(data=data)
-        if lc.df.iloc[-1]['isNewBuySignal']:
-            screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + f'Lorentzian-Buy' + colorText.END
-            saveDict['Pattern'] = f'Lorentzian-Buy'
-            if lookFor != 3:
-                return True
-        elif lc.df.iloc[-1]['isNewSellSignal']:
-            screenDict['Pattern'] = colorText.BOLD + colorText.FAIL + f'Lorentzian-Sell' + colorText.END
-            saveDict['Pattern'] = f'Lorentzian-Sell'
-            if lookFor != 2:
-                return True
-        return False
 
     # Validate VPC
     def validateVCP(self, data, screenDict, saveDict, stockName=None, window=3, percentageFromTop=3):
@@ -616,8 +595,7 @@ class tools:
             print(traceback.format_exc())
         return False
 
-
-
+    
     def monitorFiveEma(self, proxyServer, fetcher, result_df, last_signal, risk_reward = 3):
         col_names = ['High', 'Low', 'Close', '5EMA']
         data_list = ['nifty_buy', 'banknifty_buy', 'nifty_sell', 'banknifty_sell']
@@ -649,13 +627,11 @@ class tools:
                             ],
                         axis=1
                         )
-            validate = validate.tail(len(old_index))
             validate = validate.set_index(old_index)
             if 'sell' in data_list[cnt]:
                 final = validate[validate.Close < validate['5EMA']].tail(1)
             else:
                 final = validate[validate.Close > validate['5EMA']].tail(1)
-
 
             if data_list[cnt] not in last_signal:
                 last_signal[data_list[cnt]] = final
@@ -710,7 +686,7 @@ class tools:
             )
             return data
 
-
+    
     '''
     # Find out trend for days to lookback
     def validateVCP(data, screenDict, saveDict, daysToLookback=ConfigManager.daysToLookback, stockName=None):
@@ -730,7 +706,7 @@ class tools:
                 bot_slope,bot_c = np.polyfit(data.index[data.bots > 0], data['bots'][data.bots > 0], 1)
                 topAngle = math.degrees(math.atan(top_slope))
                 vcpAngle = math.degrees(math.atan(bot_slope) - math.atan(top_slope))
-
+                
                 # print(math.degrees(math.atan(top_slope)))
                 # print(math.degrees(math.atan(bot_slope)))
                 # print(vcpAngle)

@@ -23,7 +23,6 @@ tabulate
 yfinance==0.2.61
 alive-progress>=3.2.0
 Pillow
-scikit-learn>=1.6.0
 joblib
 altgraph # Installed as dependency for pyinstaller
 atomicwrites # Installed as dependency for pytest
