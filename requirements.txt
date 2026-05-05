@@ -18,7 +18,7 @@ pytest-mock
 pytoml
 retrying
 scipy==1.11.2
-TA-Lib-Precompiled
+ta-lib
 tabulate
 yfinance==0.2.61
 alive-progress==1.6.2
@@ -56,7 +56,7 @@ six # Installed as dependency for cycler, nsetools, packaging, retrying, python-
 toml # Installed as dependency for pep517, pytest
 urllib3 # Installed as dependency for requests
 webencodings # Installed as dependency for html5lib
-pandas_ta
+pandas-ta-remake
 protobuf
 streamlit
 tensorflow
