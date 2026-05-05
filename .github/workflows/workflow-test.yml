@@ -46,6 +46,7 @@ jobs:
     - name: Install project dependencies
       run: |
         uv sync --group dev
+        uv pip install ta
         uv pip install --no-deps advanced-ta
 
     - name: Lint with flake8

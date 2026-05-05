@@ -779,7 +779,7 @@ class tools:
                 if (vcpAngle > 20 and vcpAngle < 70) and (topAngle > -10 and topAngle < 10) and (data['bots'].max() <= data['tops'].max()) and (len(data['bots'][data.bots > 0]) > 1):
                     print("---> GOOD VCP %s at %sRs" % (stockName, top_c))
                     import os
-                    os.system("echo %s >> vcp_plots\VCP.txt" % stockName)
+                    os.system("echo %s >> vcp_plots/VCP.txt" % stockName)
 
                     import matplotlib.pyplot as plt                
                     plt.scatter(data.index[data.tops > 0], data['tops'][data.tops > 0], c='g')
@@ -790,7 +790,7 @@ class tools:
                     if stockName != None:
                         plt.title(stockName)
                     # plt.show()
-                    plt.savefig('vcp_plots\%s.png' % stockName)
+                    plt.savefig('vcp_plots/%s.png' % stockName)
                     plt.clf()
             except np.RankWarning:
                 pass

@@ -30,6 +30,7 @@ dependencies = [
     "pyyaml",
     "httpx",
     "ta-lib",
+    "ta",
     "pandas-ta-remake",
     "mplfinance==0.12.9b7",
     "num2words",

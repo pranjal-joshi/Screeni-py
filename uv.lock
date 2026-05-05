@@ -3174,6 +3174,7 @@ dependencies = [
     { name = "scikit-learn" },
     { name = "scipy" },
     { name = "streamlit" },
+    { name = "ta" },
     { name = "ta-lib" },
     { name = "tabulate" },
     { name = "tensorflow" },
@@ -3218,6 +3219,7 @@ requires-dist = [
     { name = "scikit-learn", specifier = ">=1.3.2,<2" },
     { name = "scipy", specifier = ">=1.11.2,<2" },
     { name = "streamlit" },
+    { name = "ta" },
     { name = "ta-lib" },
     { name = "tabulate" },
     { name = "tensorflow" },
@@ -3344,6 +3346,16 @@ sdist = { url = "https://files.pythonhosted.org/packages/5d/f8/b2daf7a5f8ae15527
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d8/1a/3ca2293d8552bacea3e67e9600d2d1df7df4a325059769ad83d91c279595/streamlit-1.57.0-py3-none-any.whl", hash = "sha256:0d1d41972aeade5637dbb0e7f0eefa5312272f85304923d240a1b1f0475249c8", size = 9194216, upload-time = "2026-04-28T22:13:29.624Z" },
 ]
+
+[[package]]
+name = "ta"
+version = "0.11.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "pandas" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e0/9a/37d92a6b470dc9088612c2399a68f1a9ac22872d4e1eff416818e22ab11b/ta-0.11.0.tar.gz", hash = "sha256:de86af43418420bd6b088a2ea9b95483071bf453c522a8441bc2f12bcf8493fd", size = 25308, upload-time = "2023-11-02T13:53:35.434Z" }
 
 [[package]]
 name = "ta-lib"
