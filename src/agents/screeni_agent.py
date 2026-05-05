@@ -210,30 +210,31 @@ class ScreeniAgent:
             # Fallback: some versions may not accept model as kwarg
             self._agent = Agent(**kwargs)
 
-    async def run(self, query: str) -> str:
+    async def run(self, query: str, session=None) -> str:
         """
         Run the agent asynchronously with the given query.
         Handles MCP server lifecycle if any are configured.
+        Pass a SQLiteSession (or any Session) for multi-turn conversation history.
         """
         try:
             mcp_servers = getattr(self._agent, 'mcp_servers', []) or []
             connected_servers = []
             if mcp_servers:
-                # Connect each MCP server; only keep ones that connected successfully
                 for srv in mcp_servers:
                     try:
                         await srv.connect()
                         connected_servers.append(srv)
                     except Exception as e:
                         logger.warning(f"MCP connect failed, skipping: {e}")
-                # Swap agent's mcp_servers to only the connected ones so Runner
-                # doesn't attempt a second connect() on already-failed servers.
                 try:
                     self._agent.mcp_servers = connected_servers
                 except Exception:
                     pass
             try:
-                result = await Runner.run(self._agent, query)
+                run_kwargs = {}
+                if session is not None:
+                    run_kwargs['session'] = session
+                result = await Runner.run(self._agent, query, **run_kwargs)
                 return result.final_output
             finally:
                 for srv in connected_servers:
@@ -245,11 +246,12 @@ class ScreeniAgent:
             logger.error(f"Agent run failed: {e}")
             return f"Error: {e}"
 
-    def run_sync(self, query: str) -> str:
+    def run_sync(self, query: str, session=None) -> str:
         """
         Run the agent synchronously from any context — including inside Streamlit
         (which runs under a Tornado event loop). Spawns a dedicated thread with its
         own event loop so asyncio.run() never conflicts with an existing loop.
+        Pass a SQLiteSession for multi-turn conversation history.
         """
         import concurrent.futures
 
@@ -259,7 +261,9 @@ class ScreeniAgent:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             try:
-                result_holder['result'] = loop.run_until_complete(self.run(query))
+                result_holder['result'] = loop.run_until_complete(
+                    self.run(query, session=session)
+                )
             except Exception as e:
                 logger.error(f"Agent run_sync thread failed: {e}")
                 result_holder['result'] = f"Error: {e}"
@@ -268,6 +272,6 @@ class ScreeniAgent:
 
         t = concurrent.futures.ThreadPoolExecutor(max_workers=1)
         future = t.submit(_run_in_thread)
-        future.result()  # blocks until done, propagates exceptions
+        future.result()
         t.shutdown(wait=False)
         return result_holder.get('result', 'Error: no result returned')

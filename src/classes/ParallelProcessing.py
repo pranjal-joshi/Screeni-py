@@ -249,9 +249,6 @@ class StockConsumer(multiprocessing.Process):
                         elif reversalOption == 6 and isNR:
                             self.screenResultsCounter.value += 1
                             return screeningDictionary, saveDictionary
-                        elif reversalOption == 7 and isLorentzian:
-                            self.screenResultsCounter.value += 1
-                            return screeningDictionary, saveDictionary
                         elif reversalOption == 8 and isRsiReversal:
                             self.screenResultsCounter.value += 1
                             return screeningDictionary, saveDictionary

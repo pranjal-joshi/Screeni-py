@@ -146,19 +146,20 @@ class KiteMCPSession:
             logger.error(f"Kite login tool call failed: {e}")
             raise
 
-    def run_agent_query(self, agent, query: str) -> str:
+    def run_agent_query(self, agent, query: str, sql_session=None) -> str:
         """
         Run an openai-agents Agent query inside this session's event loop
         so it shares the already-authenticated MCP server connection.
+        Pass a SQLiteSession for multi-turn conversation history.
         """
         if not self._connected or not self._loop:
             raise RuntimeError("Session not connected.")
         future = asyncio.run_coroutine_threadsafe(
-            self._run_agent(agent, query), self._loop
+            self._run_agent(agent, query, sql_session=sql_session), self._loop
         )
         return future.result(timeout=300)
 
-    async def _run_agent(self, agent, query: str) -> str:
+    async def _run_agent(self, agent, query: str, sql_session=None) -> str:
         try:
             import sys as _sys, importlib as _il, site as _site
             _sp = [p for p in _site.getsitepackages() if __import__('os').path.exists(p)]
@@ -177,7 +178,10 @@ class KiteMCPSession:
                 else:
                     _sys.modules.pop('agents', None)
 
-            result = await Runner.run(agent, query)
+            run_kwargs = {}
+            if sql_session is not None:
+                run_kwargs['session'] = sql_session
+            result = await Runner.run(agent, query, **run_kwargs)
             return result.final_output
         except Exception as e:
             logger.error(f"Agent run in Kite session failed: {e}")

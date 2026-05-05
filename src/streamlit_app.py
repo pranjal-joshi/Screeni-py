@@ -57,7 +57,7 @@ from classes.Changelog import VERSION
 st.markdown("""
 <style>
   /* Enough top padding to clear Streamlit's fixed toolbar (~3.75rem) */
-  .block-container { padding-top: 3rem; padding-bottom: 0rem; }
+  .block-container { padding-top: 3rem; padding-bottom: 5rem; }
 
   /* Uniform tall buttons */
   .stButton>button, .stDownloadButton>button { height: 56px; }
@@ -298,6 +298,9 @@ def _load_llm_defaults_from_yaml():
             st.session_state['ai_model'] = llm.get('model', 'gpt-4o')
         if 'ai_base_url' not in st.session_state:
             st.session_state['ai_base_url'] = llm.get('base_url') or 'http://localhost:11434/v1'
+        # Seed api_key from env var once — never from YAML (key is never persisted)
+        if 'ai_api_key' not in st.session_state:
+            st.session_state['ai_api_key'] = os.environ.get('SCREENIPY_API_KEY', '')
     except Exception:
         pass
 
@@ -621,28 +624,22 @@ with tab_config:
     st.caption('Provider, model, and base URL are saved to screenipy.yaml. API key is session-only.')
 
     lc1, lc2 = st.columns(2)
-    provider = lc1.selectbox(
+    lc1.selectbox(
         'Provider',
         options=['openai', 'anthropic', 'openai-compatible'],
         index=['openai', 'anthropic', 'openai-compatible'].index(
             st.session_state.get('ai_provider', 'openai')),
         key='ai_provider',
         help='Select your LLM provider',
-        on_change=_save_llm_config_to_yaml,
     )
-    default_model = 'gpt-4o' if provider == 'openai' else (
-        'claude-sonnet-4-5' if provider == 'anthropic' else 'gpt-4o')
     lc2.text_input(
         'Model',
-        value=st.session_state.get('ai_model', default_model),
         key='ai_model',
-        on_change=_save_llm_config_to_yaml,
     )
 
     api_key_val = st.text_input(
         'API Key',
         type='password',
-        value=st.session_state.get('ai_api_key', os.environ.get('SCREENIPY_API_KEY', '')),
         key='ai_api_key',
         help='Your API key — stored in session memory only, never persisted to disk.',
     )
@@ -651,14 +648,15 @@ with tab_config:
     else:
         st.caption('⚠️ No API key set. The AI Native tab will not be able to run agents.')
 
-    if provider == 'openai-compatible':
+    if st.session_state.get('ai_provider') == 'openai-compatible':
         st.text_input(
             'Base URL',
-            value=st.session_state.get('ai_base_url', 'http://localhost:11434/v1'),
             key='ai_base_url',
             help='Base URL for OpenAI-compatible endpoint (e.g., Ollama)',
-            on_change=_save_llm_config_to_yaml,
         )
+
+    if st.button('💾 Save LLM Config', key='save_llm_btn', type='primary'):
+        _save_llm_config_to_yaml()
 
     # ── Persona Editor ───────────────────────────────────────────────────────
     st.markdown('<p class="section-header">Agent Personas</p>', unsafe_allow_html=True)
