@@ -18,7 +18,6 @@ jobs:
   Test-Source:
 
     runs-on: ubuntu-latest
-    if: false  # skip: tests already passed, only running Docker build this push
 
     steps:
     - uses: actions/checkout@v4
@@ -33,16 +32,6 @@ jobs:
       with:
         enable-cache: true
         cache-dependency-glob: '**/pyproject.toml'
-
-    - name: Install TA-Lib system dependency
-      run: |
-        cd .github/dependencies/
-        tar -xzf ta-lib-0.4.0-src.tar.gz
-        cd ta-lib/
-        ./configure --prefix=/usr
-        make
-        sudo make install
-        sudo ldconfig
 
     - name: Install project dependencies
       run: |
@@ -98,7 +87,6 @@ jobs:
   Create-Pull-Request:
 
     runs-on: ubuntu-latest
-    if: false  # skip: only running Docker build this push
     needs: [Test-Source]
 
     steps:

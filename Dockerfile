@@ -29,21 +29,13 @@ WORKDIR /opt/program
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 
-# Install TA-Lib system library from bundled source
-COPY .github/dependencies/ta-lib-0.4.0-src.tar.gz /tmp/
-RUN cd /tmp && \
-    tar -xzf ta-lib-0.4.0-src.tar.gz && \
-    cd ta-lib && \
-    ./configure --prefix=/usr && \
-    make && make install && \
-    ldconfig && \
-    cd / && rm -rf /tmp/ta-lib*
-
 # Copy project files for uv
 COPY pyproject.toml uv.lock ./
 COPY requirements.txt ./
 
 # Create venv and install all deps via uv
+# ta-lib >=0.6.5 ships pre-built manylinux wheels for amd64+arm64 on Python 3.9-3.13
+# — no C compiler or system library build required
 RUN uv venv /venv
 ENV PATH=/venv/bin:$PATH
 ENV UV_PROJECT_ENVIRONMENT=/venv
@@ -55,11 +47,6 @@ RUN uv pip install --python /venv/bin/python --no-deps advanced-ta
 # Package Phase
 ##############
 FROM base AS app
-
-# Install TA-Lib runtime shared libraries
-COPY --from=build /usr/lib/libta_lib* /usr/lib/
-COPY --from=build /usr/include/ta-lib /usr/include/ta-lib
-RUN ldconfig
 
 COPY --from=build /venv /venv
 ENV PATH=/venv/bin:$PATH

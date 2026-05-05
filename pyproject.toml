@@ -29,7 +29,7 @@ dependencies = [
     "plotly",
     "pyyaml",
     "httpx",
-    "ta-lib",
+    "ta-lib>=0.6.5",
     "ta",
     # advanced-ta and pandas-ta-remake installed via uv pip --no-deps (numpy conflict)
     # they are in requirements.txt for Docker
