@@ -56,7 +56,9 @@ six # Installed as dependency for cycler, nsetools, packaging, retrying, python-
 toml # Installed as dependency for pep517, pytest
 urllib3 # Installed as dependency for requests
 webencodings # Installed as dependency for html5lib
-pandas-ta-remake
+# advanced-ta and pandas-ta-remake have conflicting numpy constraints;
+# installed separately with --no-deps in Dockerfile and CI workflow
+# pandas-ta-remake (excluded from requirements.txt, installed via --no-deps)
 protobuf
 streamlit
 tensorflow
@@ -64,4 +66,4 @@ chromadb>=1.0.0
 mplfinance>=0.12.9b7
 num2words
 ta
-advanced-ta
+# advanced-ta (excluded from requirements.txt, installed via --no-deps)

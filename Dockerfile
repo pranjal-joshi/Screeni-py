@@ -41,7 +41,7 @@ ENV PATH=/venv/bin:$PATH
 ENV UV_PROJECT_ENVIRONMENT=/venv
 
 RUN uv pip install --python /venv/bin/python -r requirements.txt
-RUN uv pip install --python /venv/bin/python --no-deps advanced-ta
+RUN uv pip install --python /venv/bin/python --no-deps advanced-ta pandas-ta-remake
 
 ##############
 # Package Phase
