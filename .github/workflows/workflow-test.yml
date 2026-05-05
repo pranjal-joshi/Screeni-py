@@ -58,7 +58,7 @@ jobs:
 
     - name: Run a Test with pytest
       run: |
-        uv run pytest test/ -v
+        cd test && uv run pytest -v
 
   Dev-Docker-Build:
 
