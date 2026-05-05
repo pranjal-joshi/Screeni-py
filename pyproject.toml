@@ -2,9 +2,9 @@
 name = "screenipy"
 version = "2.29.0"
 description = "An open-source NSE stock screener"
-requires-python = ">=3.13"
+requires-python = ">=3.13,<3.14"
 dependencies = [
-    "numpy",
+    "numpy==2.1.0",
     "appdirs",
     "cachecontrol",
     "contextlib2",
@@ -12,14 +12,14 @@ dependencies = [
     "openpyxl",
     "progress",
     "retrying",
-    "scipy>=1.15.0",
+    "scipy==1.15.0",
     "tabulate",
     "yfinance>=0.2.61",
     "alive-progress>=3.2.0",
     "Pillow",
-    "scikit-learn>=1.6.0",
+    "scikit-learn==1.6.0",
     "joblib",
-    "pandas>=2.2.0",
+    "pandas==2.2.3",
     "requests",
     "streamlit",
     "openai-agents",
@@ -29,16 +29,11 @@ dependencies = [
     "plotly",
     "pyyaml",
     "httpx",
-    "ta-lib>=0.6.5",
+    "ta-lib==0.6.5",
     "ta",
-    # advanced-ta and pandas-ta-remake installed via uv pip --no-deps (numpy conflict)
-    # they are in requirements.txt for Docker
-    "mplfinance>=0.12.9b7",
-    "num2words",
-    "chromadb>=1.0.0",
-    "tensorflow",
-    "keras",
-    "protobuf",
+    "mplfinance==0.12.10b0",
+    "num2words==0.5.14",
+    "chromadb==1.0.0",
 ]
 
 [dependency-groups]

@@ -212,27 +212,7 @@ def on_start_button_click():
 
 def nifty_predict(col):
   with col.container():
-    with st.spinner('🔮 Taking a Look into the Future, Please wait...'):
-      import classes.Fetcher as Fetcher
-      import classes.Screener as Screener
-      configManager = ConfigManager.tools()
-      fetcher = Fetcher.tools(configManager)
-      screener = Screener.tools(configManager)
-      os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
-      prediction, trend, confidence, data_used = screener.getNiftyPrediction(
-          data=fetcher.fetchLatestNiftyDaily(proxyServer=proxyServer), 
-          proxyServer=proxyServer
-      )
-  if 'BULLISH' in trend:
-      col.success(f'Market may Open **Gap Up** next day!\n\nProbability/Strength of Prediction = {confidence}%', icon='📈')
-  elif 'BEARISH' in trend:
-      col.error(f'Market may Open **Gap Down** next day!\n\nProbability/Strength of Prediction = {confidence}%', icon='📉')
-  else:
-      col.info("Couldn't determine the Trend. Try again later!")
-  col.warning('The AI prediction should be executed After 3 PM or Around the Closing hours as the Prediction Accuracy is based on the Closing price!\n\nThis is Just a Statistical Prediction and There are Chances of **False** Predictions!', icon='⚠️')
-  col.info("What's New in **v3**?\n\nMachine Learning model (v3) now uses Nifty, Crude and Gold Historical prices to Predict the Gap!", icon='🆕')
-  col.markdown("**Following data is used to make above prediction:**")
-  col.dataframe(data_used)
+    col.info("Nifty prediction feature has been removed. The application now focuses on AI-native agentic features.", icon='ℹ️')
       
 def find_similar_stocks(stockCode:str, candles:int):
   global execute_inputs

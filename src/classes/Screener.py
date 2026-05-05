@@ -10,7 +10,6 @@ import math
 import numpy as np
 import pandas as pd
 import joblib
-import keras
 import time
 import classes.Utility as Utility
 from copy import copy
@@ -617,45 +616,7 @@ class tools:
             print(traceback.format_exc())
         return False
 
-    def getNiftyPrediction(self, data, proxyServer):
-        import warnings 
-        warnings.filterwarnings("ignore")
-        # Disable GPUs as this causes wrong preds in Docker
-        import tensorflow as tf
-        physical_devices = tf.config.list_physical_devices('GPU')
-        try:
-          tf.config.set_visible_devices([], 'GPU')
-          visible_devices = tf.config.get_visible_devices()
-          for device in visible_devices:
-            assert device.device_type != 'GPU'
-        except:
-          pass
-        #
-        model, pkl = Utility.tools.getNiftyModel(proxyServer=proxyServer)
-        datacopy = copy(data[pkl['columns']])
-        with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
-            data = data[pkl['columns']]
-            ### v2 Preprocessing
-            for col in pkl['columns']:
-                data[col] = data[col].pct_change(fill_method=None) * 100
-            data = data.ffill().dropna()
-            data = data.iloc[-1] 
-            ###
-            data = pkl['scaler'].transform([data])
-            pred = model.predict(data)[0]
-        if pred > 0.5:
-            out = colorText.BOLD + colorText.FAIL + "BEARISH" + colorText.END + colorText.BOLD
-            sug = "Hold your Short position!"
-        else:
-            out = colorText.BOLD + colorText.GREEN + "BULLISH" + colorText.END + colorText.BOLD
-            sug = "Stay Bullish!"
-        if not Utility.tools.isClosingHour():
-            print(colorText.BOLD + colorText.WARN + "Note: The AI prediction should be executed After 3 PM Around the Closing hours as the Prediction Accuracy is based on the Closing price!" + colorText.END)
-        print(colorText.BOLD + colorText.BLUE + "\n" + "[+] Nifty AI Prediction -> " + colorText.END + colorText.BOLD + "Market may Open {} next day! {}".format(out, sug) + colorText.END)
-        print(colorText.BOLD + colorText.BLUE + "\n" + "[+] Nifty AI Prediction -> " + colorText.END + "Probability/Strength of Prediction = {}%".format(Utility.tools.getSigmoidConfidence(pred[0])))
-        if isGui():
-            return pred, 'BULLISH' if pred <= 0.5 else 'BEARISH', Utility.tools.getSigmoidConfidence(pred[0]), pd.DataFrame(datacopy.iloc[-1]).T
-        return pred
+
 
     def monitorFiveEma(self, proxyServer, fetcher, result_df, last_signal, risk_reward = 3):
         col_names = ['High', 'Low', 'Close', '5EMA']

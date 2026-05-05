@@ -1,5 +1,5 @@
 # numpy==1.21.0 # Installed as dependency for yfinance, scipy, matplotlib, pandas
-numpy
+numpy==2.1.0
 appdirs
 cachecontrol
 contextlib2
@@ -40,7 +40,7 @@ lxml # Installed as dependency for yfinance
 msgpack # Installed as dependency for cachecontrol
 multitasking # Installed as dependency for yfinance
 packaging # Installed as dependency for pytest
-pandas>=2.2.0
+pandas==2.2.3
 pefile # Installed as dependency for pyinstaller
 pluggy # Installed as dependency for pytest
 py # Installed as dependency for pytest
@@ -59,9 +59,7 @@ webencodings # Installed as dependency for html5lib
 # advanced-ta and pandas-ta-remake have conflicting numpy constraints;
 # installed separately with --no-deps in Dockerfile and CI workflow
 # pandas-ta-remake (excluded from requirements.txt, installed via --no-deps)
-protobuf
 streamlit
-tensorflow
 chromadb>=1.0.0
 mplfinance>=0.12.9b7
 num2words

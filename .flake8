@@ -3,7 +3,6 @@ exclude =
     .venv,
     .git,
     __pycache__,
-    src/ml/,
     src/static/,
     *.egg-info,
     dist,
