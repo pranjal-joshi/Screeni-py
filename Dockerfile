@@ -42,6 +42,7 @@ ENV PATH=/venv/bin:$PATH
 ENV UV_PROJECT_ENVIRONMENT=/venv
 
 RUN uv pip install --python /venv/bin/python -r requirements.txt
+RUN uv pip install --python /venv/bin/python streamlit-local-storage>=0.0.1
 RUN uv pip install --python /venv/bin/python --no-deps advanced-ta pandas-ta-remake
 
 # Patch advanced-ta Classifier.py: np.NaN was removed in NumPy 2.0 (advanced-ta still uses it as of 0.1.8)

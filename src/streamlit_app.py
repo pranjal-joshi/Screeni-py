@@ -49,6 +49,7 @@ import pandas as pd
 import classes.ConfigManager as ConfigManager
 import classes.Utility as Utility
 import classes.Fetcher as Fetcher
+import classes.BrowserConfigStore as BrowserConfigStore
 from screenipy import main as screenipy_main
 from classes.OtaUpdater import OTAUpdater
 from classes.Changelog import VERSION
@@ -259,7 +260,20 @@ def on_config_change():
     cm.cacheEnabled = st.session_state.get('cfg_cache', cm.cacheEnabled)
     cm.stageTwo = st.session_state.get('cfg_stagetwo', cm.stageTwo)
     cm.useEMA = st.session_state.get('cfg_useema', cm.useEMA)
-    cm.setConfig(configparser.ConfigParser(strict=False), default=True, showFileCreatedText=False)
+    data = {
+        "period": cm.period,
+        "daysToLookback": cm.daysToLookback,
+        "duration": cm.duration,
+        "minLTP": cm.minLTP,
+        "maxLTP": cm.maxLTP,
+        "volumeRatio": cm.volumeRatio,
+        "consolidationPercentage": cm.consolidationPercentage,
+        "shuffleEnabled": cm.shuffleEnabled,
+        "cacheEnabled": cm.cacheEnabled,
+        "stageTwo": cm.stageTwo,
+        "useEMA": cm.useEMA,
+    }
+    BrowserConfigStore.save_screening_config(data, cm)
     st.toast('Configuration saved!', icon='💾')
 
 
@@ -280,51 +294,39 @@ def _find_screenipy_yaml():
 
 
 def _load_llm_defaults_from_yaml():
-    """Read llm section from screenipy.yaml and pre-populate session_state (once per session)."""
+    """Read llm config from localStorage (with YAML fallback) and pre-populate session_state (once per session)."""
     if st.session_state.get('_llm_defaults_loaded'):
         return
     st.session_state['_llm_defaults_loaded'] = True
-    path = _find_screenipy_yaml()
-    if not os.path.exists(path):
-        return
     try:
-        import yaml
-        with open(path, 'r') as f:
-            cfg = yaml.safe_load(f) or {}
-        llm = cfg.get('llm', {})
+        llm = BrowserConfigStore.load_llm_config()
         if 'ai_provider' not in st.session_state:
             st.session_state['ai_provider'] = llm.get('provider', 'openai')
         if 'ai_model' not in st.session_state:
             st.session_state['ai_model'] = llm.get('model', 'gpt-4o')
         if 'ai_base_url' not in st.session_state:
             st.session_state['ai_base_url'] = llm.get('base_url') or 'http://localhost:11434/v1'
-        # Seed api_key from env var once — never from YAML (key is never persisted)
         if 'ai_api_key' not in st.session_state:
-            st.session_state['ai_api_key'] = os.environ.get('SCREENIPY_API_KEY', '')
+            # Use remembered key from localStorage if user opted in, else fall back to env var
+            remembered_key = llm.get('api_key', '') if llm.get('remember_api_key') else ''
+            st.session_state['ai_api_key'] = remembered_key or os.environ.get('SCREENIPY_API_KEY', '')
+        if 'ai_remember_key' not in st.session_state:
+            st.session_state['ai_remember_key'] = llm.get('remember_api_key', False)
     except Exception:
         pass
 
 
 def _save_llm_config_to_yaml():
-    """Persist provider/model/base_url to screenipy.yaml. API key is never saved."""
-    path = _find_screenipy_yaml()
+    """Persist LLM config to localStorage and mirror safe fields to screenipy.yaml."""
+    data = {
+        "provider": st.session_state.get('ai_provider', 'openai'),
+        "model": st.session_state.get('ai_model', 'gpt-4o'),
+        "base_url": st.session_state.get('ai_base_url', None),
+        "api_key": st.session_state.get('ai_api_key', ''),
+    }
+    remember_key = st.session_state.get('ai_remember_key', False)
     try:
-        import yaml
-        if os.path.exists(path):
-            with open(path, 'r') as f:
-                cfg = yaml.safe_load(f) or {}
-        else:
-            cfg = {}
-        llm = cfg.setdefault('llm', {})
-        llm['provider'] = st.session_state.get('ai_provider', 'openai')
-        llm['model'] = st.session_state.get('ai_model', 'gpt-4o')
-        base_url = st.session_state.get('ai_base_url', None)
-        if llm.get('provider') == 'openai-compatible' and base_url:
-            llm['base_url'] = base_url
-        else:
-            llm['base_url'] = None
-        with open(path, 'w') as f:
-            yaml.dump(cfg, f, default_flow_style=False, allow_unicode=True)
+        BrowserConfigStore.save_llm_config(data, remember_api_key=remember_key)
         st.toast('LLM configuration saved!', icon='🤖')
     except Exception as e:
         st.toast(f'Could not save LLM config: {e}', icon='⚠️')
@@ -559,6 +561,9 @@ with tab_config:
     configManager = ConfigManager.tools()
     configManager.getConfig(parser=ConfigManager.parser)
 
+    # Load screening config: localStorage first, ConfigManager as fallback
+    _sc = BrowserConfigStore.load_screening_config(configManager)
+
     hdr_col, exp_col = st.columns([10, 2])
     hdr_col.markdown('## ⚙️ Configuration')
     exp_col.download_button(
@@ -577,34 +582,45 @@ with tab_config:
     period_options = ['15d', '60d', '300d', '52wk', '3y', '5y', 'max']
     duration_options = ['5m', '15m', '1h', '4h', '1d', '1wk']
 
+    _sc_period = _sc.get('period', configManager.period)
+    _sc_duration = _sc.get('duration', configManager.duration)
+    _period_idx = period_options.index(_sc_period) if _sc_period in period_options else 2
+    _duration_idx = duration_options.index(_sc_duration) if _sc_duration in duration_options else 4
+
     c1, c2, c3 = st.columns(3)
     period = c1.selectbox('Period', options=period_options,
-                          index=period_options.index(configManager.period), key='cfg_period')
-    daystolookback = c2.number_input('Lookback Candles', value=configManager.daysToLookback,
+                          index=_period_idx, key='cfg_period')
+    daystolookback = c2.number_input('Lookback Candles',
+                                     value=int(_sc.get('daysToLookback', configManager.daysToLookback)),
                                      step=1, key='cfg_lookback')
     duration = c3.selectbox('Candle Duration', options=duration_options,
-                             index=duration_options.index(configManager.duration), key='cfg_duration')
+                             index=_duration_idx, key='cfg_duration')
     if 'm' in duration or 'h' in duration:
         c3.caption(':orange[For intraday durations, period must be ≤ 60d]')
 
     c1, c2 = st.columns(2)
-    c1.number_input('Min Price (₹)', value=float(configManager.minLTP), step=0.1, key='cfg_minprice',
+    c1.number_input('Min Price (₹)', value=float(_sc.get('minLTP', configManager.minLTP)), step=0.1, key='cfg_minprice',
                     help='Stocks below this price are ignored')
-    c2.number_input('Max Price (₹)', value=float(configManager.maxLTP), step=0.1, key='cfg_maxprice',
+    c2.number_input('Max Price (₹)', value=float(_sc.get('maxLTP', configManager.maxLTP)), step=0.1, key='cfg_maxprice',
                     help='Stocks above this price are ignored')
 
     c1, c2 = st.columns(2)
-    c1.number_input('Volume Multiplier (Breakout confirmation)', value=float(configManager.volumeRatio),
+    c1.number_input('Volume Multiplier (Breakout confirmation)',
+                    value=float(_sc.get('volumeRatio', configManager.volumeRatio)),
                     step=0.1, key='cfg_volratio')
-    c2.number_input('Consolidation Range (%)', value=int(configManager.consolidationPercentage),
+    c2.number_input('Consolidation Range (%)',
+                    value=int(_sc.get('consolidationPercentage', configManager.consolidationPercentage)),
                     step=1, key='cfg_consolpct')
 
     c1, c2, c3, c4 = st.columns(4)
-    c1.checkbox('Shuffle stocks', value=configManager.shuffleEnabled, disabled=True, key='cfg_shuffle')
-    c2.checkbox('Cache stock data', value=configManager.cacheEnabled, disabled=True, key='cfg_cache')
-    c3.checkbox('Stage-2 stocks only', value=configManager.stageTwo, key='cfg_stagetwo',
-                help='Only show stocks in Stage-2 uptrend')
-    c4.checkbox('Use EMA (instead of SMA)', value=configManager.useEMA, key='cfg_useema')
+    c1.checkbox('Shuffle stocks', value=bool(_sc.get('shuffleEnabled', configManager.shuffleEnabled)),
+                disabled=True, key='cfg_shuffle')
+    c2.checkbox('Cache stock data', value=bool(_sc.get('cacheEnabled', configManager.cacheEnabled)),
+                disabled=True, key='cfg_cache')
+    c3.checkbox('Stage-2 stocks only', value=bool(_sc.get('stageTwo', configManager.stageTwo)),
+                key='cfg_stagetwo', help='Only show stocks in Stage-2 uptrend')
+    c4.checkbox('Use EMA (instead of SMA)', value=bool(_sc.get('useEMA', configManager.useEMA)),
+                key='cfg_useema')
 
     st.button('💾 Save Screening Configuration', on_click=on_config_change,
               type='primary', use_container_width=True)
@@ -621,7 +637,7 @@ with tab_config:
     _load_llm_defaults_from_yaml()
     st.markdown('<p class="section-header">LLM Configuration (AI Native Tab)</p>', unsafe_allow_html=True)
     st.divider()
-    st.caption('Provider, model, and base URL are saved to screenipy.yaml. API key is session-only.')
+    st.caption('Config saved to browser localStorage (primary) and screenipy.yaml (CLI fallback). API key is session-only unless you enable "Remember API key" below.')
 
     lc1, lc2 = st.columns(2)
     lc1.selectbox(
@@ -641,12 +657,20 @@ with tab_config:
         'API Key',
         type='password',
         key='ai_api_key',
-        help='Your API key — stored in session memory only, never persisted to disk.',
+        help='Your API key — optionally remembered in browser localStorage if you enable the checkbox below.',
     )
     if api_key_val:
         st.caption('✅ API key is set for this session.')
     else:
         st.caption('⚠️ No API key set. The AI Native tab will not be able to run agents.')
+
+    st.checkbox(
+        '☑️ Remember API key on this device (stored in browser localStorage — only enable on trusted devices)',
+        value=st.session_state.get('ai_remember_key', False),
+        key='ai_remember_key',
+        help='When enabled, your API key is persisted in this browser localStorage. '
+             'Only use this on devices you trust and control.',
+    )
 
     if st.session_state.get('ai_provider') == 'openai-compatible':
         st.text_input(
@@ -780,6 +804,18 @@ with tab_config:
 
     except Exception as _e:
         st.warning(f'Persona editor unavailable: {_e}')
+
+    # ── Reset All Settings ──────────────────────────────────────────────────────────────
+    st.markdown('<p class="section-header">Reset</p>', unsafe_allow_html=True)
+    st.divider()
+    with st.popover('🗑️ Reset All Settings', use_container_width=False):
+        st.warning(
+            'This will clear all browser-stored config and LLM settings. '
+            'Defaults will reload from screenipy.ini / screenipy.yaml on next page load.'
+        )
+        if st.button('⚠️ Confirm Reset', type='primary', key='confirm_reset_btn'):
+            BrowserConfigStore.clear_all()
+            st.success('All browser settings cleared. Reload the page to apply defaults.')
 
 # ── Position Size Calculator ───────────────────────────────────────────────────
 with tab_psc:

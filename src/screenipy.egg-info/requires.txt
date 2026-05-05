@@ -11,11 +11,10 @@ tabulate
 yfinance>=0.2.61
 alive-progress>=3.2.0
 Pillow
-scikit-learn==1.6.0
-joblib
 pandas==2.2.3
 requests
-streamlit
+streamlit==1.44.1
+streamlit-local-storage>=0.0.1
 openai-agents
 anthropic
 litellm
@@ -28,3 +27,4 @@ ta
 mplfinance==0.12.10b0
 num2words==0.5.14
 chromadb==1.0.0
+joblib

@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: screenipy
-Version: 2.29.0
+Version: 3.0.0
 Summary: An open-source NSE stock screener
 Requires-Python: <3.14,>=3.13
 License-File: LICENSE
@@ -18,11 +18,10 @@ Requires-Dist: tabulate
 Requires-Dist: yfinance>=0.2.61
 Requires-Dist: alive-progress>=3.2.0
 Requires-Dist: Pillow
-Requires-Dist: scikit-learn==1.6.0
-Requires-Dist: joblib
 Requires-Dist: pandas==2.2.3
 Requires-Dist: requests
-Requires-Dist: streamlit
+Requires-Dist: streamlit==1.44.1
+Requires-Dist: streamlit-local-storage>=0.0.1
 Requires-Dist: openai-agents
 Requires-Dist: anthropic
 Requires-Dist: litellm
@@ -35,4 +34,5 @@ Requires-Dist: ta
 Requires-Dist: mplfinance==0.12.10b0
 Requires-Dist: num2words==0.5.14
 Requires-Dist: chromadb==1.0.0
+Requires-Dist: joblib
 Dynamic: license-file

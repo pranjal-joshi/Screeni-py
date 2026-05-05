@@ -59,6 +59,7 @@ webencodings # Installed as dependency for html5lib
 # installed separately with --no-deps in Dockerfile and CI workflow
 # pandas-ta-remake (excluded from requirements.txt, installed via --no-deps)
 streamlit
+streamlit-local-storage>=0.0.1
 chromadb>=1.0.0
 mplfinance>=0.12.9b7
 num2words
