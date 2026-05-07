@@ -665,7 +665,7 @@ with tab_config:
         st.caption('⚠️ No API key set. The AI Native tab will not be able to run agents.')
 
     st.checkbox(
-        '☑️ Remember API key on this device (stored in browser localStorage — only enable on trusted devices)',
+        'Remember API key on this device (stored in browser localStorage — only enable on trusted devices)',
         value=st.session_state.get('ai_remember_key', False),
         key='ai_remember_key',
         help='When enabled, your API key is persisted in this browser localStorage. '

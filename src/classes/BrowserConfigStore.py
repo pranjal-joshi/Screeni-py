@@ -22,17 +22,25 @@ from streamlit_local_storage import LocalStorage
 # ── Constants ─────────────────────────────────────────────────────────────────
 _KEY_CONFIG = "screeni_config"
 _KEY_LLM = "screeni_llm"
-_STORAGE_INIT_KEY = "_bcs_storage_init"
+_KEY_STORAGE = "_bcs_storage_init"
 
-# ── Module-level LocalStorage singleton ──────────────────────────────────────
-# We initialise once per Streamlit session to avoid re-mounting the component.
+# ── Module-level LocalStorage singleton (NOT stored in st.session_state) ────
+# We use an id()-based guard so exactly one instance is created per Python
+# interpreter.  The LocalStorage component renders itself each script run
+# (that's how Streamlit works) but we re-use the same Python object so that
+# .storedItems stays accessible across reruns.
+_storage: LocalStorage | None = None
 
 
-def _get_storage() -> LocalStorage:
-    """Return (or create) the per-session LocalStorage instance."""
-    if _STORAGE_INIT_KEY not in st.session_state:
-        st.session_state[_STORAGE_INIT_KEY] = LocalStorage(key=_STORAGE_INIT_KEY)
-    return st.session_state[_STORAGE_INIT_KEY]
+def _get_storage() -> LocalStorage | None:
+    """Return the per-process LocalStorage instance, or None on first render."""
+    global _storage
+    if _storage is None:
+        _storage = LocalStorage(key=_KEY_STORAGE)
+        # First render: component just mounted — browser hasn't synced yet.
+        # storedItems will be empty; callers should fall back to defaults.
+        return None
+    return _storage
 
 
 def _safe_json_load(raw) -> dict:
@@ -77,12 +85,20 @@ def load_screening_config(fallback_cm) -> dict:
         dict with keys matching ConfigManager attribute names.
     """
     storage = _get_storage()
+    if storage is None:
+        # First render — browser component not yet hydrated.
+        return _fallback_screening_config(fallback_cm)
+
     raw = storage.getItem(_KEY_CONFIG)
     data = _safe_json_load(raw)
     if data:
         return data
 
     # Fallback: read from ConfigManager instance
+    return _fallback_screening_config(fallback_cm)
+
+
+def _fallback_screening_config(fallback_cm) -> dict:
     return {
         "period": fallback_cm.period,
         "daysToLookback": fallback_cm.daysToLookback,
@@ -106,7 +122,8 @@ def save_screening_config(data: dict, fallback_cm) -> None:
         fallback_cm: ConfigManager.tools() instance used to write screenipy.ini.
     """
     storage = _get_storage()
-    storage.setItem(itemKey=_KEY_CONFIG, itemValue=data, key="save_screeni_config")
+    if storage is not None:
+        storage.setItem(itemKey=_KEY_CONFIG, itemValue=data, key="save_screeni_config")
 
     # Mirror to disk for CLI compatibility
     fallback_cm.period = data.get("period", fallback_cm.period)
@@ -138,10 +155,11 @@ def load_llm_config(fallback_yaml_path: str = None) -> dict:
         dict with keys: provider, model, base_url, api_key, remember_api_key.
     """
     storage = _get_storage()
-    raw = storage.getItem(_KEY_LLM)
-    data = _safe_json_load(raw)
-    if data:
-        return data
+    if storage is not None:
+        raw = storage.getItem(_KEY_LLM)
+        data = _safe_json_load(raw)
+        if data:
+            return data
 
     # Fallback: read from YAML
     yaml_path = fallback_yaml_path or _find_screenipy_yaml()
@@ -185,7 +203,8 @@ def save_llm_config(data: dict, remember_api_key: bool, fallback_yaml_path: str 
         blob["api_key"] = data.get("api_key", "")
 
     storage = _get_storage()
-    storage.setItem(itemKey=_KEY_LLM, itemValue=blob, key="save_screeni_llm")
+    if storage is not None:
+        storage.setItem(itemKey=_KEY_LLM, itemValue=blob, key="save_screeni_llm")
 
     # Mirror provider/model/base_url to YAML — never persist api_key to disk
     yaml_path = fallback_yaml_path or _find_screenipy_yaml()
@@ -212,8 +231,9 @@ def save_llm_config(data: dict, remember_api_key: bool, fallback_yaml_path: str 
 def clear_all() -> None:
     """Clear all browser-stored config blobs and relevant session_state keys."""
     storage = _get_storage()
-    storage.eraseItem(itemKey=_KEY_CONFIG, key="clear_screeni_config")
-    storage.eraseItem(itemKey=_KEY_LLM, key="clear_screeni_llm")
+    if storage is not None:
+        storage.eraseItem(itemKey=_KEY_CONFIG, key="clear_screeni_config")
+        storage.eraseItem(itemKey=_KEY_LLM, key="clear_screeni_llm")
 
     # Clear related session_state keys so defaults reload on next render
     for key in (

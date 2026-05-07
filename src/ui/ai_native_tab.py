@@ -7,7 +7,6 @@ import os
 import sys
 import uuid
 import streamlit as st
-import streamlit.components.v1 as components
 
 _src_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _src_dir not in sys.path:
@@ -171,6 +170,29 @@ def _get_kite_session():
     return sess
 
 
+def _check_credential_source() -> str:
+    """Check where LLM credentials came from: browser localStorage, YAML, or env."""
+    import os as _os
+    provider = st.session_state.get('ai_provider', '')
+    model = st.session_state.get('ai_model', '')
+    api_key = st.session_state.get('ai_api_key', '')
+
+    env_key = _os.environ.get('SCREENIPY_API_KEY', '')
+    if api_key and api_key != env_key:
+        key_source = "browser localStorage / manual input"
+    elif api_key:
+        key_source = "env var SCREENIPY_API_KEY"
+    else:
+        key_source = "not set"
+
+    masked_key = f"{api_key[:6]}...{api_key[-4:]}" if len(api_key) > 10 else ("(not set)" if not api_key else "***")
+    return (
+        f"🔑 Credentials — Provider: **{provider}**, "
+        f"Model: **{model}**, "
+        f"API Key: `{masked_key}` (source: {key_source})"
+    )
+
+
 # ── Main render ────────────────────────────────────────────────────────────────
 def render():
     """Render the AI-Native chat tab."""
@@ -237,93 +259,173 @@ def render():
         if not api_key:
             st.warning("No API key — go to **Configuration** tab.", icon="⚠️")
 
-    # ── RIGHT: chat area ───────────────────────────────────────────────────────
+    # ── RIGHT: chat area — scrollable viewport + pinned footer form ────────────
     with col_chat:
         history = st.session_state['chat_history']
 
-        # ── Scrollable chat window via fixed-height iframe ─────────────────────
-        # Build the full message HTML, then render it via components.html so the
-        # auto-scroll JS actually executes (st.markdown blocks scripts).
+        # ── Build full conversation HTML for iframe ────────────────────────────
+        def _md_to_html(text: str) -> str:
+            """Minimal markdown-to-HTML for rendering assistant messages in iframe."""
+            import re as _re2
+
+            # Extract code blocks first to protect them from later transforms
+            code_blocks = []
+            def _save_code_block(m):
+                code_blocks.append(m.group(1))
+                return f"\x00CODEBLOCK{len(code_blocks)-1}\x00"
+            text = _re2.sub(r'```(?:\w*)\n?(.*?)```', _save_code_block, text, flags=_re2.DOTALL)
+
+            safe = (text
+                    .replace("&", "&amp;").replace("<", "&lt;")
+                    .replace(">", "&gt;"))
+            # Inline code
+            safe = _re2.sub(r'`([^`]+)`', r'<code style="background:#222;color:#ddd;padding:1px 5px;border-radius:3px;font-size:0.85em;">\1</code>', safe)
+            # Bold
+            safe = _re2.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', safe)
+            # Italic
+            safe = _re2.sub(r'\*(.+?)\*', r'<em>\1</em>', safe)
+            # Tables: convert pipe tables to HTML
+            lines = safe.split("\n")
+            result_lines = []
+            in_table = False
+            table_rows = []
+            for line in lines:
+                stripped = line.strip()
+                if stripped.startswith("|") and stripped.endswith("|"):
+                    cells = [c.strip() for c in stripped.split("|")[1:-1]]
+                    if all(c.replace("-", "") == "" for c in cells):
+                        continue
+                    if not in_table:
+                        in_table = True
+                        th = "".join(f"<th style='border:1px solid #444;padding:5px 10px;background:#1a1a2e;color:#f63366;text-align:left;'>{c}</th>" for c in cells)
+                        table_rows.append(f"<tr>{th}</tr>")
+                    else:
+                        td = "".join(f"<td style='border:1px solid #333;padding:5px 10px;'>{c}</td>" for c in cells)
+                        table_rows.append(f"<tr>{td}</tr>")
+                else:
+                    if in_table:
+                        result_lines.append(f"<table style='border-collapse:collapse;margin:6px 0;font-size:0.85rem;'>{''.join(table_rows)}</table>")
+                        table_rows = []
+                        in_table = False
+                    result_lines.append(stripped if stripped else "<br>")
+            if in_table:
+                result_lines.append(f"<table style='border-collapse:collapse;margin:6px 0;font-size:0.85rem;'>{''.join(table_rows)}</table>")
+            safe = "".join(result_lines)
+
+            # Restore code blocks
+            for i, block in enumerate(code_blocks):
+                escaped = (block.replace("&", "&amp;").replace("<", "&lt;")
+                                .replace(">", "&gt;"))
+                safe = safe.replace(
+                    f"\x00CODEBLOCK{i}\x00",
+                    f"<pre style='background:#1a1a2e;color:#0f0;padding:8px 12px;border-radius:6px;font-size:0.85rem;overflow-x:auto;'>{escaped}</pre>",
+                )
+            return safe
+
         chat_inner = ""
         if not history:
             chat_inner = (
-                "<div style='text-align:center;padding:60px 0;color:#555;"
+                "<div style='text-align:center;padding:60px 0;color:#888;"
                 "font-size:0.95rem;'>"
                 "💬 Ask me anything — e.g. "
                 "<em>\"Top 3 Nifty 50 breakouts for tomorrow\"</em>"
                 "</div>"
             )
 
-        # Render user bubbles inside the iframe; assistant replies below natively
-        # (st.chat_message must be outside the iframe for full markdown support)
         for msg in history:
             if msg['role'] == 'user':
                 safe = (msg['content']
                         .replace("&", "&amp;").replace("<", "&lt;")
                         .replace(">", "&gt;").replace("\n", "<br>"))
                 chat_inner += (
-                    f"<div class='chat-row-user'>"
-                    f"<div class='chat-label'>You</div>"
+                    "<div class='chat-row-user'>"
+                    "<div class='chat-label'>You</div>"
                     f"<div class='chat-user'>{safe}</div>"
-                    f"</div>"
+                    "</div>"
+                )
+            else:
+                html = _md_to_html(msg['content'])
+                chat_inner += (
+                    "<div class='chat-row-assistant'>"
+                    "<div class='chat-label'>Screeni</div>"
+                    f"<div class='chat-assistant'>{html}</div>"
+                    "</div>"
                 )
 
-        scroll_html = f"""
-<!DOCTYPE html>
+        # ── Scrollable messages iframe via srcdoc (height via CSS calc) ────────
+        import html as _html_mod
+        _safe_srcdoc = _html_mod.escape(f"""<!DOCTYPE html>
 <html>
 <head>
 <style>
   * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-  body {{ background: transparent; font-family: sans-serif; overflow: hidden; }}
-  .chat-viewport {{
+  html, body {{
+      height: 100%;
+      overflow: hidden;
+      background: #0e1117;
+      color: #fafafa;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }}
+  #viewport {{
       height: 100%;
       overflow-y: auto;
       overflow-x: hidden;
-      padding: 8px 4px;
+      padding: 12px 8px 16px 8px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 6px;
       scrollbar-width: thin;
       scrollbar-color: #444 transparent;
   }}
-  .chat-viewport::-webkit-scrollbar {{ width: 5px; }}
-  .chat-viewport::-webkit-scrollbar-thumb {{ background:#444; border-radius:4px; }}
+  #viewport::-webkit-scrollbar {{ width: 5px; }}
+  #viewport::-webkit-scrollbar-thumb {{ background:#444; border-radius:4px; }}
   .chat-user {{
       background:#1e3a5f; color:#e8f4fd;
       border-radius:18px 18px 4px 18px;
       padding:10px 16px; margin:4px 0 4px 12%;
       display:inline-block; max-width:88%;
       word-wrap:break-word; font-size:0.93rem; line-height:1.55;
+      align-self: flex-end;
+  }}
+  .chat-assistant {{
+      color:#fafafa; padding:6px 14px; margin:4px 0 4px 2%;
+      display:inline-block; max-width:92%;
+      word-wrap:break-word; font-size:0.9rem; line-height:1.6;
+      align-self: flex-start;
   }}
   .chat-row-user {{ text-align:right; }}
-  .chat-label {{ font-size:0.72rem; color:#666; margin-bottom:1px; }}
+  .chat-row-assistant {{ text-align:left; margin-bottom:2px; }}
+  .chat-label {{ font-size:0.72rem; color:#888; margin-bottom:1px; }}
+  .chat-assistant pre {{ white-space:pre-wrap; word-break:break-word; background:#1a1a2e;color:#0f0;padding:6px 10px;border-radius:6px;font-size:0.85rem; }}
+  .chat-assistant code {{ word-break:break-word; background:#222;color:#ddd;padding:1px 5px;border-radius:3px;font-size:0.85em; }}
 </style>
 </head>
 <body>
-  <div class="chat-viewport" id="vp">
+  <div id="viewport">
     {chat_inner}
   </div>
   <script>
-    var vp = document.getElementById('vp');
-    if (vp) vp.scrollTop = vp.scrollHeight;
+    var vp = document.getElementById('viewport');
+    if (vp) {{
+      requestAnimationFrame(function() {{
+        vp.scrollTop = vp.scrollHeight;
+      }});
+    }}
   </script>
 </body>
-</html>"""
+</html>""")
 
-        # Dynamic height: 55px per message pair, min 200, max 520
-        n_pairs = max(1, len([m for m in history if m['role'] == 'user']))
-        iframe_h = min(520, max(200, n_pairs * 80 + 60))
-        components.html(scroll_html, height=iframe_h, scrolling=False)
+        # Inject iframe via st.markdown — uses dvh (dynamic viewport height) for
+        # responsive sizing across desktop and mobile browsers.
+        st.markdown(
+            f'<iframe class="chat-iframe" srcdoc="{_safe_srcdoc}" '
+            'style="width:100%;height:calc(100dvh - 220px);min-height:350px;'
+            'border:none;border-radius:8px;background:#0e1117;" '
+            'sandbox="allow-scripts"></iframe>',
+            unsafe_allow_html=True,
+        )
 
-        # Render assistant messages natively (full markdown + tables)
-        for msg in history:
-            if msg['role'] == 'assistant':
-                with st.chat_message("assistant", avatar="📈"):
-                    st.markdown(msg['content'])
-
-        st.divider()
-
-        # ── Input — st.form so Enter submits ──────────────────────────────────
+        # ── Input — st.form so Enter submits (pinned at footer) ───────────────
         with st.form(key='chat_form', clear_on_submit=True):
             fi_col, fb_col = st.columns([5, 1], gap="small")
             user_input = fi_col.text_input(
@@ -332,7 +434,7 @@ def render():
                 label_visibility='collapsed',
             )
             submitted = fb_col.form_submit_button(
-                "Send ▶", type='primary', use_container_width=True
+                "Send", type='primary', use_container_width=True
             )
 
         # ── Handle submit ─────────────────────────────────────────────────────
@@ -343,6 +445,11 @@ def render():
             if not selected_persona:
                 st.error("Select a persona.")
                 return
+
+            # Verify credential source (localStorage vs env var)
+            cred_source = _check_credential_source()
+            if cred_source:
+                st.caption(cred_source)
 
             query = user_input.strip()
             st.session_state['chat_history'].append({'role': 'user', 'content': query})
@@ -405,9 +512,6 @@ def render():
             except Exception as e:
                 result = f"⚠️ Error: {e}"
                 _step(f"Failed: {e}")
-
-            anim_slot.empty()
-            steps_slot.empty()
 
             st.session_state['chat_history'].append({'role': 'assistant', 'content': result})
 
