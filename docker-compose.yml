@@ -1,0 +1,54 @@
+version: '3.9'
+
+services:
+  screenipy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: screenipy
+    ports:
+      - "8501:8501"
+      - "8000:8000"
+    environment:
+      # LLM Configuration
+      - SCREENIPY_API_KEY=${SCREENIPY_API_KEY:-your-api-key-here}
+      # Uncomment and set for non-OpenAI LLM providers
+      # - LLM_PROVIDER=${LLM_PROVIDER:-openai}
+      # - LLM_MODEL=${LLM_MODEL:-gpt-4o}
+      # - LLM_BASE_URL=${LLM_BASE_URL:-}
+      
+      # Python/App Settings
+      - PYTHONUNBUFFERED=1
+      - SCREENIPY_DOCKER=TRUE
+      - SCREENIPY_GUI=TRUE
+    volumes:
+      # Mount for persistent config/data
+      - screenipy_config:/opt/program/config
+      - screenipy_data:/opt/program/data
+      - screenipy_logs:/opt/program/logs
+      # Mount config file if you have a custom screenipy.yaml
+      # - ./screenipy.yaml:/opt/program/screenipy.yaml:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # Optional: resource limits
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '2'
+    #       memory: 2G
+    #     reservations:
+    #       cpus: '1'
+    #       memory: 1G
+
+volumes:
+  screenipy_config:
+    driver: local
+  screenipy_data:
+    driver: local
+  screenipy_logs:
+    driver: local
