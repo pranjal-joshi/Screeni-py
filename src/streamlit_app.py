@@ -126,7 +126,10 @@ except OSError as e:
 def check_updates():
     return OTAUpdater.checkForUpdate(proxyServer, VERSION)
 
-isDevVersion, guiUpdateMessage = check_updates()
+try:
+    isDevVersion, guiUpdateMessage = check_updates()
+except Exception:
+    isDevVersion, guiUpdateMessage = None, ""
 
 # All slow work done — clear the splash and mark loaded
 st.session_state['_app_loaded'] = True

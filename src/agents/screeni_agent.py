@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 # 'agents' to our local package.
 try:
     import importlib as _il
+    import site as _site
 
     def _load_real_agents():
         """Load real openai-agents, bypassing our local src/agents/ shadow."""
@@ -36,6 +37,30 @@ try:
             _mod = _il.import_module('agents')
             sys.modules['_screenipy_openai_agents_real'] = _mod
             return _mod
+        except (ImportError, ModuleNotFoundError):
+            # Fallback: try via site-packages paths (Docker/uv managed venvs)
+            _sp_paths = []
+            try:
+                _sp_paths.extend(_site.getsitepackages())
+            except Exception:
+                pass
+            try:
+                _sp_paths.append(_site.getusersitepackages())
+            except Exception:
+                pass
+            _valid_sp = [p for p in _sp_paths if os.path.exists(p)]
+            for p in _valid_sp:
+                sys.path.insert(0, p)
+            try:
+                _mod = _il.import_module('agents')
+                sys.modules['_screenipy_openai_agents_real'] = _mod
+                return _mod
+            finally:
+                for p in _valid_sp:
+                    try:
+                        sys.path.remove(p)
+                    except ValueError:
+                        pass
         finally:
             for p in reversed(_paths_to_remove):
                 sys.path.insert(0, p)
