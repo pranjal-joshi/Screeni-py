@@ -138,7 +138,7 @@ def _tv_url(ticker: str, ticker_option) -> str:
 def _style_result_df(df: pd.DataFrame):
     """Apply background colour highlights to key columns."""
     GREEN = 'background-color: #1a4d2e; color: #6fcf97'
-    RED   = 'background-color: #4d1a1a; color: #eb5757'
+    RED = 'background-color: #4d1a1a; color: #eb5757'
     AMBER = 'background-color: #3d3000; color: #f2c94c'
     RESET = ''
 
@@ -170,7 +170,8 @@ def show_df_as_result_table():
         ac.markdown(f'#### 🔍 Found **{len(df)}** Results')
 
         if cc.button('🗑️ Clear Cache', use_container_width=True, key=random.randint(1, 999_999_999)):
-            os.system('rm -f stock_data_*.pkl')
+            for p in Path.cwd().glob('stock_data_*.pkl'):
+                p.unlink(missing_ok=True)
             st.toast('Stock cache deleted!', icon='🗑️')
 
         bc.download_button(
@@ -772,7 +773,7 @@ with tab_config:
         # Save / Delete buttons
         btn_col1, btn_col2 = st.columns([3, 1])
         _save_label = '💾 Save New Persona' if _selected_edit == '+ New Persona' else '💾 Save Changes'
-        if btn_col1.button(_save_label, use_container_width=True, key='pe_save', type='primary'):
+        if btn_col1.button(_save_label, key='pe_save', type='primary'):
             try:
                 if not _pe_name.strip():
                     st.error('Persona name cannot be empty.')

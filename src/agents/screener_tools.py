@@ -179,6 +179,15 @@ def _run_screen(ticker_option: int, execute_option: int, **extra_args) -> list:
                 logger.debug(f"Skipping {symbol}: {e}")
                 continue
 
+        # Save results to pickle file for classic tab display
+        if results:
+            try:
+                df = pd.DataFrame(results)
+                df.to_pickle('last_screened_unformatted_results.pkl')
+                logger.info(f"Saved {len(results)} results to pickle file for classic tab")
+            except Exception as e:
+                logger.warning(f"Failed to save results to pickle: {e}")
+
         return results if results else [{"message": "No stocks matched the criteria."}]
 
     except Exception as e:

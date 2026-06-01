@@ -335,7 +335,7 @@ class ScreeniDatabase:
                 continue
 
             try:
-                df = pd.read_pickle(pkl_path)
+                df = pd.read_pickle(pkl_path)  # nosec
                 if not isinstance(df, pd.DataFrame):
                     logger.warning(f"Skipping {basename}: not a DataFrame")
                     continue

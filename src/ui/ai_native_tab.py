@@ -216,8 +216,8 @@ def render():
 
     # Read credentials from session_state only — no value= re-seed
     provider = st.session_state.get('ai_provider', 'openai')
-    model    = st.session_state.get('ai_model', 'gpt-4o')
-    api_key  = st.session_state.get('ai_api_key', '')
+    model = st.session_state.get('ai_model', 'gpt-4o')
+    api_key = st.session_state.get('ai_api_key', '')
     base_url = st.session_state.get('ai_base_url', '')
 
     # ── Layout ────────────────────────────────────────────────────────────────
@@ -225,12 +225,22 @@ def render():
 
     # ── LEFT sidebar ───────────────────────────────────────────────────────────
     with col_side:
+        # ── New Chat button (moved above Persona, like ChatGPT) ────────────────
+        if st.button("💬 New Chat", use_container_width=True, key='new_chat_btn'):
+            st.session_state['chat_history'] = []
+            st.session_state.pop('_agent_sql_session', None)
+            st.session_state.pop('agent_session_id', None)
+            st.rerun()
+
+        st.divider()
+
+        # ── Persona ────────────────────────────────────────────────────────────
         st.markdown("### 🤖 Persona")
         selected_persona = None
         if persona_names:
             default_name = 'MomentumAnalyst'
-            default_idx  = persona_names.index(default_name) if default_name in persona_names else 0
-            chosen_name  = st.selectbox(
+            default_idx = persona_names.index(default_name) if default_name in persona_names else 0
+            chosen_name = st.selectbox(
                 "Persona", options=persona_names, index=default_idx,
                 key='ai_persona_selector', label_visibility='collapsed',
             )
@@ -238,23 +248,27 @@ def render():
             if selected_persona:
                 st.caption(f"**{selected_persona.get('description', '')}**")
                 st.caption(f"📊 {selected_persona.get('index', 'Nifty 500')}")
-                for t in selected_persona.get('tools', []):
-                    st.markdown(
-                        f"<span style='font-size:0.78rem;color:#aaa'>• {t}</span>",
-                        unsafe_allow_html=True,
-                    )
+                # Compact tool selector (multiselect, same pattern as config)
+                _all_tools = [
+                    'screen_breakout', 'screen_volume_breakout', 'screen_consolidation',
+                    'screen_rsi', 'screen_reversal', 'screen_chart_patterns', 'screen_vcp',
+                    'screen_momentum', 'screen_narrow_range', 'screen_ipo_base',
+                    'screen_confluence', 'screen_ma_reversal', 'screen_rsi_ma_cross',
+                ]
+                _current_tools = selected_persona.get('tools', [])
+                _selected_tools = st.multiselect(
+                    'Tools',
+                    options=_all_tools,
+                    default=[t for t in _current_tools if t in _all_tools],
+                    key='ai_tool_selector',
+                    label_visibility='collapsed',
+                )
         else:
             st.warning("No personas found.")
 
         st.divider()
         _render_kite_auth_compact()
         st.divider()
-
-        if st.button("🗑️ Clear Chat", use_container_width=True, key='clear_chat_btn'):
-            st.session_state['chat_history'] = []
-            st.session_state.pop('_agent_sql_session', None)
-            st.session_state.pop('agent_session_id', None)
-            st.rerun()
 
         if not api_key:
             st.warning("No API key — go to **Configuration** tab.", icon="⚠️")
@@ -454,13 +468,13 @@ def render():
             query = user_input.strip()
             st.session_state['chat_history'].append({'role': 'user', 'content': query})
 
-            anim_slot  = st.empty()
+            anim_slot = st.empty()
             steps_slot = st.empty()
             anim_slot.markdown(_THINKING_HTML, unsafe_allow_html=True)
 
             def _step(text, done=False):
                 icon = "✅" if done else "⏳"
-                cls  = "done" if done else "active"
+                cls = "done" if done else "active"
                 steps_slot.markdown(
                     f'<div class="step-item {cls}"><span>{icon}</span>{text}</div>',
                     unsafe_allow_html=True,
@@ -535,7 +549,7 @@ def _render_kite_auth_compact():
         return
 
     authenticated = st.session_state.get('_kite_authenticated', False)
-    kite_sess     = st.session_state.get('_kite_mcp_session')
+    kite_sess = st.session_state.get('_kite_mcp_session')
     session_alive = kite_sess is not None and kite_sess.is_connected
 
     st.markdown("### 🔑 Kite")

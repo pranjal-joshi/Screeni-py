@@ -12,7 +12,7 @@ _src_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _src_dir not in sys.path:
     sys.path.insert(0, _src_dir)
 
-from agents.llm_config import load_llm_config, load_kite_config, ScreeniConfigError
+from agents.llm_config import load_llm_config, ScreeniConfigError
 from agents.screener_tools import TOOL_MAP, ALL_TOOLS
 
 logger = logging.getLogger(__name__)
@@ -179,29 +179,11 @@ class ScreeniAgent:
         if persona_index and 'index' not in instructions.lower():
             instructions = f"{instructions}\n\nDefault index: {persona_index}"
 
-        # Add Kite MCP if configured — only when running in a proper async context
-        # (MCP servers require connect() via async-with; skip in sync/Streamlit runs)
-        mcp_servers = []
-        kite_cfg = load_kite_config()
-        if kite_cfg.get('enabled') and kite_cfg.get('url'):
-            try:
-                from agents.mcp import MCPServerStreamableHttp, MCPServerStreamableHttpParams
-                kite_server = MCPServerStreamableHttp(
-                    MCPServerStreamableHttpParams({'url': kite_cfg['url']})
-                )
-                mcp_servers.append(kite_server)
-                logger.info(f"Kite MCP configured: {kite_cfg['url']}")
-            except Exception as e:
-                logger.warning(f"Could not configure Kite MCP server: {e}")
-
-        # Create the agent
         kwargs = {
             'name': self.persona_config.get('name', 'ScreeniAgent'),
             'instructions': instructions,
             'tools': selected_tools,
         }
-        if mcp_servers:
-            kwargs['mcp_servers'] = mcp_servers
 
         # model can be passed as string for OpenAI; for other providers may need model object
         try:

@@ -46,7 +46,7 @@ def _render_results(configManager):
 
     if df is None:
         try:
-            df = pd.read_pickle('last_screened_unformatted_results.pkl')
+            df = pd.read_pickle('last_screened_unformatted_results.pkl')  # nosec
         except FileNotFoundError:
             pass
 
@@ -64,7 +64,9 @@ def _render_results(configManager):
         key=f'clear_cache_{random.randint(1, 999999999)}',
     )
     if clear_cache_btn:
-        os.system('rm -f stock_data_*.pkl')
+        import glob
+        for f in glob.glob('stock_data_*.pkl'):
+            os.remove(f)
         st.toast('Stock Cache Deleted!', icon='🗑️')
 
     bc.download_button(
