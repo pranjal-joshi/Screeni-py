@@ -7,9 +7,16 @@
 
 from classes.ColorText import colorText
 
-VERSION = "3.0.1"
+VERSION = "3.0.2"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
+[3.0.2]
+1. Fixed _load_real_agents() import dance - removed fragile site.getsitepackages() hack, use direct sys.path manipulation.
+2. Fixed OtaUpdater crash with semver versions like "3.0.1" (float() ValueError).
+3. Fixed Styler.applymap deprecation warning → Styler.map.
+4. Fixed use_container_width deprecation warning → width parameter.
+5. Fixed ai_provider/ai_remember_key Session State API conflict (removed redundant default value params).
+
 [3.0.1]
 1. Fixed import shadowing conflict between local src/agents/ and openai-agents package.
 2. Removed @function_tool decorators from screener_tools.py; wrapping moved to screeni_agent._setup_agent().
