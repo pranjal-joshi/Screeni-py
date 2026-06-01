@@ -67,29 +67,36 @@ class KiteMCPSession:
 
     async def _connect(self):
         try:
-            # Import lazily — avoids breaking if openai-agents absent
-            # Must bypass our local src/agents/ package that shadows the real one
-            import sys as _sys, importlib as _il, site as _site
-            _sp = [p for p in _site.getsitepackages() if __import__('os').path.exists(p)]
-            _our = _sys.modules.pop('agents', None)
-            _our_mcp = _sys.modules.pop('agents.mcp', None)
-            for p in _sp:
-                _sys.path.insert(0, p)
-            try:
-                _il.import_module('agents')
+            # Import lazily — avoids breaking if openai-agents absent.
+            # First try the real agents reference cached by screeni_agent.py;
+            # fall back to the site-packages import dance.
+            import sys as _sys, importlib as _il
+            _real = _sys.modules.get('_screenipy_openai_agents_real')
+            if _real is not None:
                 _mcp_mod = _il.import_module('agents.mcp')
-                MCPServerStreamableHttp = _mcp_mod.MCPServerStreamableHttp
-                MCPServerStreamableHttpParams = _mcp_mod.MCPServerStreamableHttpParams
-            finally:
+                _mcp_mod = _real.mcp
+            else:
+                import site as _site
+                _sp = [p for p in _site.getsitepackages() if __import__('os').path.exists(p)]
+                _our = _sys.modules.pop('agents', None)
+                _our_mcp = _sys.modules.pop('agents.mcp', None)
                 for p in _sp:
-                    try: _sys.path.remove(p)
-                    except ValueError: pass
-                if _our is not None:
-                    _sys.modules['agents'] = _our
-                else:
-                    _sys.modules.pop('agents', None)
-                if _our_mcp is not None:
-                    _sys.modules['agents.mcp'] = _our_mcp
+                    _sys.path.insert(0, p)
+                try:
+                    _il.import_module('agents')
+                    _mcp_mod = _il.import_module('agents.mcp')
+                finally:
+                    for p in _sp:
+                        try: _sys.path.remove(p)
+                        except ValueError: pass
+                    if _our is not None:
+                        _sys.modules['agents'] = _our
+                    else:
+                        _sys.modules.pop('agents', None)
+                    if _our_mcp is not None:
+                        _sys.modules['agents.mcp'] = _our_mcp
+            MCPServerStreamableHttp = _mcp_mod.MCPServerStreamableHttp
+            MCPServerStreamableHttpParams = _mcp_mod.MCPServerStreamableHttpParams
 
             self._server = MCPServerStreamableHttp(
                 MCPServerStreamableHttpParams({'url': self.url})

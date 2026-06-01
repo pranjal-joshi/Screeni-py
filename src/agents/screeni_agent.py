@@ -13,20 +13,20 @@ if _src_dir not in sys.path:
     sys.path.insert(0, _src_dir)
 
 from agents.llm_config import load_llm_config, ScreeniConfigError
-from agents.screener_tools import TOOL_MAP, ALL_TOOLS
 
 logger = logging.getLogger(__name__)
 
-# Avoid name collision with the 'agents' package from openai-agents
+# ── Load real openai-agents package BEFORE importing our local agents ─────
+# Our local src/agents/ package shadows the openai-agents 'agents' namespace,
+# so we must grab Agent, Runner, function_tool before Python ever resolves
+# 'agents' to our local package.
 try:
     import sys as _sys
     import importlib as _il
+    import site as _site
 
-    _SITE_PACKAGES = '/home/node/.local/lib/python3.11/site-packages'
-
-    def _load_real_openai_agents_for_agent():
-        """Load openai-agents bypassing local src/agents/ shadow."""
-        import site as _site
+    def _load_real_agents():
+        """Bypass our local src/agents/ and load the real openai-agents."""
         _sp_paths = []
         try:
             _sp_paths.extend(_site.getsitepackages())
@@ -36,9 +36,9 @@ try:
             _sp_paths.append(_site.getusersitepackages())
         except Exception:
             pass
-        _sp_paths.append(_SITE_PACKAGES)
-
-        _our_agents = _sys.modules.pop('agents', None)
+        # Temporarily remove any 'agents' from sys.modules so Python
+        # searches sys.path from scratch.
+        _our = _sys.modules.pop('agents', None)
         _valid_sp = [p for p in _sp_paths if __import__('os').path.exists(p)]
         for _sp in _valid_sp:
             _sys.path.insert(0, _sp)
@@ -51,17 +51,29 @@ try:
                     _sys.path.remove(_sp)
                 except ValueError:
                     pass
-            if _our_agents is not None:
-                _sys.modules['agents'] = _our_agents
+            # Keep the real package accessible under a non-conflicting key
+            _real = _sys.modules.get('agents')
+            if _real:
+                _sys.modules['_screenipy_openai_agents_real'] = _real
+            # Re-register our local agents if it existed before
+            if _our is not None:
+                _sys.modules['agents'] = _our
+            else:
+                _sys.modules.pop('agents', None)
 
-    _agents_pkg = _load_real_openai_agents_for_agent()
-    Agent = _agents_pkg.Agent
-    Runner = _agents_pkg.Runner
+    _REAL_AGENTS = _load_real_agents()
+    Agent = _REAL_AGENTS.Agent
+    Runner = _REAL_AGENTS.Runner
+    _function_tool = _REAL_AGENTS.function_tool
     _AGENTS_AVAILABLE = True
 except (ImportError, AttributeError, Exception) as _e:
     _AGENTS_AVAILABLE = False
     Agent = None
     Runner = None
+    _function_tool = None
+
+# ── Our local tool definitions (import AFTER real agents are cached) ─────
+from agents.screener_tools import TOOL_MAP, ALL_TOOLS
 
 
 def _build_openai_model(llm_cfg: dict):
@@ -130,7 +142,7 @@ class ScreeniAgent:
             try:
                 from openai import AsyncOpenAI
                 _custom_client = AsyncOpenAI(api_key=api_key or 'none', base_url=base_url)
-                set_default_openai_client = getattr(_agents_pkg, 'set_default_openai_client', None)
+                set_default_openai_client = getattr(_REAL_AGENTS, 'set_default_openai_client', None)
                 if set_default_openai_client:
                     set_default_openai_client(_custom_client)
                 else:
@@ -140,7 +152,7 @@ class ScreeniAgent:
                 # Force the SDK to use the /v1/chat/completions endpoint instead of
                 # the newer /v1/responses endpoint — most OpenAI-compatible proxies
                 # (LiteLLM, Ollama, etc.) only support chat completions.
-                set_default_openai_api = getattr(_agents_pkg, 'set_default_openai_api', None)
+                set_default_openai_api = getattr(_REAL_AGENTS, 'set_default_openai_api', None)
                 if set_default_openai_api:
                     set_default_openai_api('chat_completions')
             except Exception as _e:
@@ -152,7 +164,7 @@ class ScreeniAgent:
             # Disable openai-agents tracing — it tries to POST to api.openai.com
             # which will always fail (and log errors) when using a non-OpenAI endpoint.
             try:
-                _disable_tracing = getattr(_agents_pkg, 'set_tracing_disabled', None)
+                _disable_tracing = getattr(_REAL_AGENTS, 'set_tracing_disabled', None)
                 if _disable_tracing:
                     _disable_tracing(True)
                 else:
@@ -172,6 +184,10 @@ class ScreeniAgent:
             ]
         else:
             selected_tools = ALL_TOOLS
+
+        # Wrap plain functions with FunctionTool via openai-agents
+        if _function_tool is not None:
+            selected_tools = [_function_tool(fn) for fn in selected_tools]
 
         # Build instructions
         instructions = self.persona_config.get('instructions', '')
