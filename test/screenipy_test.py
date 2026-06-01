@@ -34,12 +34,15 @@ def test_generate_default_config(mocker, capsys):
     assert err == ''
 
 
+def _parse_version(v: str) -> tuple:
+    return tuple(int(x) for x in v.lstrip('v').replace('-', '.').split('.')[:3])
+
 def test_if_release_version_increamented():
     global last_release
     r = requests.get(
         "https://api.github.com/repos/pranjal-joshi/Screeni-py/releases/latest")
-    last_release = float(r.json()['tag_name'])
-    assert float(VERSION) > last_release
+    last_release = r.json()['tag_name']
+    assert _parse_version(VERSION) > _parse_version(last_release)
 
 
 def test_option_0(mocker):
@@ -187,5 +190,7 @@ def test_option_14(mocker):
 
 
 def test_if_changelog_version_changed():
-    v = changelog.split(']')[-2].split('[')[-1]
-    assert float(v) > float(last_release)
+    import re
+    match = re.search(r'\[([\d.]+)\]', changelog)
+    v = match.group(1) if match else ''
+    assert _parse_version(v) > _parse_version(last_release)
