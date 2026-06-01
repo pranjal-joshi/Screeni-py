@@ -170,7 +170,7 @@ def _style_result_df(df: pd.DataFrame):
     )]
     style = df.style
     for col in signal_cols:
-        style = style.applymap(colour_signal, subset=[col])
+        style = style.map(colour_signal, subset=[col])
     return style.set_properties(**{'font-size': '0.85rem'})
 
 
@@ -182,7 +182,7 @@ def show_df_as_result_table():
         ac, cc, bc = st.columns([6, 1, 1])
         ac.markdown(f'#### 🔍 Found **{len(df)}** Results')
 
-        if cc.button('🗑️ Clear Cache', use_container_width=True, key=random.randint(1, 999_999_999)):
+        if cc.button('🗑️ Clear Cache', width='stretch', key=random.randint(1, 999_999_999)):
             for p in Path.cwd().glob('stock_data_*.pkl'):
                 p.unlink(missing_ok=True)
             st.toast('Stock cache deleted!', icon='🗑️')
@@ -192,7 +192,7 @@ def show_df_as_result_table():
             data=df.to_csv().encode('utf-8'),
             file_name=f'screenipy_{datetime.datetime.now().strftime("%H%M%S_%d%m%Y")}.csv',
             mime='text/csv',
-            use_container_width=True,
+            width='stretch',
         )
 
         # ── Build TradingView URL column ─────────────────────────────────────
@@ -248,7 +248,7 @@ def show_df_as_result_table():
         # ── Styled dataframe ─────────────────────────────────────────────────
         st.dataframe(
             _style_result_df(df),
-            use_container_width=True,
+            width='stretch',
             hide_index=True,
             height=min(48 + len(df) * 36, 640),
             column_config=col_cfg,
@@ -543,7 +543,7 @@ with tab_screen:
 
     executeOption = str(c_criteria.selectbox('Screening Criteria', options=list_criteria).split(' ')[0])
 
-    start_button = c_btn.button('▶ Start', type='primary', key='start_button', use_container_width=True)
+    start_button = c_btn.button('▶ Start', type='primary', key='start_button', width='stretch')
 
     get_extra_inputs(tickerOption=tickerOption, executeOption=executeOption, c_index=c_index, c_criteria=c_criteria)
 
@@ -586,7 +586,7 @@ with tab_config:
         file_name='screenipy.ini',
         mime='text/plain',
         type='secondary',
-        use_container_width=True,
+        width='stretch',
     )
 
     # ── Screening settings ────────────────────────────────────────────────────
@@ -637,7 +637,7 @@ with tab_config:
                 key='cfg_useema')
 
     st.button('💾 Save Screening Configuration', on_click=on_config_change,
-              type='primary', use_container_width=True)
+              type='primary', width='stretch')
 
     st.markdown('<p class="section-header">Import Configuration</p>', unsafe_allow_html=True)
     st.divider()
@@ -657,8 +657,6 @@ with tab_config:
     lc1.selectbox(
         'Provider',
         options=['openai', 'anthropic', 'openai-compatible'],
-        index=['openai', 'anthropic', 'openai-compatible'].index(
-            st.session_state.get('ai_provider', 'openai')),
         key='ai_provider',
         help='Select your LLM provider',
     )
@@ -680,7 +678,6 @@ with tab_config:
 
     st.checkbox(
         'Remember API key on this device (stored in browser localStorage — only enable on trusted devices)',
-        value=st.session_state.get('ai_remember_key', False),
         key='ai_remember_key',
         help='When enabled, your API key is persisted in this browser localStorage. '
              'Only use this on devices you trust and control.',
@@ -811,7 +808,7 @@ with tab_config:
                 st.error(f'Could not save persona: {_e}')
 
         if _selected_edit != '+ New Persona':
-            if btn_col2.button('🗑️ Delete', use_container_width=True, key='pe_delete'):
+            if btn_col2.button('🗑️ Delete', width='stretch', key='pe_delete'):
                 os.remove(_existing_file)
                 st.toast(f'Persona "{_selected_edit}" deleted.', icon='🗑️')
                 st.rerun()
@@ -822,7 +819,7 @@ with tab_config:
     # ── Reset All Settings ──────────────────────────────────────────────────────────────
     st.markdown('<p class="section-header">Reset</p>', unsafe_allow_html=True)
     st.divider()
-    with st.popover('🗑️ Reset All Settings', use_container_width=False):
+    with st.popover('🗑️ Reset All Settings', width='content'):
         st.warning(
             'This will clear all browser-stored config and LLM settings. '
             'Defaults will reload from screenipy.ini / screenipy.yaml on next page load.'
@@ -863,7 +860,7 @@ with tab_psc:
         price = p1.number_input('Entry Price (₹)', min_value=0.0)
         pct_sl = p2.number_input('Stoploss (%)', min_value=0.0, max_value=100.0, value=5.0)
 
-        calc_btn = st.button('📐 Calculate Quantity', type='primary', use_container_width=True)
+        calc_btn = st.button('📐 Calculate Quantity', type='primary', width='stretch')
 
     with result_col:
         st.markdown('## Result')

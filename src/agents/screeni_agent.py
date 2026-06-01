@@ -21,45 +21,26 @@ logger = logging.getLogger(__name__)
 # so we must grab Agent, Runner, function_tool before Python ever resolves
 # 'agents' to our local package.
 try:
-    import sys as _sys
     import importlib as _il
-    import site as _site
 
     def _load_real_agents():
-        """Bypass our local src/agents/ and load the real openai-agents."""
-        _sp_paths = []
-        try:
-            _sp_paths.extend(_site.getsitepackages())
-        except Exception:
-            pass
-        try:
-            _sp_paths.append(_site.getusersitepackages())
-        except Exception:
-            pass
-        # Temporarily remove any 'agents' from sys.modules so Python
-        # searches sys.path from scratch.
-        _our = _sys.modules.pop('agents', None)
-        _valid_sp = [p for p in _sp_paths if __import__('os').path.exists(p)]
-        for _sp in _valid_sp:
-            _sys.path.insert(0, _sp)
+        """Load real openai-agents, bypassing our local src/agents/ shadow."""
+        _our = sys.modules.pop('agents', None)
+        _paths_to_remove = [
+            p for p in sys.path
+            if os.path.abspath(p) == _src_dir
+        ]
+        for p in _paths_to_remove:
+            sys.path.remove(p)
         try:
             _mod = _il.import_module('agents')
+            sys.modules['_screenipy_openai_agents_real'] = _mod
             return _mod
         finally:
-            for _sp in _valid_sp:
-                try:
-                    _sys.path.remove(_sp)
-                except ValueError:
-                    pass
-            # Keep the real package accessible under a non-conflicting key
-            _real = _sys.modules.get('agents')
-            if _real:
-                _sys.modules['_screenipy_openai_agents_real'] = _real
-            # Re-register our local agents if it existed before
+            for p in reversed(_paths_to_remove):
+                sys.path.insert(0, p)
             if _our is not None:
-                _sys.modules['agents'] = _our
-            else:
-                _sys.modules.pop('agents', None)
+                sys.modules['agents'] = _our
 
     _REAL_AGENTS = _load_real_agents()
     Agent = _REAL_AGENTS.Agent
