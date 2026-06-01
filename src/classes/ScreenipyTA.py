@@ -1,14 +1,27 @@
 import numpy as np
 import os
 
+# pandas_ta-remake is a drop-in replacement for pandas_ta that supports Python 3.11+
+# It is imported as pandas_ta for backward compatibility
+try:
+    import pandas_ta_remake as pandas_ta  # noqa: F401 - ensure importable as pandas_ta
+except ImportError:
+    pass
+
 if 'STREAMLIT_APP' in os.environ:
-    import pandas_ta as talib
+    try:
+        import pandas_ta_remake as talib
+    except ImportError:
+        import pandas_ta as talib
     print('[+] Importing pandas_ta as we are running on Streamlit cloud app')
 else:
     try:
         import talib
     except ImportError:
-        import pandas_ta as talib
+        try:
+            import pandas_ta_remake as talib
+        except ImportError:
+            import pandas_ta as talib
 
 
 class ScreenerTA:

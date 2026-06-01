@@ -10,13 +10,10 @@ import math
 import numpy as np
 import pandas as pd
 import joblib
-import keras
 import time
 import classes.Utility as Utility
 from copy import copy
-from advanced_ta import LorentzianClassification
 from classes.Utility import isGui
-from sklearn.preprocessing import StandardScaler
 from scipy.signal import argrelextrema
 from scipy.stats import linregress
 from classes.ColorText import colorText
@@ -52,7 +49,6 @@ class tools:
     def getCandleType(self, dailyData):
         return bool(dailyData['Close'].iloc[0] >= dailyData['Open'].iloc[0])
             
-
     # Preprocess the acquired data
     def preprocessData(self, data:pd.DataFrame, daysToLookback=None):
         if daysToLookback is None:
@@ -433,7 +429,7 @@ class tools:
             saveDict['MA-Signal'] = f'RSI-MA-Buy'
             return True
         elif data['maRsi'].iloc[0] >= data['RSI'].iloc[0] and data['maRsi'].iloc[1] < data['RSI'].iloc[1]:
-            screenDict['MA-Signal'] = colorText.BOLD + colorText.GREEN + f'RSI-MA-Sell' + colorText.END
+            screenDict['MA-Signal'] = colorText.BOLD + colorText.FAIL + f'RSI-MA-Sell' + colorText.END
             saveDict['MA-Signal'] = f'RSI-MA-Sell'
             return True
         return False
@@ -533,7 +529,7 @@ class tools:
         '''
         return False
 
-
+    
     # Find NRx range for Reversal
     def validateNarrowRange(self, data, screenDict, saveDict, nr=4):
         if Utility.tools.isTradingTime():
@@ -560,24 +556,6 @@ class tools:
                 saveDict['Pattern'] = f'NR{nr}'
                 return True
             return False
-
-    # Validate Lorentzian Classification signal  
-    def validateLorentzian(self, data, screenDict, saveDict, lookFor=1):
-        # lookFor: 1-Any, 2-Buy, 3-Sell
-        data = data[::-1]               # Reverse the dataframe
-        data = data.rename(columns={'Open':'open', 'Close':'close', 'High':'high', 'Low':'low', 'Volume':'volume'})
-        lc = LorentzianClassification(data=data)
-        if lc.df.iloc[-1]['isNewBuySignal']:
-            screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + f'Lorentzian-Buy' + colorText.END
-            saveDict['Pattern'] = f'Lorentzian-Buy'
-            if lookFor != 3:
-                return True
-        elif lc.df.iloc[-1]['isNewSellSignal']:
-            screenDict['Pattern'] = colorText.BOLD + colorText.FAIL + f'Lorentzian-Sell' + colorText.END
-            saveDict['Pattern'] = f'Lorentzian-Sell'
-            if lookFor != 2:
-                return True
-        return False
 
     # Validate VPC
     def validateVCP(self, data, screenDict, saveDict, stockName=None, window=3, percentageFromTop=3):
@@ -617,46 +595,7 @@ class tools:
             print(traceback.format_exc())
         return False
 
-    def getNiftyPrediction(self, data, proxyServer):
-        import warnings 
-        warnings.filterwarnings("ignore")
-        # Disable GPUs as this causes wrong preds in Docker
-        import tensorflow as tf
-        physical_devices = tf.config.list_physical_devices('GPU')
-        try:
-          tf.config.set_visible_devices([], 'GPU')
-          visible_devices = tf.config.get_visible_devices()
-          for device in visible_devices:
-            assert device.device_type != 'GPU'
-        except:
-          pass
-        #
-        model, pkl = Utility.tools.getNiftyModel(proxyServer=proxyServer)
-        datacopy = copy(data[pkl['columns']])
-        with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
-            data = data[pkl['columns']]
-            ### v2 Preprocessing
-            for col in pkl['columns']:
-                data[col] = data[col].pct_change(fill_method=None) * 100
-            data = data.ffill().dropna()
-            data = data.iloc[-1] 
-            ###
-            data = pkl['scaler'].transform([data])
-            pred = model.predict(data)[0]
-        if pred > 0.5:
-            out = colorText.BOLD + colorText.FAIL + "BEARISH" + colorText.END + colorText.BOLD
-            sug = "Hold your Short position!"
-        else:
-            out = colorText.BOLD + colorText.GREEN + "BULLISH" + colorText.END + colorText.BOLD
-            sug = "Stay Bullish!"
-        if not Utility.tools.isClosingHour():
-            print(colorText.BOLD + colorText.WARN + "Note: The AI prediction should be executed After 3 PM Around the Closing hours as the Prediction Accuracy is based on the Closing price!" + colorText.END)
-        print(colorText.BOLD + colorText.BLUE + "\n" + "[+] Nifty AI Prediction -> " + colorText.END + colorText.BOLD + "Market may Open {} next day! {}".format(out, sug) + colorText.END)
-        print(colorText.BOLD + colorText.BLUE + "\n" + "[+] Nifty AI Prediction -> " + colorText.END + "Probability/Strength of Prediction = {}%".format(Utility.tools.getSigmoidConfidence(pred[0])))
-        if isGui():
-            return pred, 'BULLISH' if pred <= 0.5 else 'BEARISH', Utility.tools.getSigmoidConfidence(pred[0]), pd.DataFrame(datacopy.iloc[-1]).T
-        return pred
-
+    
     def monitorFiveEma(self, proxyServer, fetcher, result_df, last_signal, risk_reward = 3):
         col_names = ['High', 'Low', 'Close', '5EMA']
         data_list = ['nifty_buy', 'banknifty_buy', 'nifty_sell', 'banknifty_sell']
@@ -688,13 +627,11 @@ class tools:
                             ],
                         axis=1
                         )
-            validate = validate.tail(len(old_index))
             validate = validate.set_index(old_index)
             if 'sell' in data_list[cnt]:
                 final = validate[validate.Close < validate['5EMA']].tail(1)
             else:
                 final = validate[validate.Close > validate['5EMA']].tail(1)
-
 
             if data_list[cnt] not in last_signal:
                 last_signal[data_list[cnt]] = final
@@ -749,7 +686,7 @@ class tools:
             )
             return data
 
-
+    
     '''
     # Find out trend for days to lookback
     def validateVCP(data, screenDict, saveDict, daysToLookback=ConfigManager.daysToLookback, stockName=None):
@@ -769,7 +706,7 @@ class tools:
                 bot_slope,bot_c = np.polyfit(data.index[data.bots > 0], data['bots'][data.bots > 0], 1)
                 topAngle = math.degrees(math.atan(top_slope))
                 vcpAngle = math.degrees(math.atan(bot_slope) - math.atan(top_slope))
-
+                
                 # print(math.degrees(math.atan(top_slope)))
                 # print(math.degrees(math.atan(bot_slope)))
                 # print(vcpAngle)
@@ -779,7 +716,7 @@ class tools:
                 if (vcpAngle > 20 and vcpAngle < 70) and (topAngle > -10 and topAngle < 10) and (data['bots'].max() <= data['tops'].max()) and (len(data['bots'][data.bots > 0]) > 1):
                     print("---> GOOD VCP %s at %sRs" % (stockName, top_c))
                     import os
-                    os.system("echo %s >> vcp_plots\VCP.txt" % stockName)
+                    os.system("echo %s >> vcp_plots/VCP.txt" % stockName)
 
                     import matplotlib.pyplot as plt                
                     plt.scatter(data.index[data.tops > 0], data['tops'][data.tops > 0], c='g')
@@ -790,7 +727,7 @@ class tools:
                     if stockName != None:
                         plt.title(stockName)
                     # plt.show()
-                    plt.savefig('vcp_plots\%s.png' % stockName)
+                    plt.savefig('vcp_plots/%s.png' % stockName)
                     plt.clf()
             except np.RankWarning:
                 pass

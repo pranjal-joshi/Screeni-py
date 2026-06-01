@@ -1,0 +1,11 @@
+kite_mcp:
+  enabled: true
+  url: https://mcp.kite.trade/mcp
+llm:
+  api_key_env: SCREENIPY_API_KEY
+  base_url: null
+  model: claude-haiku-4-5
+  provider: openai
+schedule: []
+workflow:
+  default_mode: classic

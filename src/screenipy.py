@@ -39,7 +39,9 @@ argParser = argparse.ArgumentParser()
 argParser.add_argument('-t', '--testbuild', action='store_true', help='Run in test-build mode', required=False)
 argParser.add_argument('-d', '--download', action='store_true', help='Only Download Stock data in .pkl file', required=False)
 argParser.add_argument('-v', action='store_true')        # Dummy Arg for pytest -v
-args = argParser.parse_args()
+argParser.add_argument('--mode', choices=['classic', 'ai'], default=None, help='Workflow mode: classic or ai')
+argParser.add_argument('--agent', type=str, default=None, help='Agent persona name for AI mode (e.g. swing_trader)')
+args, _ = argParser.parse_known_args()  # parse_known_args ignores Streamlit's own CLI args (--server.port, etc.)
 
 # Try Fixing bug with this symbol
 TEST_STKCODE = "SBIN"
@@ -126,7 +128,7 @@ def initExecution():
         Utility.tools.clearScreen()
         return initExecution()
 
-    if tickerOption == 'N' or tickerOption == 'E' or tickerOption == 'S':
+    if tickerOption == 'N' or tickerOption == 'E':
         return tickerOption, 0
 
     if tickerOption and tickerOption != 'W':
@@ -292,7 +294,7 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
               "[+] Press any key to Exit!" + colorText.END)
         sys.exit(0)
 
-    if tickerOption == 'W' or tickerOption == 'N' or tickerOption == 'E' or tickerOption == 'S' or (tickerOption >= 0 and tickerOption < 17):
+    if tickerOption == 'W' or tickerOption == 'N' or tickerOption == 'E' or (tickerOption >= 0 and tickerOption < 17):
         configManager.getConfig(ConfigManager.parser)
         try:
             if tickerOption == 'W':
@@ -301,23 +303,7 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
                     input(colorText.BOLD + colorText.FAIL +
                           f'[+] Create the watchlist.xlsx file in {os.getcwd()} and Restart the Program!' + colorText.END)
                     sys.exit(0)
-            elif tickerOption == 'N':
-                os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
-                import tensorflow as tf
-                physical_devices = tf.config.list_physical_devices('GPU')
-                try:
-                    tf.config.set_visible_devices([], 'GPU')
-                    visible_devices = tf.config.get_visible_devices()
-                    for device in visible_devices:
-                        assert device.device_type != 'GPU'
-                except:
-                    pass
-                prediction = screener.getNiftyPrediction(
-                    data=fetcher.fetchLatestNiftyDaily(proxyServer=proxyServer), 
-                    proxyServer=proxyServer
-                )
-                input('\nPress any key to Continue...\n')
-                return
+
             elif tickerOption == 'E':
                 result_df = pd.DataFrame(columns=['Time','Stock/Index','Action','SL','Target','R:R'])
                 last_signal = {}
@@ -349,18 +335,6 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
                     if not isGui():
                         input('\nPress any key to Continue...\n')
                     return
-            elif tickerOption == 'S':
-                if not CHROMA_AVAILABLE:
-                    print(colorText.BOLD + colorText.FAIL +
-                  "\n\n[+] ChromaDB not available in your environment! You can't use this feature!\n" + colorText.END)
-                else:
-                    if execute_inputs != []:
-                        stockCode, candles = execute_inputs[2], execute_inputs[3]
-                    else:
-                        stockCode, candles = Utility.tools.promptSimilarStockSearch()
-                    vectorSearch = [stockCode, candles, True]
-                    tickerOption, executeOption = 12, 1
-                    listStockCodes = fetcher.fetchStockCodes(tickerOption, proxyServer=proxyServer)
             else:
                 if tickerOption == 14:    # Override config for F&O Stocks
                     configManager.stageTwo = False
@@ -526,7 +500,86 @@ if __name__ == "__main__":
     isDevVersion = OTAUpdater.checkForUpdate(proxyServer, VERSION)
     if not configManager.checkConfigFile():
         configManager.setConfig(ConfigManager.parser, default=True, showFileCreatedText=False)
-    if args.testbuild:
+
+    # Determine workflow mode
+    workflow_mode = args.mode
+    if workflow_mode is None:
+        try:
+            import yaml
+            _yaml_candidates = [
+                os.path.join(os.path.dirname(__file__), '..', 'screenipy.yaml'),
+                os.path.join(os.path.dirname(__file__), 'screenipy.yaml'),
+                'screenipy.yaml',
+            ]
+            for _yp in _yaml_candidates:
+                _yp = os.path.abspath(_yp)
+                if os.path.exists(_yp):
+                    with open(_yp) as _yf:
+                        _ycfg = yaml.safe_load(_yf)
+                    workflow_mode = _ycfg.get('workflow', {}).get('default_mode', 'classic')
+                    break
+        except Exception:
+            pass
+        if workflow_mode is None:
+            workflow_mode = 'classic'
+
+    if workflow_mode == 'ai' and not isGui():
+        # AI-native CLI mode
+        try:
+            from agents.agent_loader import AgentLoader
+            from agents.screeni_agent import ScreeniAgent
+            from agents.llm_config import load_llm_config, ScreeniConfigError
+
+            loader = AgentLoader()
+            all_personas = loader.load_all()
+
+            if not all_personas:
+                print(colorText.BOLD + colorText.FAIL + '[!] No agent personas found. Check src/agents/personas/' + colorText.END)
+                sys.exit(1)
+
+            persona = None
+            if args.agent:
+                persona = loader.load(args.agent)
+                if not persona:
+                    print(colorText.BOLD + colorText.FAIL + f'[!] Persona "{args.agent}" not found.' + colorText.END)
+                    print(loader.summary())
+                    sys.exit(1)
+            else:
+                print(loader.summary())
+                persona_names = [p.get('name', '?') for p in all_personas]
+                print(colorText.BOLD + colorText.GREEN + '\nEnter persona name: ' + colorText.END, end='')
+                choice = input().strip()
+                persona = loader.load(choice)
+                if not persona:
+                    print(colorText.BOLD + colorText.FAIL + f'[!] Persona "{choice}" not found.' + colorText.END)
+                    sys.exit(1)
+
+            try:
+                llm_cfg = load_llm_config()
+            except ScreeniConfigError as e:
+                print(colorText.BOLD + colorText.FAIL + f'[!] Config error: {e}' + colorText.END)
+                sys.exit(1)
+
+            agent = ScreeniAgent(persona, llm_cfg)
+            print(colorText.BOLD + colorText.GREEN + f'\n[+] Running {persona.get("name")} agent. Type your query (or "exit" to quit).' + colorText.END)
+
+            while True:
+                print(colorText.BOLD + colorText.WARN + '\n> ' + colorText.END, end='')
+                query = input().strip()
+                if query.lower() in ('exit', 'quit', 'q'):
+                    break
+                if not query:
+                    continue
+                result = agent.run_sync(query)
+                print(colorText.BOLD + colorText.GREEN + '\n[Agent Response]' + colorText.END)
+                print(result)
+
+        except ImportError as e:
+            print(colorText.BOLD + colorText.FAIL + f'[!] AI mode requires additional packages: {e}' + colorText.END)
+            print('[!] Install with: pip install openai-agents pyyaml')
+            sys.exit(1)
+
+    elif args.testbuild:
         print(colorText.BOLD + colorText.FAIL +"[+] Started in TestBuild mode!" + colorText.END)
         main(testBuild=True)
     elif args.download:

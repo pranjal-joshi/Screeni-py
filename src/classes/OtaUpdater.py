@@ -98,9 +98,9 @@ rm updater.sh
             resp = None
             now = float(VERSION)
             if proxyServer:
-                resp = requests.get("https://api.github.com/repos/pranjal-joshi/Screeni-py/releases/latest",proxies={'https':proxyServer})
+                resp = requests.get("https://api.github.com/repos/pranjal-joshi/Screeni-py/releases/latest",proxies={'https':proxyServer}, timeout=10)
             else:
-                resp = requests.get("https://api.github.com/repos/pranjal-joshi/Screeni-py/releases/latest")
+                resp = requests.get("https://api.github.com/repos/pranjal-joshi/Screeni-py/releases/latest", timeout=10)
             # Disabling Exe check as Executables are deprecated v2.03 onwards
             '''
             if 'Windows' in platform.system():

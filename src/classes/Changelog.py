@@ -7,9 +7,21 @@
 
 from classes.ColorText import colorText
 
-VERSION = "2.29"
+VERSION = "3.0"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
+[3.0]
+1. AI-Native agentic screening with openai-agents (OpenAI, Anthropic, OpenAI-compatible/Ollama).
+2. Agent personas (MomentumAnalyst, SwingTrader, DayTrader, ValueScreener, OptionBuyer) — editable via UI.
+3. Persona editor in Configuration tab: structured form with tool multi-select, instructions editor, YAML preview.
+4. LLM config (provider/model/base URL) auto-saved to screenipy.yaml on field change.
+5. Removed TensorFlow/Keras Nifty prediction and Lorentzian Classification (ML features).
+6. Removed scikit-learn dependency; Python 3.13 support; wheel-only installs.
+7. Streamlit UI revamped: new tab order, transparent ticker, uniform button heights.
+8. Fixed alive-progress spinner name for Windows (dots_waves).
+9. Fixed openai-compatible provider base URL passthrough via set_default_openai_client.
+10. Fixed MCPServerStreamableHttp initialisation for Kite MCP integration.
+
 [1.00 - Beta]
 1. Initial Release for beta testing
 2. Minor Bug fixes
@@ -315,4 +327,13 @@ changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + 
 
 [2.29]
 1. Bugfixes - yfinance package downgraded to 0.2.61
+
+[2.30]
+1. AI-Native workflow added with OpenAI Agents harness and Kite MCP integration
+2. SQLite-based persistence replacing pickle files (auto-migration included)
+3. 14 screener function tools for AI-driven stock analysis
+4. 4 built-in agent personas: SwingTrader, DayTrader, OptionBuyer, ValueScreener
+5. Streamlit UI with AI Native tab, Plotly OHLC + RSI charts
+6. APScheduler-based cron for scheduled scans and Kite MCP heartbeat monitoring
+7. Classic mode fully preserved - zero breaking changes
 ''' + colorText.END

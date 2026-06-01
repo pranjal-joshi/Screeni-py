@@ -23,10 +23,10 @@ from classes.CandlePatterns import CandlePatterns
 from classes.ColorText import colorText
 from classes.SuppressOutput import SuppressOutput
 
-if sys.platform.startswith('win'):
-    import multiprocessing.popen_spawn_win32 as forking
-else:
-    import multiprocessing.popen_fork as forking
+# NOTE: Private multiprocessing.popen_* submodule imports removed.
+# The _Popen override below was a PyInstaller 2.x/3.x workaround that
+# has been unnecessary since PyInstaller 4+. Modern Python 3.13 does not
+# expose these private modules as stable API.
 
 
 class StockConsumer(multiprocessing.Process):
@@ -205,9 +205,6 @@ class StockConsumer(multiprocessing.Process):
                     with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
                         isBuyingTrendline = screener.findTrendlines(fullData, screeningDictionary, saveDictionary)
 
-                with SuppressOutput(suppress_stderr=True, suppress_stdout=True):
-                    isLorentzian = screener.validateLorentzian(fullData, screeningDictionary, saveDictionary, lookFor = maLength)
-
                 try:
                     backtestReport = Utility.tools.calculateBacktestReport(data=processedData, backtestDict=backtestReport)
                     screeningDictionary.update(backtestReport)
@@ -252,9 +249,6 @@ class StockConsumer(multiprocessing.Process):
                         elif reversalOption == 6 and isNR:
                             self.screenResultsCounter.value += 1
                             return screeningDictionary, saveDictionary
-                        elif reversalOption == 7 and isLorentzian:
-                            self.screenResultsCounter.value += 1
-                            return screeningDictionary, saveDictionary
                         elif reversalOption == 8 and isRsiReversal:
                             self.screenResultsCounter.value += 1
                             return screeningDictionary, saveDictionary
@@ -295,19 +289,6 @@ class StockConsumer(multiprocessing.Process):
         return
 
     def multiprocessingForWindows(self):
-        if sys.platform.startswith('win'):
-
-            class _Popen(forking.Popen):
-                def __init__(self, *args, **kw):
-                    if hasattr(sys, 'frozen'):
-                        os.putenv('_MEIPASS2', sys._MEIPASS)
-                    try:
-                        super(_Popen, self).__init__(*args, **kw)
-                    finally:
-                        if hasattr(sys, 'frozen'):
-                            if hasattr(os, 'unsetenv'):
-                                os.unsetenv('_MEIPASS2')
-                            else:
-                                os.putenv('_MEIPASS2', '')
-
-            forking.Popen = _Popen
+        # PyInstaller _MEIPASS2 workaround is no longer needed with
+        # PyInstaller 4+ and Python 3.13; private forking submodule removed.
+        pass

@@ -1,16 +1,17 @@
+# syntax=docker/dockerfile:1
 # Project             :   Screenipy
 # Author              :   Pranjal Joshi
 # Created             :   17/08/2023
 # Description         :   Dockerfile to build Screeni-py image for GUI release
 
-FROM python:3.11.6-slim-bookworm AS base
+FROM python:3.13-slim-bookworm AS base
 
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git vim nano wget curl && \
+    git vim nano wget curl build-essential && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/* 
+    rm -rf /var/lib/apt/lists/*
 
 ENV LANG=C.UTF-8 \
     PYTHONUNBUFFERED=TRUE \
@@ -24,18 +25,38 @@ ENV LANG=C.UTF-8 \
 ##############
 FROM base AS build
 
-ARG PIP_DISABLE_PIP_VERSION_CHECK=1
-ARG PIP_NO_CACHE_DIR=1
-
 WORKDIR /opt/program
 
-RUN python3 -m venv /venv
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
+
+# Copy project files for uv
+COPY pyproject.toml uv.lock ./
+COPY requirements.txt ./
+
+# Create venv and install all deps via uv
+# ta-lib >=0.6.5 ships pre-built manylinux wheels for amd64+arm64 on Python 3.9-3.13
+# — no C compiler or system library build required
+RUN uv venv /venv
 ENV PATH=/venv/bin:$PATH
+ENV UV_PROJECT_ENVIRONMENT=/venv
 
-COPY requirements.txt .
+RUN uv pip install --python /venv/bin/python -r requirements.txt
+RUN uv pip install --python /venv/bin/python streamlit-local-storage>=0.0.1
+RUN uv pip install --python /venv/bin/python --no-deps advanced-ta pandas-ta-remake
 
-RUN --mount=type=cache,target=/root/.cache/pip pip3 install -r requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip pip3 install --no-deps advanced-ta
+# Patch advanced-ta Classifier.py: np.NaN was removed in NumPy 2.0 (advanced-ta still uses it as of 0.1.8)
+# advanced-ta is installed --no-deps to bypass its numpy<2.0.0 constraint, so we must fix the one broken call site.
+RUN python3 << 'EOF'
+import pathlib, sys
+cf = next(pathlib.Path('/venv').rglob('LorentzianClassification/Classifier.py'), None)
+if cf is None: sys.exit('Classifier.py not found')
+txt = cf.read_text()
+patched = txt.replace('np.NaN', 'np.nan')
+cf.write_text(patched)
+changed = txt.count('np.NaN')
+print(f'Patched {changed} occurrences of np.NaN -> np.nan in {cf}')
+EOF
 
 ##############
 # Package Phase

@@ -212,17 +212,20 @@ class tools:
             append_exchange = ".NS"
             if tickerOption == 15 or tickerOption == 16:
                 append_exchange = ""
-            data = yf.download(
+            _start, _end = self._getBacktestDate(backtest=backtestDate)
+            _dl_kwargs = dict(
                 tickers=stockCode + append_exchange,
-                period=period,
                 interval=duration,
-                proxy=proxyServer,
                 progress=False,
                 timeout=10,
-                start=self._getBacktestDate(backtest=backtestDate)[0],
-                end=self._getBacktestDate(backtest=backtestDate)[1],
                 auto_adjust=False
             )
+            if _start is not None and _end is not None:
+                _dl_kwargs['start'] = _start
+                _dl_kwargs['end'] = _end
+            else:
+                _dl_kwargs['period'] = period
+            data = yf.download(**_dl_kwargs)
             # For df backward compatibility towards yfinance 0.2.32
             data = self.makeDataBackwardCompatible(data)
             # end
@@ -231,7 +234,6 @@ class tools:
                 backtestData = yf.download(
                     tickers=stockCode + append_exchange,
                     interval='1d',
-                    proxy=proxyServer,
                     progress=False,
                     timeout=10,
                     start=backtestDate - datetime.timedelta(days=1),
@@ -268,7 +270,6 @@ class tools:
                 tickers="^NSEI",
                 period='5d',
                 interval='1d',
-                proxy=proxyServer,
                 progress=False,
                 timeout=10
             )
@@ -277,7 +278,6 @@ class tools:
                 tickers="GC=F",
                 period='5d',
                 interval='1d',
-                proxy=proxyServer,
                 progress=False,
                 timeout=10
             ).add_prefix(prefix='gold_')
@@ -286,7 +286,6 @@ class tools:
                     tickers="CL=F",
                     period='5d',
                     interval='1d',
-                    proxy=proxyServer,
                     progress=False,
                     timeout=10
                 ).add_prefix(prefix='crude_')
@@ -303,7 +302,6 @@ class tools:
                 tickers="^NSEI",
                 period='5d',
                 interval='5m',
-                proxy=proxyServer,
                 progress=False,
                 timeout=10
             )
@@ -312,7 +310,6 @@ class tools:
                 tickers="^NSEBANK",
                 period='5d',
                 interval='5m',
-                proxy=proxyServer,
                 progress=False,
                 timeout=10
             )
@@ -321,7 +318,6 @@ class tools:
                 tickers="^NSEI",
                 period='5d',
                 interval='15m',
-                proxy=proxyServer,
                 progress=False,
                 timeout=10
             )
@@ -330,7 +326,6 @@ class tools:
                 tickers="^NSEBANK",
                 period='5d',
                 interval='15m',
-                proxy=proxyServer,
                 progress=False,
                 timeout=10
             )

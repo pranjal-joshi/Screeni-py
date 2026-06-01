@@ -1,0 +1,48 @@
+[project]
+name = "screenipy"
+version = "3.0.0"
+description = "An open-source NSE stock screener"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "numpy==2.1.0",
+    "appdirs",
+    "cachecontrol",
+    "contextlib2",
+    "nsetools",
+    "openpyxl",
+    "progress",
+    "retrying",
+    "scipy==1.15.0",
+    "tabulate",
+    "yfinance>=0.2.61",
+    "alive-progress>=3.2.0",
+    "Pillow",
+    "pandas==2.2.3",
+    "requests",
+    "streamlit==1.44.1",
+    "streamlit-local-storage>=0.0.1",
+    "openai-agents",
+    "anthropic",
+    "litellm",
+    "apscheduler",
+    "plotly",
+    "pyyaml",
+    "httpx",
+    "ta-lib==0.6.5",
+    "ta",
+    "mplfinance==0.12.10b0",
+    "num2words==0.5.14",
+    "chromadb==1.0.0",
+    "joblib",
+]
+
+[dependency-groups]
+dev = [
+    "flake8",
+    "pytest",
+    "pytest-mock",
+]
+
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"

@@ -14,7 +14,6 @@ import pickle
 import requests
 import time
 import joblib
-import keras
 import pandas as pd
 from alive_progress import alive_bar
 from tabulate import tabulate
@@ -70,8 +69,17 @@ class tools:
               "[+] Download latest software from https://github.com/pranjal-joshi/Screeni-py/releases/latest" + colorText.END)
         input('')
 
-    # Save last screened result to pickle file
+    # Save last screened result to pickle file (primary: SQLite, backup: pickle)
     def setLastScreenedResults(df, unformatted=False):
+        # Primary: save to SQLite
+        try:
+            from classes.Database import ScreeniDatabase
+            db = ScreeniDatabase()
+            criteria = 'last_screened_unformatted' if unformatted else 'last_screened'
+            db.save_scan_results(criteria=criteria, index_name='last_screened', results_df=df)
+        except Exception as e:
+            pass  # SQLite failure is non-fatal
+        # Backup: keep pickle
         try:
             if not unformatted:
                 df.sort_values(by=['Stock'], ascending=True, inplace=True)
@@ -83,10 +91,23 @@ class tools:
             print(colorText.BOLD + colorText.FAIL +
                   '[+] Failed to save recently screened result table on disk! Skipping..' + colorText.END)
             
-    # Load last screened result to pickle file
+    # Load last screened result from SQLite (primary) or pickle (fallback)
     def getLastScreenedResults():
+        df = None
+        # Primary: try SQLite
         try:
-            df = pd.read_pickle(lastScreened)
+            from classes.Database import ScreeniDatabase
+            db = ScreeniDatabase()
+            df = db.get_last_scan_results(criteria='last_screened')
+        except Exception:
+            pass
+        # Fallback: try pickle
+        if df is None:
+            try:
+                df = pd.read_pickle(lastScreened)
+            except FileNotFoundError:
+                pass
+        if df is not None:
             print(colorText.BOLD + colorText.GREEN +
                   '\n[+] Showing recently screened results..\n' + colorText.END)
             print(tabulate(df, headers='keys', tablefmt='psql'))
@@ -94,7 +115,7 @@ class tools:
                   "[+] Note: Trend calculation is based on number of recent days to screen as per your configuration." + colorText.END)
             input(colorText.BOLD + colorText.GREEN +
                   '[+] Press any key to continue..' + colorText.END)
-        except FileNotFoundError:
+        else:
             print(colorText.BOLD + colorText.FAIL +
                   '[+] Failed to load recently screened result table from disk! Skipping..' + colorText.END)
 
@@ -316,65 +337,10 @@ class tools:
         spinner = 'waves'
         if 'Windows' in platform.platform():
             bar = 'classic2'
-            spinner = 'dots_recur'
+            spinner = 'dots_waves'
         return bar, spinner
 
-    def getNiftyModel(proxyServer=None):
-        files = ['nifty_model_v3.h5', 'nifty_model_v3.pkl']
-        urls = [
-            f"https://raw.github.com/pranjal-joshi/Screeni-py/new-features/src/ml/{files[0]}",
-            f"https://raw.github.com/pranjal-joshi/Screeni-py/new-features/src/ml/{files[1]}"
-        ]
-        if os.path.isfile(files[0]) and os.path.isfile(files[1]):
-            file_age = (time.time() - os.path.getmtime(files[0]))/604800
-            if file_age > 1:
-                download = True
-                os.remove(files[0])
-                os.remove(files[1])
-            else:
-                download = False
-        else:
-            download = True
-        if download:
-            for file_url in urls:
-                if proxyServer is not None:
-                    resp = requests.get(file_url, stream=True, proxies={'https':proxyServer})
-                else:
-                    resp = requests.get(file_url, stream=True)
-                if resp.status_code == 200:
-                    print(colorText.BOLD + colorText.GREEN +
-                            "[+] Downloading AI model (v3) for Nifty predictions, Please Wait.." + colorText.END)
-                    try:
-                        chunksize = 1024*1024*1
-                        filesize = int(int(resp.headers.get('content-length'))/chunksize)
-                        filesize = 1 if not filesize else filesize
-                        bar, spinner = tools.getProgressbarStyle()
-                        f = open(file_url.split('/')[-1], 'wb')
-                        dl = 0
-                        with alive_bar(filesize, bar=bar, spinner=spinner, manual=True) as progressbar:
-                            for data in resp.iter_content(chunk_size=chunksize):
-                                dl += 1
-                                f.write(data)
-                                progressbar(dl/filesize)
-                                if dl >= filesize:
-                                    progressbar(1.0)
-                        f.close()
-                    except Exception as e:
-                        print("[!] Download Error - " + str(e))
-            time.sleep(3)
-        model = keras.models.load_model(files[0])
-        pkl = joblib.load(files[1])
-        return model, pkl
 
-    def getSigmoidConfidence(x):
-        out_min, out_max = 0, 100
-        if x > 0.5:
-            in_min = 0.50001
-            in_max = 1
-        else:
-            in_min = 0
-            in_max = 0.5
-        return round(((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min),3)
 
     def alertSound(beeps=3, delay=0.2):
         for i in range(beeps):
