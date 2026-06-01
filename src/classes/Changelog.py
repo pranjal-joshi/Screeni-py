@@ -7,9 +7,17 @@
 
 from classes.ColorText import colorText
 
-VERSION = "3.0"
+VERSION = "3.0.1"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
+[3.0.1]
+1. Fixed import shadowing conflict between local src/agents/ and openai-agents package.
+2. Removed @function_tool decorators from screener_tools.py; wrapping moved to screeni_agent._setup_agent().
+3. Real openai-agents loaded before local imports via _load_real_agents() with sys.modules caching.
+4. Fixed kite_session._connect() to use cached _screenipy_openai_agents_real reference.
+5. Fixed _agents_pkg references to _REAL_AGENTS in _setup_agent().
+6. Fixed dark theme: default Streamlit theme set to dark + global CSS overrides.
+
 [3.0]
 1. AI-Native agentic screening with openai-agents (OpenAI, Anthropic, OpenAI-compatible/Ollama).
 2. Agent personas (MomentumAnalyst, SwingTrader, DayTrader, ValueScreener, OptionBuyer) — editable via UI.

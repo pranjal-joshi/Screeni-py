@@ -54,7 +54,7 @@ from screenipy import main as screenipy_main
 from classes.OtaUpdater import OTAUpdater
 from classes.Changelog import VERSION
 
-# ── Global CSS ────────────────────────────────────────────────────────────────
+# ── Global CSS (dark theme base + app overrides) ──────────────────────────────
 st.markdown("""
 <style>
   /* Enough top padding to clear Streamlit's fixed toolbar (~3.75rem) */
@@ -79,6 +79,19 @@ st.markdown("""
     margin-top: 1.2rem;
     margin-bottom: 0.2rem;
   }
+
+  /* ── Dark theme overrides ──────────────────────────────────────────────── */
+  .stApp { background-color: #0e1117; }
+  html, body, #root { background-color: #0e1117; }
+  .stDataFrame, [data-testid="stDataFrame"] { background-color: #1a1d24; }
+  .stTextInput>div>div>input, .stSelectbox>div>div>select {
+    background-color: #1a1d24; color: #fafafa;
+  }
+  textarea { background-color: #1a1d24 !important; color: #fafafa !important; }
+  .stAlert { background-color: #1a1d24; }
+  [data-testid="stExpanderToggleIcon"] { color: #fafafa; }
+  div[data-testid="stMetricValue"] { color: #fafafa; }
+  div[data-testid="stMetricLabel"] { color: #888; }
 </style>
 """, unsafe_allow_html=True)
 
