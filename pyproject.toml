@@ -19,7 +19,7 @@ dependencies = [
     "Pillow",
     "pandas==2.2.3",
     "requests",
-    "streamlit==1.44.1",
+    "streamlit==1.54.0",
     "streamlit-local-storage>=0.0.1",
     "openai-agents",
     "anthropic",
