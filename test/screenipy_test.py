@@ -190,5 +190,7 @@ def test_option_14(mocker):
 
 
 def test_if_changelog_version_changed():
-    v = changelog.split(']')[-2].split('[')[-1]
-    assert float(v) > float(last_release)
+    import re
+    match = re.search(r'\[([\d.]+)\]', changelog)
+    v = match.group(1) if match else ''
+    assert _parse_version(v) > _parse_version(last_release)
