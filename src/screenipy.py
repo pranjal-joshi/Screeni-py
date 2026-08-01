@@ -361,14 +361,38 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
                   configManager, fetcher, screener, candlePatterns, stock, newlyListedOnly, downloadOnly, vectorSearch, isDevVersion, backtestDate)
                  for stock in listStockCodes]
 
+        batchSize = max(1, int(os.environ.get('SCREENIPY_BATCH_SIZE', '10')))
+        batchEnabled = (
+            os.environ.get('SCREENIPY_BATCH_ENABLED', 'TRUE').upper() == 'TRUE'
+            and not testing
+            and not testBuild
+            and not downloadOnly
+            and not newlyListedOnly
+            and not vectorSearch
+            and not Utility.tools.isBacktesting(backtestDate=backtestDate)
+            and (configManager.cacheEnabled is False or Utility.tools.isTradingTime())
+        )
+        queueItems = (
+            [items[index:index + batchSize] for index in range(0, len(items), batchSize)]
+            if batchEnabled else items
+        )
+
         tasks_queue = multiprocessing.JoinableQueue()
         results_queue = multiprocessing.Queue()
 
-        totalConsumers = multiprocessing.cpu_count()
-        if totalConsumers == 1:
-            totalConsumers = 2      # This is required for single core machine
-        if configManager.cacheEnabled is True and multiprocessing.cpu_count() > 2:
-            totalConsumers -= 1
+        availableConsumers = multiprocessing.cpu_count()
+        configuredConsumers = os.environ.get('SCREENIPY_WORKERS')
+        if configuredConsumers is not None:
+            totalConsumers = max(1, int(configuredConsumers))
+        elif batchEnabled:
+            totalConsumers = min(12, availableConsumers)
+        else:
+            totalConsumers = availableConsumers
+            if totalConsumers == 1:
+                totalConsumers = 2      # This is required for single core machine
+            if configManager.cacheEnabled is True and availableConsumers > 2:
+                totalConsumers -= 1
+        totalConsumers = max(1, min(totalConsumers, len(queueItems)))
         consumers = [StockConsumer(tasks_queue, results_queue, screenCounter, screenResultsCounter, stockDict, proxyServer, keyboardInterruptEvent)
                      for _ in range(totalConsumers)]
 
@@ -386,10 +410,10 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
                     if testing or (testBuild and len(screenResults) > 2):
                         break
         else:
-            for item in items:
+            for item in queueItems:
                 tasks_queue.put(item)
             # Append exit signal for each process indicated by None
-            for _ in range(multiprocessing.cpu_count()):
+            for _ in range(totalConsumers):
                 tasks_queue.put(None)
             try:
                 numStocks, totalStocks = len(listStockCodes), len(listStockCodes)

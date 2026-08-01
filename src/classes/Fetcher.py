@@ -14,12 +14,9 @@ import os
 import datetime
 import yfinance as yf
 import pandas as pd
-from nsetools import Nse
 from classes.ColorText import colorText
 from classes.SuppressOutput import SuppressOutput
 from classes.Utility import isDocker
-
-nse = Nse()
 
 # Exception class if yfinance stock delisted
 
@@ -263,6 +260,55 @@ class tools:
                   colorText.END, end='\r', flush=True)
         return data, dateDict
 
+    def fetchStockDataBatch(self, stockCodes, period, duration, tickerOption=None, threads=2):
+        """Download several symbols concurrently in one yfinance call.
+
+        yfinance still performs one Yahoo request per ticker internally, but a
+        single call safely coordinates its module-level shared result state.
+        Callers retry symbols missing from the returned mapping individually.
+        """
+        if not stockCodes:
+            return {}
+
+        append_exchange = "" if tickerOption in (15, 16) else ".NS"
+        ticker_by_stock = {
+            stock: (stock + append_exchange).upper()
+            for stock in stockCodes
+        }
+        required_columns = ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
+
+        try:
+            with SuppressOutput(suppress_stdout=True, suppress_stderr=True):
+                data = yf.download(
+                    tickers=list(ticker_by_stock.values()),
+                    period=period,
+                    interval=duration,
+                    progress=False,
+                    timeout=10,
+                    auto_adjust=False,
+                    group_by='ticker',
+                    threads=max(1, int(threads)),
+                    multi_level_index=True,
+                )
+        except Exception:
+            return {}
+
+        if data is None or data.empty or not isinstance(data.columns, pd.MultiIndex):
+            return {}
+
+        results = {}
+        for stock, ticker in ticker_by_stock.items():
+            try:
+                ticker_data = data[ticker].copy()
+                ticker_data = ticker_data.rename_axis(None, axis=1)
+                ticker_data = ticker_data[required_columns].dropna(how='all')
+                ticker_data = ticker_data.astype('float64', copy=False)
+                if not ticker_data.empty:
+                    results[stock] = ticker_data
+            except (KeyError, TypeError, ValueError):
+                continue
+        return results
+
     # Get Daily Nifty 50 Index:
     def fetchLatestNiftyDaily(self, proxyServer=None):
         data = yf.download(
@@ -380,4 +426,5 @@ class tools:
                 f'{column_prefix}Volume'
             ]
         ]
+        data = data.astype('float64', copy=False)
         return data

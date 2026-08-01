@@ -54,14 +54,52 @@ class StockConsumer(multiprocessing.Process):
                 if next_task is None:
                     self.task_queue.task_done()
                     break
-                answer = self.screenStocks(*(next_task))
+                if isinstance(next_task, list):
+                    answers = self.screenStockBatch(next_task)
+                else:
+                    answers = [self.screenStocks(*(next_task))]
                 self.task_queue.task_done()
-                self.result_queue.put(answer)
+                for answer in answers:
+                    self.result_queue.put(answer)
         except Exception as e:
             sys.exit(0)
 
+    def screenStockBatch(self, tasks):
+        first_task = tasks[0]
+        tickerOption = first_task[0]
+        configManager = first_task[10]
+        fetcher = first_task[11]
+        stocks = [task[14] for task in tasks]
+        period = configManager.period
+        batch_threads = max(1, int(os.environ.get('SCREENIPY_BATCH_THREADS', '2')))
+
+        try:
+            batch_data = fetcher.fetchStockDataBatch(
+                stocks,
+                period,
+                configManager.duration,
+                tickerOption=tickerOption,
+                threads=batch_threads,
+            )
+        except Exception:
+            batch_data = {}
+
+        answers = []
+        for task in tasks:
+            stock = task[14]
+            data = batch_data.get(stock)
+            if data is None or data.empty:
+                # Preserve reliability: retry any partial batch failure using
+                # the existing single-symbol download path.
+                answer = self.screenStocks(*task)
+            else:
+                answer = self.screenStocks(*task, prefetchedData=(data, None))
+            answers.append(answer)
+        return answers
+
     def screenStocks(self, tickerOption, executeOption, reversalOption, maLength, daysForLowestVolume, minRSI, maxRSI, respChartPattern, insideBarToLookback, totalSymbols,
-                     configManager, fetcher, screener:Screener.tools, candlePatterns, stock, newlyListedOnly, downloadOnly, vectorSearch, isDevVersion, backtestDate, printCounter=False):
+                     configManager, fetcher, screener:Screener.tools, candlePatterns, stock, newlyListedOnly, downloadOnly, vectorSearch, isDevVersion, backtestDate, printCounter=False,
+                     prefetchedData=None):
         screenResults = pd.DataFrame(columns=[
             'Stock', 'Consolidating', 'Breaking-Out', 'MA-Signal', 'Volume', 'LTP', 'RSI', 'Trend', 'Pattern'])
         screeningDictionary = {'Stock': "", 'Consolidating': "",  'Breaking-Out': "",
@@ -79,7 +117,9 @@ class StockConsumer(multiprocessing.Process):
                 else:
                     period = configManager.period
 
-            if (self.stockDict.get(stock) is None) or (configManager.cacheEnabled is False) or self.isTradingTime or downloadOnly:
+            if prefetchedData is not None:
+                data, backtestReport = prefetchedData
+            elif (self.stockDict.get(stock) is None) or (configManager.cacheEnabled is False) or self.isTradingTime or downloadOnly:
                 try:
                     data, backtestReport = fetcher.fetchStockData(stock,
                                                 period,

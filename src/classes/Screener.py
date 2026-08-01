@@ -110,8 +110,8 @@ class tools:
     def validateConsolidation(self, data, screenDict, saveDict, percentage=10):
         data = data.fillna(0)
         data = data.replace([np.inf, -np.inf], 0)
-        hc = data.describe()['Close']['max']
-        lc = data.describe()['Close']['min']
+        hc = data['Close'].max()
+        lc = data['Close'].min()
         if ((hc - lc) <= (hc*percentage/100) and (hc - lc != 0)):
             screenDict['Consolidating'] = colorText.BOLD + colorText.GREEN + "Range = " + str(round((abs((hc-lc)/hc)*100),1))+"%" + colorText.END
         else:
@@ -210,8 +210,8 @@ class tools:
         data = data.replace([np.inf, -np.inf], 0)
         recent = data.head(1)
         data = data[1:]
-        hs = round(data.describe()['High']['max'],2)
-        hc = round(data.describe()['Close']['max'],2)
+        hs = round(data['High'].max(),2)
+        hc = round(data['Close'].max(),2)
         rc = round(recent['Close'].iloc[0],2)
         if np.isnan(hc) or np.isnan(hs):
             saveDict['Breaking-Out'] = 'BO: Unknown'
@@ -284,7 +284,7 @@ class tools:
             daysForLowestVolume = 30
         data = data.head(daysForLowestVolume)
         recent = data.head(1)
-        if((recent['Volume'].iloc[0] <= data.describe()['Volume']['min']) and recent['Volume'].iloc[0] != np.nan):
+        if((recent['Volume'].iloc[0] <= data['Volume'].min()) and recent['Volume'].iloc[0] != np.nan):
             return True
         return False
 
@@ -439,7 +439,7 @@ class tools:
     def validateIpoBase(self, stock, data, screenDict, saveDict, percentage=0.3):
         listingPrice = data[::-1].head(1)['Open'].iloc[0]
         currentPrice = data.head(1)['Close'].iloc[0]
-        ATH = data.describe()['High']['max']
+        ATH = data['High'].max()
         if ATH > (listingPrice + (listingPrice * percentage)):
             return False
         away = round(((currentPrice - listingPrice)/listingPrice)*100, 1)
@@ -537,7 +537,7 @@ class tools:
             now_candle = data.head(1)
             rangeData['Range'] = abs(rangeData['Close'] - rangeData['Open'])
             recent = rangeData.head(1)
-            if recent['Range'].iloc[0] == rangeData.describe()['Range']['min']:
+            if recent['Range'].iloc[0] == rangeData['Range'].min():
                 if self.getCandleType(recent) and now_candle['Close'].iloc[0] >= recent['Close'].iloc[0]:
                     screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + f'Buy-NR{nr}' + colorText.END
                     saveDict['Pattern'] = f'Buy-NR{nr}'
@@ -551,7 +551,7 @@ class tools:
             rangeData = data.head(nr)
             rangeData['Range'] = abs(rangeData['Close'] - rangeData['Open'])
             recent = rangeData.head(1)
-            if recent['Range'].iloc[0] == rangeData.describe()['Range']['min']:
+            if recent['Range'].iloc[0] == rangeData['Range'].min():
                 screenDict['Pattern'] = colorText.BOLD + colorText.GREEN + f'NR{nr}' + colorText.END
                 saveDict['Pattern'] = f'NR{nr}'
                 return True
@@ -569,7 +569,7 @@ class tools:
             data = data.replace([np.inf, -np.inf], 0)
             tops = data[data.tops > 0]
             bots = data[data.bots > 0]
-            highestTop = round(tops.describe()['High']['max'],1)
+            highestTop = round(tops['High'].max(),1)
             filteredTops = tops[tops.tops > (highestTop-(highestTop*percentageFromTop))]
             # print(tops)
             # print(filteredTops)
@@ -581,7 +581,7 @@ class tools:
                 for i in range(len(tops)-1):
                     endDate = tops.iloc[i]['Date']
                     startDate = tops.iloc[i+1]['Date']
-                    lowPoints.append(data[(data.Date >= startDate) & (data.Date <= endDate)].describe()['Low']['min'])
+                    lowPoints.append(data[(data.Date >= startDate) & (data.Date <= endDate)]['Low'].min())
                 lowPointsOrg = lowPoints
                 lowPoints.sort(reverse=True)
                 lowPointsSorted = lowPoints

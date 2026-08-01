@@ -152,10 +152,8 @@ class tools:
                     parser.get('config', 'consolidationPercentage'))
                 self.daysToLookback = int(
                     parser.get('config', 'daysToLookback'))
-                if 'n' not in str(parser.get('config', 'shuffle')).lower():
-                    self.shuffleEnabled = True
-                if 'n' not in str(parser.get('config', 'cachestockdata')).lower():
-                    self.cacheEnabled = True
+                self.shuffleEnabled = 'n' not in str(parser.get('config', 'shuffle')).lower()
+                self.cacheEnabled = 'n' not in str(parser.get('config', 'cachestockdata')).lower()
                 if 'n' not in str(parser.get('config', 'onlyStageTwoStocks')).lower():
                     self.stageTwo = True
                 else:
@@ -203,4 +201,3 @@ class tools:
         pattern = re.compile(r'\d+')
         result = [int(match.group()) for match in pattern.finditer(self.period)][0]
         return result
-
