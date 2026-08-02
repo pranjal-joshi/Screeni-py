@@ -2,6 +2,7 @@ import random
 import streamlit as st
 import requests
 import os
+import errno
 import sys
 import configparser
 import urllib
@@ -103,11 +104,22 @@ except KeyError:
     proxyServer = ""
 
 # ── Static file server (js/css for TableFilter) ───────────────────────────────
+@st.cache_resource
 def start_static_file_server():
     class ThreadedHTTPServer(TCPServer):
         allow_reuse_address = True
 
-    server = ThreadedHTTPServer(("0.0.0.0", 8000), SimpleHTTPRequestHandler)
+    configured_port = int(os.environ.get("SCREENIPY_STATIC_PORT", "8000"))
+    try:
+        server = ThreadedHTTPServer(
+            ("0.0.0.0", configured_port), SimpleHTTPRequestHandler
+        )
+    except OSError as error:
+        if error.errno != errno.EADDRINUSE or configured_port == 0:
+            raise
+        # Another Screeni-py instance (or another application) owns the
+        # configured port. Let the OS select an available port instead.
+        server = ThreadedHTTPServer(("0.0.0.0", 0), SimpleHTTPRequestHandler)
 
     def serve():
         with server:
@@ -116,11 +128,7 @@ def start_static_file_server():
     threading.Thread(target=serve, daemon=True).start()
     return server
 
-try:
-    staticFileServer = start_static_file_server()
-except OSError as e:
-    if e.errno not in (98, 10048):   # already in use on Linux / Windows
-        raise
+staticFileServer = start_static_file_server()
 
 # ── Update check (cached 1 h) ─────────────────────────────────────────────────
 @st.cache_data(ttl='1h', show_spinner=False)
