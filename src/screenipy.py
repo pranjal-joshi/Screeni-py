@@ -370,7 +370,11 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
             and not newlyListedOnly
             and not vectorSearch
             and not Utility.tools.isBacktesting(backtestDate=backtestDate)
-            and (configManager.cacheEnabled is False or Utility.tools.isTradingTime())
+            and (
+                configManager.cacheEnabled is False
+                or Utility.tools.isTradingTime()
+                or loadCount == 0
+            )
         )
         queueItems = (
             [items[index:index + batchSize] for index in range(0, len(items), batchSize)]

@@ -2,6 +2,8 @@ import random
 import streamlit as st
 import requests
 import os
+import errno
+import sys
 import configparser
 import urllib
 import datetime
@@ -102,11 +104,22 @@ except KeyError:
     proxyServer = ""
 
 # ── Static file server (js/css for TableFilter) ───────────────────────────────
+@st.cache_resource
 def start_static_file_server():
     class ThreadedHTTPServer(TCPServer):
         allow_reuse_address = True
 
-    server = ThreadedHTTPServer(("0.0.0.0", 8000), SimpleHTTPRequestHandler)
+    configured_port = int(os.environ.get("SCREENIPY_STATIC_PORT", "8000"))
+    try:
+        server = ThreadedHTTPServer(
+            ("0.0.0.0", configured_port), SimpleHTTPRequestHandler
+        )
+    except OSError as error:
+        if error.errno != errno.EADDRINUSE or configured_port == 0:
+            raise
+        # Another Screeni-py instance (or another application) owns the
+        # configured port. Let the OS select an available port instead.
+        server = ThreadedHTTPServer(("0.0.0.0", 0), SimpleHTTPRequestHandler)
 
     def serve():
         with server:
@@ -115,11 +128,7 @@ def start_static_file_server():
     threading.Thread(target=serve, daemon=True).start()
     return server
 
-try:
-    staticFileServer = start_static_file_server()
-except OSError as e:
-    if e.errno not in (98, 10048):   # already in use on Linux / Windows
-        raise
+staticFileServer = start_static_file_server()
 
 # ── Update check (cached 1 h) ─────────────────────────────────────────────────
 @st.cache_data(ttl='1h', show_spinner=False)
@@ -354,13 +363,27 @@ def on_start_button_click():
     if isDevVersion is not None:
         st.info(f'Debug inputs: {execute_inputs}')
 
+    run_errors = []
+
     def _run():
+        # On spawn-based platforms (macOS/Windows), multiprocessing otherwise
+        # re-executes this Streamlit page in every stock worker. Point the
+        # spawn bootstrap at the import-safe CLI module instead.
+        main_module = sys.modules.get('__main__')
+        original_main_file = getattr(main_module, '__file__', None)
         try:
+            if main_module is not None:
+                main_module.__file__ = str(Path(__file__).with_name('screenipy.py'))
             screenipy_main(execute_inputs=execute_inputs, isDevVersion=isDevVersion, backtestDate=backtestDate)
         except StopIteration:
             pass
         except requests.exceptions.RequestException:
             os.environ['SCREENIPY_REQ_ERROR'] = "TRUE"
+        except Exception as error:
+            run_errors.append(error)
+        finally:
+            if main_module is not None and original_main_file is not None:
+                main_module.__file__ = original_main_file
 
     if Utility.tools.isBacktesting(backtestDate=backtestDate):
         st.write(f'Running in :red[**Backtesting Mode**] for *T = {backtestDate}* (Y-M-D)')
@@ -382,7 +405,7 @@ def on_start_button_click():
     progress_bar = st.progress(0, text="🚀 Preparing screener, please wait…")
     os.environ['SCREENIPY_SCREEN_COUNTER'] = '0'
 
-    while int(os.environ.get('SCREENIPY_SCREEN_COUNTER', '0')) < 100:
+    while t.is_alive():
         sleep(0.05)
         cnt = int(os.environ.get('SCREENIPY_SCREEN_COUNTER', '0'))
         if cnt > 0:
@@ -401,6 +424,8 @@ def on_start_button_click():
 
     t.join()
     progress_bar.empty()
+    if run_errors:
+        st.error(f'Screening failed: {run_errors[0]}')
 
 
 def get_extra_inputs(tickerOption, executeOption, c_index=None, c_criteria=None):
