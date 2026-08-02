@@ -361,7 +361,7 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
                   configManager, fetcher, screener, candlePatterns, stock, newlyListedOnly, downloadOnly, vectorSearch, isDevVersion, backtestDate)
                  for stock in listStockCodes]
 
-        batchSize = max(1, int(os.environ.get('SCREENIPY_BATCH_SIZE', '10')))
+        batchSize = max(1, int(os.environ.get('SCREENIPY_BATCH_SIZE', '24')))
         batchEnabled = (
             os.environ.get('SCREENIPY_BATCH_ENABLED', 'TRUE').upper() == 'TRUE'
             and not testing
@@ -385,7 +385,7 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
         if configuredConsumers is not None:
             totalConsumers = max(1, int(configuredConsumers))
         elif batchEnabled:
-            totalConsumers = min(12, availableConsumers)
+            totalConsumers = min(8, availableConsumers)
         else:
             totalConsumers = availableConsumers
             if totalConsumers == 1:

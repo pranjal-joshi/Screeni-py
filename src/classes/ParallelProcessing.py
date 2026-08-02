@@ -71,7 +71,7 @@ class StockConsumer(multiprocessing.Process):
         fetcher = first_task[11]
         stocks = [task[14] for task in tasks]
         period = configManager.period
-        batch_threads = max(1, int(os.environ.get('SCREENIPY_BATCH_THREADS', '2')))
+        batch_threads = max(1, int(os.environ.get('SCREENIPY_BATCH_THREADS', '4')))
 
         try:
             batch_data = fetcher.fetchStockDataBatch(

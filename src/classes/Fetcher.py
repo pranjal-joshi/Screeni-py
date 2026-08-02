@@ -260,7 +260,7 @@ class tools:
                   colorText.END, end='\r', flush=True)
         return data, dateDict
 
-    def fetchStockDataBatch(self, stockCodes, period, duration, tickerOption=None, threads=2):
+    def fetchStockDataBatch(self, stockCodes, period, duration, tickerOption=None, threads=4):
         """Download several symbols concurrently in one yfinance call.
 
         yfinance still performs one Yahoo request per ticker internally, but a
