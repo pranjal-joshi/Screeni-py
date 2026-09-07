@@ -26,6 +26,7 @@ except Exception:
     _FASTAPI_AVAILABLE = False
 
 from agents.engine import ScreenipyEngine
+from agents.byok import load_byok, save_byok, is_configured, byok_path, redacted
 
 _engine: ScreenipyEngine | None = None
 
@@ -145,7 +146,60 @@ def create_app(engine: ScreenipyEngine | None = None):
 
     @app.get("/health")
     def health():
-        return {"status": "ok", "engine": "screenipy", "skills": list(_eng.skills.keys())}
+        return {"status": "ok", "engine": "screenipy", "skills": list(_eng.skills.keys()), "byok": is_configured()}
+
+    @app.get("/setup")
+    def setup_get():
+        # Minimal HTML form - chat-visible error handling done via POST response
+        from fastapi.responses import HTMLResponse
+        configured = is_configured()
+        banner = "<p style='color:green'>BYOK already configured. Submit again to overwrite.</p>" if configured else "<p>First run: set your model key + endpoint. Stored in <code>screenipy_data/byok.json</code>.</p>"
+        html = f"""<!doctype html><html><head><meta charset='utf-8'><title>Screenipy Setup</title></head>
+<body style='font-family:sans-serif;max-width:640px;margin:2rem auto'>
+<h1>Screenipy — First-run setup</h1>
+{banner}
+<form method='post' action='/setup'>
+<label>Provider<br><select name='provider'><option>openai</option><option>openai-compatible</option><option>anthropic</option></select></label><br><br>
+<label>API key<br><input name='api_key' type='password' style='width:100%' required></label><br><br>
+<label>Base URL (optional, for openai-compatible)<br><input name='base_url' type='text' style='width:100%' placeholder='https://api.openai.com/v1'></label><br><br>
+<label>Model<br><input name='model' type='text' style='width:100%' value='gpt-4o'></label><br><br>
+<button type='submit'>Save</button>
+</form>
+<p>After saving, open <a href='http://localhost:3000'>Chat (Open WebUI on :3000)</a> — it is pre-wired to <code>http://screenipy:8000/v1</code>.</p>
+</body></html>"""
+        return HTMLResponse(html)
+
+    @app.post("/setup")
+    async def setup_post(request: __import__('fastapi').Request):
+        # Accept both JSON and form
+        ctype = (request.headers.get("content-type") or "").lower()
+        data = {}
+        if "application/json" in ctype:
+            try:
+                data = await request.json()
+            except Exception:
+                raise HTTPException(status_code=400, detail="invalid JSON")
+        else:
+            try:
+                form = await request.form()
+                data = {k: v for k, v in form.items()}
+            except Exception:
+                # Fallback without python-multipart: parse urlencoded body
+                from urllib.parse import parse_qs
+                body = await request.body()
+                qs = parse_qs(body.decode() if isinstance(body, (bytes, bytearray)) else str(body))
+                data = {k: v[0] if isinstance(v, list) else v for k, v in qs.items()}
+        try:
+            p = save_byok(data)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+        # Never echo raw key
+        return {"status": "ok", "path": str(p), "byok": redacted(load_byok(p))}
+
+    @app.get("/byok")
+    def byok_status():
+        data = load_byok()
+        return {"configured": data is not None, "path": str(byok_path()), "byok": redacted(data)}
 
     @app.get("/v1/models")
     def list_models():

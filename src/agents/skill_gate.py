@@ -47,6 +47,7 @@ _NAME_RE = re.compile(r'^[a-z0-9][a-z0-9_\-]*$')
 CURATED_DIR = Path(__file__).with_name("skills")
 CUSTOM_ENV = "SCREENIPY_SKILLS_DIR"
 CUSTOM_DEFAULTS = [
+    Path("/opt/program/data/skills"),
     Path.cwd() / "screenipy_data" / "skills",
     Path.home() / ".screenipy" / "skills",
     Path("/data/skills"),

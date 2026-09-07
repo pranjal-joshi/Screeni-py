@@ -1,5 +1,7 @@
-version: '3.9'
-
+# v4 compose — Screenipy service (engine + /v1 + setup) + Chat dumb shell (Open WebUI)
+# One command: docker compose up --build
+# First run: open http://localhost:8000/setup, save BYOK key+endpoint -> persisted in screenipy_data/byok.json
+# Chat is pre-wired to http://screenipy:8000/v1 and holds no agent logic.
 services:
   screenipy:
     build:
@@ -7,48 +9,58 @@ services:
       dockerfile: Dockerfile
     container_name: screenipy
     ports:
-      - "8501:8501"
-      - "8000:8000"
+      - "8000:8000"  # /v1 + /setup + /health
     environment:
-      # LLM Configuration
-      - SCREENIPY_API_KEY=${SCREENIPY_API_KEY:-your-api-key-here}
-      # Uncomment and set for non-OpenAI LLM providers
-      # - LLM_PROVIDER=${LLM_PROVIDER:-openai}
-      # - LLM_MODEL=${LLM_MODEL:-gpt-4o}
-      # - LLM_BASE_URL=${LLM_BASE_URL:-}
-      
-      # Python/App Settings
       - PYTHONUNBUFFERED=1
       - SCREENIPY_DOCKER=TRUE
-      - SCREENIPY_GUI=TRUE
+      - SCREENIPY_DATA_DIR=/opt/program/data
+      # BYOK file path (default /opt/program/data/byok.json); override via SCREENIPY_BYOK_PATH if needed
+      #- SCREENIPY_API_KEY=${SCREENIPY_API_KEY:-}
+      #- LLM_PROVIDER=${LLM_PROVIDER:-openai}
+      #- LLM_MODEL=${LLM_MODEL:-gpt-4o}
+      #- LLM_BASE_URL=${LLM_BASE_URL:-}
     volumes:
-      # Mount for persistent config/data
-      - screenipy_config:/opt/program/config
       - screenipy_data:/opt/program/data
       - screenipy_logs:/opt/program/logs
-      # Mount config file if you have a custom screenipy.yaml
-      # - ./screenipy.yaml:/opt/program/screenipy.yaml:ro
+      # Skills volume (custom drops): same data volume, subfolder skills/
+      # Mount a custom skills folder if you keep one locally:
+      # - ./screenipy_data/skills:/opt/program/data/skills:ro
     restart: unless-stopped
+    command: ["uv", "run", "uvicorn", "agents.server:app", "--host", "0.0.0.0", "--port", "8000", "--app-dir", "src"]
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8501/_stcore/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    # Optional: resource limits
-    # deploy:
-    #   resources:
-    #     limits:
-    #       cpus: '2'
-    #       memory: 2G
-    #     reservations:
-    #       cpus: '1'
-    #       memory: 1G
+      test: ["CMD", "curl", "--fail", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+
+  chat:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: screenipy-chat
+    ports:
+      - "3000:8080"
+    environment:
+      # Dumb shell: no agent logic, forwards to Screenipy /v1
+      - OPENAI_API_BASE_URL=http://screenipy:8000/v1
+      - OPENAI_API_KEY=dummy
+      - DEFAULT_MODELS=screenipy
+      - ENABLE_PERSISTENT_CONFIG=false
+      - WEBUI_NAME=Screenipy
+      - WEBUI_AUTH=false
+      - ENABLE_SIGNUP=false
+    volumes:
+      - open-webui:/app/backend/data
+    depends_on:
+      screenipy:
+        condition: service_healthy
+    restart: unless-stopped
+    # Loopback-only is enforced by ports binding to 127.0.0.1 in production;
+    # compose default binds to 0.0.0.0 for local single-user desktop — see docs.
 
 volumes:
-  screenipy_config:
-    driver: local
   screenipy_data:
     driver: local
   screenipy_logs:
+    driver: local
+  open-webui:
     driver: local
