@@ -27,6 +27,7 @@ except Exception:
 
 from agents.engine import ScreenipyEngine
 from agents.byok import load_byok, save_byok, is_configured, byok_path, redacted
+from agents.presets import MODEL_PRESETS, DEFAULT_STRATEGY_PACK
 
 _engine: ScreenipyEngine | None = None
 
@@ -203,17 +204,30 @@ def create_app(engine: ScreenipyEngine | None = None):
 
     @app.get("/v1/models")
     def list_models():
+        now = int(time.time())
         return {
             "object": "list",
             "data": [
-                {"id": "screenipy", "object": "model", "created": int(time.time()), "owned_by": "screenipy"},
-                {"id": "screenipy-breakout", "object": "model", "created": int(time.time()), "owned_by": "screenipy"},
+                {"id": m["id"], "object": "model", "created": now, "owned_by": m.get("owned_by", "screenipy")}
+                for m in MODEL_PRESETS
             ],
         }
 
     @app.get("/v1/skills")
     def list_skills():
-        return {"skills": sorted(_eng.skills.keys()), "rejections": _eng.chat_visible_rejections()}
+        return {
+            "skills": sorted(_eng.skills.keys()),
+            "default_strategy_pack": DEFAULT_STRATEGY_PACK,
+            "rejections": _eng.chat_visible_rejections(),
+        }
+
+    @app.get("/v1/presets")
+    def list_presets():
+        return {
+            "models": MODEL_PRESETS,
+            "default_strategy_pack": DEFAULT_STRATEGY_PACK,
+            "skills": sorted(_eng.skills.keys()),
+        }
 
     @app.post("/v1/chat/completions")
     def chat_completions(req: ChatCompletionRequest):
