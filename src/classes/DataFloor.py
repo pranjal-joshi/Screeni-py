@@ -137,6 +137,35 @@ class RawCache:
             return payload
         return None
 
+    def summarize(self, kind: str, now: datetime = None) -> dict:
+        """Aggregate staleness across entries of one kind for envelopes."""
+        now = now or utcnow()
+        count, sources, latest, stale_symbols = 0, set(), None, []
+        stale = False
+        with self._lock:
+            items = [(key, payload, fetched)
+                     for (entry_kind, key), (payload, fetched) in self._entries.items()
+                     if entry_kind == kind]
+        for key, payload, fetched_at in items:
+            data, source = payload
+            count += 1
+            sources.add(source)
+            entry_stale = not is_fresh(kind, fetched_at, now=now)
+            stale = stale or entry_stale
+            if entry_stale:
+                stale_symbols.append(key)
+            if isinstance(data, pd.DataFrame) and len(data):
+                ts = data.index[-1]
+                if latest is None or ts > latest:
+                    latest = ts
+        return {
+            'count': count,
+            'sources': sorted(sources),
+            'as_of': latest.isoformat() if latest is not None else None,
+            'stale': stale,
+            'stale_symbols': sorted(stale_symbols),
+        }
+
 
 _shared_cache = None
 _shared_lock = threading.Lock()

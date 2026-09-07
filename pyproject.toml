@@ -34,6 +34,8 @@ dependencies = [
     "num2words==0.5.14",
     "chromadb==1.0.0",
     "joblib",
+    "mcp>=1.28,<2",
+    "uvicorn",
 ]
 
 [dependency-groups]
