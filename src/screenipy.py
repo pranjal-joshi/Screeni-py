@@ -17,6 +17,7 @@ from classes.OtaUpdater import OTAUpdater
 from classes.CandlePatterns import CandlePatterns
 from classes.ParallelProcessing import StockConsumer
 from classes.Changelog import VERSION
+from classes.DataFloor import warm_on_startup
 from classes.Utility import isDocker, isGui
 from alive_progress import alive_bar
 import argparse
@@ -174,6 +175,11 @@ def initExecution():
 # Main function
 def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list = [], isDevVersion=None, backtestDate=date.today()):
     global screenCounter, screenResultsCounter, stockDict, loadedStockData, keyboardInterruptEvent, loadCount, maLength, newlyListedOnly, vectorSearch
+    # App open: warm core universes in the background; never break startup.
+    try:
+        warm_on_startup()
+    except Exception:
+        pass
     screenCounter = multiprocessing.Value('i', 1)
     screenResultsCounter = multiprocessing.Value('i', 0)
     keyboardInterruptEvent = multiprocessing.Manager().Event()

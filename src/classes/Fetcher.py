@@ -8,6 +8,7 @@
 import sys
 import urllib.request
 import csv
+import re
 import requests
 import random
 import os
@@ -18,6 +19,13 @@ from nsetools import Nse
 from classes.ColorText import colorText
 from classes.SuppressOutput import SuppressOutput
 from classes.Utility import isDocker
+from classes.DataFloor import (
+    fetch_daily as floor_daily,
+    fetch_intraday as floor_intraday,
+    get_universe,
+    get_shared_cache,
+    DataUnavailable as FloorUnavailable,
+)
 
 nse = Nse()
 
@@ -35,6 +43,27 @@ class tools:
     def __init__(self, configManager):
         self.configManager = configManager
         pass
+
+    @staticmethod
+    def _floor_covers(period, df) -> bool:
+        """True when a floor frame spans the requested period.
+
+        The floor serves fixed windows (300d daily / 5d intraday); a config
+        asking for more must keep the legacy path. Unparseable periods are
+        conservative (legacy).
+        """
+        m = re.match(r'^\s*(\d+)\s*([a-z]*)\s*$', str(period).lower())
+        if not m:
+            return False
+        per_day = {'d': 1, 'wk': 7, 'w': 7, 'mo': 30, 'm': 30, 'y': 365, 'yr': 365}
+        unit = m.group(2)
+        if unit not in per_day:
+            return False
+        try:
+            span = (df.index[-1] - df.index[0]).days
+        except Exception:
+            return False
+        return span >= int(m.group(1)) * per_day[unit] - 7
 
     def getAllNiftyIndices(self) -> dict:
         return {
@@ -176,7 +205,12 @@ class tools:
         else:
             print(colorText.BOLD +
                   "[+] Getting Stock Codes From NSE... ", end='')
-            listStockCodes = self.fetchCodes(tickerOption,proxyServer=proxyServer)
+            cache = get_shared_cache() if getattr(self.configManager, 'cacheEnabled', True) else None
+            listStockCodes, _fresh = get_universe(
+                tickerOption,
+                loader=lambda opt: self.fetchCodes(opt, proxyServer=proxyServer),
+                cache=cache,
+            )
             if type(listStockCodes) == dict:
                 listStockCodes = list(listStockCodes.keys())
             if len(listStockCodes) > 10:
@@ -203,48 +237,76 @@ class tools:
 
         return listStockCodes
 
-    # Fetch stock price data from Yahoo finance
+    # Fetch stock price data: keyless-first floor, legacy yfinance as fallback
     def fetchStockData(self, stockCode, period, duration, proxyServer, screenResultsCounter, screenCounter, totalSymbols, backtestDate=None, printCounter=False, tickerOption=None):
         dateDict = None
-        with SuppressOutput(suppress_stdout=True, suppress_stderr=True):
-            append_exchange = ".NS"
-            if tickerOption == 15 or tickerOption == 16:
-                append_exchange = ""
-            _start, _end = self._getBacktestDate(backtest=backtestDate)
-            _dl_kwargs = dict(
-                tickers=stockCode + append_exchange,
-                interval=duration,
-                progress=False,
-                timeout=10,
-                auto_adjust=False
-            )
-            if _start is not None and _end is not None:
-                _dl_kwargs['start'] = _start
-                _dl_kwargs['end'] = _end
-            else:
-                _dl_kwargs['period'] = period
-            data = yf.download(**_dl_kwargs)
-            # For df backward compatibility towards yfinance 0.2.32
-            data = self.makeDataBackwardCompatible(data)
-            # end
-            if backtestDate != datetime.date.today():
-                dateDict = self._getDatesForBacktestReport(backtest=backtestDate)
-                backtestData = yf.download(
+        data = None
+        # Live bars go through the data floor (Stooq -> yfinance -> Upstox,
+        # cached); backtest windows and anything the floor cannot serve keep
+        # the legacy yfinance path below. Freshness rides on df.attrs.
+        use_cache = getattr(self.configManager, 'cacheEnabled', True)
+        cache = get_shared_cache() if use_cache else None
+        live = backtestDate is None or backtestDate == datetime.date.today()
+        suffix = '' if tickerOption in (15, 16) else '.ns'
+        if live and duration == '1d':
+            try:
+                data, fresh = floor_daily(stockCode, cache=cache, suffix=suffix)
+                if self._floor_covers(period, data):
+                    data.attrs['freshness'] = fresh
+                else:
+                    data = None
+            except FloorUnavailable:
+                data = None
+        elif live and duration in ('5m', '15m', '30m', '1h'):
+            try:
+                data, fresh = floor_intraday(stockCode, interval=duration, cache=cache,
+                                             suffix=suffix)
+                if self._floor_covers(period, data):
+                    data.attrs['freshness'] = fresh
+                else:
+                    data = None
+            except FloorUnavailable:
+                data = None
+        if data is None:
+            with SuppressOutput(suppress_stdout=True, suppress_stderr=True):
+                append_exchange = ".NS"
+                if tickerOption == 15 or tickerOption == 16:
+                    append_exchange = ""
+                _start, _end = self._getBacktestDate(backtest=backtestDate)
+                _dl_kwargs = dict(
                     tickers=stockCode + append_exchange,
-                    interval='1d',
+                    interval=duration,
                     progress=False,
                     timeout=10,
-                    start=backtestDate - datetime.timedelta(days=1),
-                    end=backtestDate + datetime.timedelta(days=370)
+                    auto_adjust=False
                 )
-                for key, value in dateDict.copy().items():
-                    if value is not None:
-                        try:
-                            dateDict[key] = backtestData.loc[pd.Timestamp(value)]['Close']
-                        except KeyError:
-                            continue
-                dateDict['T+52wkH'] = backtestData['High'].max()
-                dateDict['T+52wkL'] = backtestData['Low'].min()
+                if _start is not None and _end is not None:
+                    _dl_kwargs['start'] = _start
+                    _dl_kwargs['end'] = _end
+                else:
+                    _dl_kwargs['period'] = period
+                data = yf.download(**_dl_kwargs)
+                # For df backward compatibility towards yfinance 0.2.32
+                data = self.makeDataBackwardCompatible(data)
+                # end
+                if backtestDate != datetime.date.today():
+                    dateDict = self._getDatesForBacktestReport(backtest=backtestDate)
+                    backtestData = yf.download(
+                        tickers=stockCode + append_exchange,
+                        interval='1d',
+                        progress=False,
+                        timeout=10,
+                        start=backtestDate - datetime.timedelta(days=1),
+                        end=backtestDate + datetime.timedelta(days=370)
+                    )
+                    for key, value in dateDict.copy().items():
+                        if value is not None:
+                            try:
+                                dateDict[key] = backtestData.loc[pd.Timestamp(value)]['Close']
+                            except KeyError:
+                                continue
+                    dateDict['T+52wkH'] = backtestData['High'].max()
+                    dateDict['T+52wkL'] = backtestData['Low'].min()
         if printCounter:
             sys.stdout.write("\r\033[K")
             try:
@@ -263,14 +325,18 @@ class tools:
 
     # Get Daily Nifty 50 Index:
     def fetchLatestNiftyDaily(self, proxyServer=None):
-        data = yf.download(
-                auto_adjust=False,
-                tickers="^NSEI",
-                period='5d',
-                interval='1d',
-                progress=False,
-                timeout=10
-            )
+        try:
+            data, fresh = floor_daily('^NSEI', cache=get_shared_cache(), suffix='')
+            data.attrs['freshness'] = fresh
+        except FloorUnavailable:
+            data = yf.download(
+                    auto_adjust=False,
+                    tickers="^NSEI",
+                    period='5d',
+                    interval='1d',
+                    progress=False,
+                    timeout=10
+                )
         gold = yf.download(
                 auto_adjust=False,
                 tickers="GC=F",
@@ -295,38 +361,27 @@ class tools:
 
     # Get Data for Five EMA strategy
     def fetchFiveEmaData(self, proxyServer=None):
-        nifty_sell = yf.download(
-                auto_adjust=False,
-                tickers="^NSEI",
-                period='5d',
-                interval='5m',
-                progress=False,
-                timeout=10
-            )
-        banknifty_sell = yf.download(
-                auto_adjust=False,
-                tickers="^NSEBANK",
-                period='5d',
-                interval='5m',
-                progress=False,
-                timeout=10
-            )
-        nifty_buy = yf.download(
-                auto_adjust=False,
-                tickers="^NSEI",
-                period='5d',
-                interval='15m',
-                progress=False,
-                timeout=10
-            )
-        banknifty_buy = yf.download(
-                auto_adjust=False,
-                tickers="^NSEBANK",
-                period='5d',
-                interval='15m',
-                progress=False,
-                timeout=10
-            )
+        cache = get_shared_cache()
+
+        def _leg(sym, iv):
+            try:
+                df, fresh = floor_intraday(sym, interval=iv, cache=cache, suffix='')
+                df.attrs['freshness'] = fresh
+                return df
+            except FloorUnavailable:
+                return yf.download(
+                        auto_adjust=False,
+                        tickers=sym,
+                        period='5d',
+                        interval=iv,
+                        progress=False,
+                        timeout=10
+                    )
+
+        nifty_sell = _leg("^NSEI", '5m')
+        banknifty_sell = _leg("^NSEBANK", '5m')
+        nifty_buy = _leg("^NSEI", '15m')
+        banknifty_buy = _leg("^NSEBANK", '15m')
         nifty_buy = self.makeDataBackwardCompatible(nifty_buy)
         banknifty_buy = self.makeDataBackwardCompatible(banknifty_buy)
         nifty_sell = self.makeDataBackwardCompatible(nifty_sell)
@@ -365,6 +420,9 @@ class tools:
         return data
     
     def makeDataBackwardCompatible(self, data:pd.DataFrame, column_prefix:str=None) -> pd.DataFrame:
+        # Floor frames are already flat; only yfinance MultiIndex frames need it.
+        if not isinstance(data.columns, pd.MultiIndex):
+            return data
         data = data.droplevel(level=1, axis=1)
         data = data.rename_axis(None, axis=1)
         column_prefix = '' if column_prefix is None else column_prefix

@@ -132,6 +132,15 @@ isDevVersion, guiUpdateMessage = check_updates()
 st.session_state['_app_loaded'] = True
 _startup_placeholder.empty()
 
+# App open: warm core universes in the background (once per session).
+if not st.session_state.get('_warmer_started'):
+    st.session_state['_warmer_started'] = True
+    try:
+        from classes.DataFloor import warm_on_startup
+        warm_on_startup()
+    except Exception:
+        pass
+
 execute_inputs = []
 
 # ── Result table ──────────────────────────────────────────────────────────────
