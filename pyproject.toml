@@ -36,6 +36,7 @@ dependencies = [
     "joblib",
     "mcp>=1.28,<2",
     "uvicorn",
+    "fastapi",
 ]
 
 [dependency-groups]
