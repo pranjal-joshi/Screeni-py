@@ -2,7 +2,6 @@
 Scheduler for Screeni-py Agent Harness.
 APScheduler-based scheduled runs for automated stock screening.
 Supports cron-style schedules from screenipy.yaml.
-Heartbeat: pings Kite MCP every 5 minutes to verify connectivity.
 """
 import asyncio
 import logging
@@ -11,8 +10,6 @@ import sys
 import sqlite3
 from datetime import datetime
 from typing import Optional
-
-import httpx
 
 _src_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _src_dir not in sys.path:
@@ -28,11 +25,9 @@ except ImportError:
     _APSCHEDULER_AVAILABLE = False
     logger.warning("APScheduler not installed. Scheduled runs unavailable.")
 
-from agents.llm_config import load_workflow_config, load_kite_config
+from agents.llm_config import load_workflow_config
 from agents.agent_loader import AgentLoader
 
-KITE_MCP_URL = "https://mcp.kite.trade/mcp"
-HEARTBEAT_LOG_FILE = "screenipy_heartbeat.log"
 RESULTS_DB = "screenipy_agent_results.db"
 
 
@@ -74,16 +69,6 @@ class AgentScheduler:
                     error TEXT
                 )
             """)
-            conn.execute("""
-                CREATE TABLE IF NOT EXISTS heartbeat_log (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    checked_at TEXT NOT NULL,
-                    url TEXT NOT NULL,
-                    status_code INTEGER,
-                    latency_ms REAL,
-                    ok INTEGER DEFAULT 0
-                )
-            """)
             conn.commit()
         finally:
             conn.close()
@@ -91,22 +76,8 @@ class AgentScheduler:
     def setup_from_config(self):
         """
         Set up scheduled jobs from screenipy.yaml.
-        Also adds the heartbeat job.
         """
         config = load_workflow_config()
-        kite_cfg = load_kite_config()
-
-        # Heartbeat job: ping Kite MCP every 5 minutes
-        heartbeat_url = kite_cfg.get('url', KITE_MCP_URL)
-        self.scheduler.add_job(
-            self._heartbeat_job,
-            'interval',
-            minutes=5,
-            args=[heartbeat_url],
-            id='kite_mcp_heartbeat',
-            replace_existing=True,
-        )
-        logger.info(f"Heartbeat job added for {heartbeat_url}")
 
         # Add scheduled agent runs from config
         schedules = config.get('schedule', [])
@@ -140,37 +111,6 @@ class AgentScheduler:
                 logger.info(f"Scheduled job added: {agent_name} at cron='{cron_expr}'")
             else:
                 logger.warning(f"Invalid cron expression: {cron_expr}")
-
-    async def _heartbeat_job(self, url: str):
-        """Ping the Kite MCP URL and log result."""
-        start = datetime.now()
-        status_code = None
-        ok = False
-        latency_ms = 0.0
-
-        try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                resp = await client.get(url)
-                status_code = resp.status_code
-                ok = resp.status_code < 400
-                latency_ms = (datetime.now() - start).total_seconds() * 1000
-        except Exception as e:
-            logger.warning(f"Heartbeat failed for {url}: {e}")
-            latency_ms = (datetime.now() - start).total_seconds() * 1000
-
-        # Log to DB
-        conn = sqlite3.connect(self.db_path)
-        try:
-            conn.execute(
-                "INSERT INTO heartbeat_log (checked_at, url, status_code, latency_ms, ok) VALUES (?, ?, ?, ?, ?)",
-                (datetime.now().isoformat(), url, status_code, latency_ms, int(ok))
-            )
-            conn.commit()
-        finally:
-            conn.close()
-
-        status_str = f"{status_code}" if status_code else "TIMEOUT"
-        logger.info(f"Heartbeat {url}: {status_str} ({latency_ms:.0f}ms) {'✓' if ok else '✗'}")
 
     async def _run_scheduled_agent(self, agent_name: str):
         """Run a scheduled agent persona and save results."""

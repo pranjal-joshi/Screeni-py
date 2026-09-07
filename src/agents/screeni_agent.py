@@ -1,7 +1,6 @@
 """
 ScreeniAgent - AI-native stock screening agent powered by openai-agents.
 Supports OpenAI, Anthropic, and OpenAI-compatible LLM providers.
-Integrates Kite MCP for live market data when configured.
 """
 import asyncio
 import logging
@@ -78,7 +77,7 @@ def _build_openai_compatible_model(llm_cfg: dict):
 class ScreeniAgent:
     """
     AI-native stock screener agent.
-    Wraps openai-agents Agent + Runner with Screeni-py tools and optional Kite MCP.
+    Wraps openai-agents Agent + Runner with Screeni-py tools.
     """
 
     def __init__(self, persona_config: dict, llm_config: dict = None):

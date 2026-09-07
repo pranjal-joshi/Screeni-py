@@ -151,25 +151,6 @@ def _get_or_create_agent_session():
     return st.session_state.get('_agent_sql_session')
 
 
-def _get_kite_session():
-    from agents.kite_session import KiteMCPSession
-    from agents.llm_config import load_kite_config
-    kite_cfg = load_kite_config()
-    if not kite_cfg.get('enabled') or not kite_cfg.get('url'):
-        return None
-    sess = st.session_state.get('_kite_mcp_session')
-    if sess is None or not sess.is_connected:
-        try:
-            sess = KiteMCPSession(kite_cfg['url'])
-            sess.start()
-            st.session_state['_kite_mcp_session'] = sess
-            st.session_state['_kite_authenticated'] = False
-        except Exception:
-            st.session_state.pop('_kite_mcp_session', None)
-            return None
-    return sess
-
-
 def _check_credential_source() -> str:
     """Check where LLM credentials came from: browser localStorage, YAML, or env."""
     import os as _os
@@ -266,8 +247,6 @@ def render():
         else:
             st.warning("No personas found.")
 
-        st.divider()
-        _render_kite_auth_compact()
         st.divider()
 
         if not api_key:
@@ -508,18 +487,7 @@ def render():
                 if not followup:
                     _step("Running screener tools…")
 
-                kite_sess = st.session_state.get('_kite_mcp_session')
-                if (kite_sess and kite_sess.is_connected
-                        and st.session_state.get('_kite_authenticated', False)):
-                    try:
-                        agent_obj._agent.mcp_servers = [kite_sess.server]
-                        result = kite_sess.run_agent_query(
-                            agent_obj._agent, query, sql_session=sql_session,
-                        )
-                    except Exception:
-                        result = agent_obj.run_sync(query, session=sql_session)
-                else:
-                    result = agent_obj.run_sync(query, session=sql_session)
+                result = agent_obj.run_sync(query, session=sql_session)
 
                 _step("Done!", done=True)
 
@@ -529,74 +497,4 @@ def render():
 
             st.session_state['chat_history'].append({'role': 'assistant', 'content': result})
 
-            if 'kite.zerodha.com/connect/login' in result:
-                import re as _re
-                m = _re.search(
-                    r'https://kite\.zerodha\.com/connect/login[^\s\)\"\']+', result
-                )
-                if m:
-                    st.session_state['_kite_pending_login_url'] = m.group(0)
-                    st.session_state['_kite_authenticated'] = False
-
             st.rerun()
-
-
-# ── Kite auth compact sidebar ──────────────────────────────────────────────────
-def _render_kite_auth_compact():
-    from agents.llm_config import load_kite_config
-    kite_cfg = load_kite_config()
-    if not kite_cfg.get('enabled'):
-        return
-
-    authenticated = st.session_state.get('_kite_authenticated', False)
-    kite_sess = st.session_state.get('_kite_mcp_session')
-    session_alive = kite_sess is not None and kite_sess.is_connected
-
-    st.markdown("### 🔑 Kite")
-
-    if authenticated and session_alive:
-        st.success("Live data ✅", icon="📡")
-        if st.button("Disconnect", key='kite_disconnect_btn', use_container_width=True):
-            from agents.kite_session import clear_session
-            clear_session()
-            st.session_state.pop('_kite_mcp_session', None)
-            st.session_state['_kite_authenticated'] = False
-            st.session_state.pop('_kite_pending_login_url', None)
-            st.rerun()
-        return
-
-    pending_url = st.session_state.get('_kite_pending_login_url')
-    if pending_url:
-        st.markdown(f"[🔓 Login to Kite]({pending_url})")
-        st.caption("Click link, log in, then:")
-        c1, c2 = st.columns(2)
-        if c1.button("✅ Done", key='kite_confirm_login', use_container_width=True):
-            st.session_state['_kite_authenticated'] = True
-            st.session_state.pop('_kite_pending_login_url', None)
-            st.rerun()
-        if c2.button("🔄", key='kite_refresh_link', use_container_width=True):
-            st.session_state.pop('_kite_pending_login_url', None)
-            st.session_state.pop('_kite_mcp_session', None)
-            st.rerun()
-        return
-
-    st.caption("Real-time quotes & orders")
-    if st.button("🔗 Connect", key='kite_connect_btn', use_container_width=True):
-        with st.spinner("Connecting…"):
-            try:
-                sess = _get_kite_session()
-                if sess is None:
-                    st.error("Connect failed.")
-                    return
-                login_url_text = sess.get_login_url()
-                import re
-                m = re.search(
-                    r'https://kite\.zerodha\.com/connect/login[^\s\)\"\']+',
-                    login_url_text,
-                )
-                st.session_state['_kite_pending_login_url'] = (
-                    m.group(0) if m else login_url_text
-                )
-                st.rerun()
-            except Exception as e:
-                st.error(f"Kite error: {e}")

@@ -514,7 +514,6 @@ with tab_screen:
         '10 > Nifty Midcap 100',
         '11 > Nifty Midcap 150',
         '13 > Newly Listed (IPOs in last 2 Years)',
-        '14 > F&O Stocks Only',
         '15 > US S&P 500',
         '16 > Sectoral Indices (NSE)',
     ]

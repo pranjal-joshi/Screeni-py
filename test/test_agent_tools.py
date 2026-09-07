@@ -150,10 +150,13 @@ class TestIndexResolution:
         from agents.screener_tools import _resolve_index
         assert _resolve_index("Nifty 500") == 5
 
-    def test_fo_stocks_resolves_to_14(self):
-        """'F&O Stocks' should resolve to ticker option 14."""
-        from agents.screener_tools import _resolve_index
-        assert _resolve_index("F&O Stocks") == 14
+    def test_fo_stocks_no_longer_resolves(self):
+        """'F&O Stocks' was a keyed Kite source; it must fall back to Nifty 500."""
+        from agents.screener_tools import INDEX_MAP, _resolve_index
+        assert "f&o stocks" not in INDEX_MAP
+        assert "f&o" not in INDEX_MAP
+        assert "fo" not in INDEX_MAP
+        assert _resolve_index("F&O Stocks") == 5
 
     def test_case_insensitive(self):
         """Index resolution should be case-insensitive."""
@@ -172,6 +175,22 @@ class TestIndexResolution:
         from agents.screener_tools import _resolve_index
         result = _resolve_index("Unknown Index XYZ")
         assert result == 5
+
+
+class TestFetcherDetachment:
+    """Fetcher seam (#298): no keyed bulk-download consumer may remain."""
+
+    def test_no_kite_source_in_fetcher(self):
+        """Fetcher source must not reference the retired Kite instruments feed."""
+        import inspect
+        from classes import Fetcher as FetcherMod
+        assert 'api.kite.trade' not in inspect.getsource(FetcherMod)
+
+    def test_retired_option_14_returns_empty_without_network(self):
+        """fetchCodes(14) fails clean with no stocks and no network call."""
+        from classes.Fetcher import Fetcher
+        fetcher = Fetcher.__new__(Fetcher)
+        assert fetcher.fetchCodes(14) == []
 
 
 class TestAgentLoader:

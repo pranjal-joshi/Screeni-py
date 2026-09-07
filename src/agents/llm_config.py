@@ -64,22 +64,6 @@ def load_llm_config():
     }
 
 
-def load_kite_config():
-    """Load Kite MCP configuration from screenipy.yaml."""
-    config_path = _find_config_file()
-    if config_path is None:
-        return {'enabled': False, 'url': None}
-
-    with open(config_path, 'r') as f:
-        config = yaml.safe_load(f)
-
-    kite_config = config.get('kite_mcp', {})
-    return {
-        'enabled': kite_config.get('enabled', False),
-        'url': kite_config.get('url', 'https://mcp.kite.trade/mcp'),
-    }
-
-
 def load_workflow_config():
     """Load workflow configuration from screenipy.yaml."""
     config_path = _find_config_file()

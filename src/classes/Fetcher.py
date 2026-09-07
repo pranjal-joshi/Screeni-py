@@ -138,10 +138,14 @@ class tools:
             9: "https://archives.nseindia.com/content/indices/ind_niftymidcap50list.csv",
             10: "https://archives.nseindia.com/content/indices/ind_niftymidcap100list.csv",
             11: "https://archives.nseindia.com/content/indices/ind_niftymidcap150list.csv",
-            14: "https://api.kite.trade/instruments"
         }
 
         url = tickerMapping.get(tickerOption)
+        if url is None:
+            # Option 14 (keyed Kite instruments feed) was retired; any other
+            # unmapped option is equally unsupported — fail clean, no network.
+            print(f"[+] Unsupported ticker option: {tickerOption} (option 14 was retired with the Kite detachment). No stocks fetched.")
+            return []
 
         try:
             if proxyServer:
@@ -150,16 +154,10 @@ class tools:
                 res = requests.get(url)
             
             cr = csv.reader(res.text.strip().split('\n'))
-            
-            if tickerOption == 14:
-                cols = next(cr)
-                df = pd.DataFrame(cr, columns=cols)
-                listStockCodes = list(set(df[df['segment'] == 'NFO-FUT']["name"].to_list()))
-                listStockCodes.sort()
-            else:
-                next(cr)  # skipping first line
-                for row in cr:
-                    listStockCodes.append(row[2])
+
+            next(cr)  # skipping first line
+            for row in cr:
+                listStockCodes.append(row[2])
         except Exception as error:
             print(error)
 

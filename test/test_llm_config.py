@@ -200,15 +200,22 @@ llm:
         assert 'MISSING_KEY_XYZ123' in error_msg or 'export' in error_msg.lower()
 
 
-class TestLoadKiteConfig:
-    """Test load_kite_config function."""
+class TestNoBrokerCoupling:
+    """Broker detachment (#298): no Kite config surface may remain."""
 
-    def test_returns_dict(self, tmp_path, monkeypatch):
-        """Should return a dict with enabled and url keys."""
+    def test_no_kite_loader(self):
+        """llm_config must not expose any Kite loader."""
+        from agents import llm_config
+        assert not hasattr(llm_config, 'load_kite_config')
+
+    def test_workflow_config_ignores_kite_section(self, tmp_path, monkeypatch):
+        """A stale kite_mcp section must not affect workflow config."""
         yaml_content = """
 kite_mcp:
   url: https://mcp.kite.trade/mcp
   enabled: true
+workflow:
+  default_mode: classic
 """
         yaml_path = str(tmp_path / "screenipy.yaml")
         with open(yaml_path, 'w') as f:
@@ -217,36 +224,9 @@ kite_mcp:
         from agents import llm_config
         monkeypatch.setattr(llm_config, '_find_config_file', lambda: yaml_path)
 
-        config = llm_config.load_kite_config()
-        assert 'enabled' in config
-        assert 'url' in config
-        assert config['enabled'] is True
-        assert 'kite' in config['url']
-
-    def test_disabled_kite(self, tmp_path, monkeypatch):
-        """Should return enabled=False when disabled in config."""
-        yaml_content = """
-kite_mcp:
-  enabled: false
-"""
-        yaml_path = str(tmp_path / "screenipy.yaml")
-        with open(yaml_path, 'w') as f:
-            f.write(yaml_content)
-
-        from agents import llm_config
-        monkeypatch.setattr(llm_config, '_find_config_file', lambda: yaml_path)
-
-        config = llm_config.load_kite_config()
-        assert config['enabled'] is False
-
-    def test_no_yaml_returns_defaults(self, monkeypatch):
-        """Should return defaults when yaml not found."""
-        from agents import llm_config
-        monkeypatch.setattr(llm_config, '_find_config_file', lambda: None)
-
-        config = llm_config.load_kite_config()
-        assert 'enabled' in config
-        assert config['enabled'] is False
+        config = llm_config.load_workflow_config()
+        assert config['default_mode'] == 'classic'
+        assert 'kite' not in str(config).lower()
 
 
 class TestLoadWorkflowConfig:

@@ -4,10 +4,6 @@ llm:
   base_url: null             # For openai-compatible endpoints (Ollama, LiteLLM, etc.)
   api_key_env: SCREENIPY_API_KEY
 
-kite_mcp:
-  url: https://mcp.kite.trade/mcp
-  enabled: true
-
 workflow:
   default_mode: classic      # classic | ai
 

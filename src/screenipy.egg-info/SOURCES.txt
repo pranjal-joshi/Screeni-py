@@ -6,8 +6,6 @@ src/screenipy.py
 src/streamlit_app.py
 src/agents/__init__.py
 src/agents/agent_loader.py
-src/agents/kite_auth_test.py
-src/agents/kite_session.py
 src/agents/llm_config.py
 src/agents/scheduler.py
 src/agents/screener_tools.py

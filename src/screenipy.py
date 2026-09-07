@@ -99,8 +99,8 @@ def initExecution():
      1 > Nifty 50               2 > Nifty Next 50           3 > Nifty 100
      4 > Nifty 200              5 > Nifty 500               6 > Nifty Smallcap 50
      7 > Nifty Smallcap 100     8 > Nifty Smallcap 250      9 > Nifty Midcap 50
-    10 > Nifty Midcap 100      11 > Nifty Midcap 150       13 > Newly Listed (IPOs in last 2 Year)
-    14 > F&O Stocks Only       15 > US S&P 500             16 > Sectoral Indices (NSE)
+     10 > Nifty Midcap 100      11 > Nifty Midcap 150       13 > Newly Listed (IPOs in last 2 Year)
+     15 > US S&P 500             16 > Sectoral Indices (NSE)
     Enter > All Stocks (default) ''' + colorText.END
           )
     try:
@@ -336,10 +336,6 @@ def main(testing=False, testBuild=False, downloadOnly=False, execute_inputs:list
                         input('\nPress any key to Continue...\n')
                     return
             else:
-                if tickerOption == 14:    # Override config for F&O Stocks
-                    configManager.stageTwo = False
-                    configManager.minLTP = 0.1
-                    configManager.maxLTP = 999999999
                 if (execute_inputs != [] and tickerOption != 0) or execute_inputs == []:
                     listStockCodes = fetcher.fetchStockCodes(tickerOption, proxyServer=proxyServer)
         except urllib.error.URLError:

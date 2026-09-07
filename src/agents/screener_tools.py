@@ -32,9 +32,6 @@ INDEX_MAP = {
     "nifty midcap 150": 11,
     "all nse": 12,
     "all": 12,
-    "f&o stocks": 14,
-    "f&o": 14,
-    "fo": 14,
     "s&p 500": 15,
     "sp500": 15,
 }
@@ -204,7 +201,7 @@ def screen_breakout(index: str = "Nifty 500", days_lookback: int = 30) -> str:
     """Screen stocks breaking out of key resistance levels with volume confirmation.
 
     Args:
-        index: Market index to screen (e.g., 'Nifty 50', 'Nifty 500', 'F&O Stocks')
+        index: Market index to screen (e.g., 'Nifty 50', 'Nifty 500')
         days_lookback: Number of days to look back for breakout analysis
     """
     ticker_opt = _resolve_index(index)
