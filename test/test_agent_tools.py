@@ -182,14 +182,27 @@ class TestFetcherDetachment:
 
     def test_no_kite_source_in_fetcher(self):
         """Fetcher source must not reference the retired Kite instruments feed."""
-        import inspect
-        from classes import Fetcher as FetcherMod
-        assert 'api.kite.trade' not in inspect.getsource(FetcherMod)
+        import os
+        path = os.path.join(os.path.dirname(__file__), '..', 'src', 'classes', 'Fetcher.py')
+        with open(os.path.abspath(path), 'r') as f:
+            assert 'api.kite.trade' not in f.read()
 
-    def test_retired_option_14_returns_empty_without_network(self):
+    def test_retired_option_14_returns_empty_without_network(self, monkeypatch):
         """fetchCodes(14) fails clean with no stocks and no network call."""
-        from classes.Fetcher import Fetcher
-        fetcher = Fetcher.__new__(Fetcher)
+        import sys
+        import types
+        from unittest.mock import MagicMock
+        stubs = {}
+        for mod in ('yfinance', 'nsetools', 'pytz', 'joblib', 'alive_progress'):
+            if mod not in sys.modules:
+                stub = types.ModuleType(mod)
+                stub.__version__ = '0.0.0'
+                stubs[mod] = stub
+                monkeypatch.setitem(sys.modules, mod, stub)
+        stubs['alive_progress'].alive_bar = MagicMock()
+        stubs['nsetools'].Nse = MagicMock()
+        from classes.Fetcher import tools as FetcherTools
+        fetcher = FetcherTools.__new__(FetcherTools)
         assert fetcher.fetchCodes(14) == []
 
 
