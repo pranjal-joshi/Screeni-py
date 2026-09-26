@@ -7,15 +7,19 @@
 
 from classes.ColorText import colorText
 
-VERSION = "3.0.2"
+VERSION = "3.02"
 
 changelog = colorText.BOLD + '[ChangeLog]\n' + colorText.END + colorText.BLUE + '''
-[3.0.2]
+[3.02]
 1. Fixed _load_real_agents() import dance - removed fragile site.getsitepackages() hack, use direct sys.path manipulation.
-2. Fixed OtaUpdater crash with semver versions like "3.0.1" (float() ValueError).
+2. Fixed OTAUpdater crash with semver versions like "3.0.1" (float() ValueError).
 3. Fixed Styler.applymap deprecation warning → Styler.map.
 4. Fixed use_container_width deprecation warning → width parameter.
 5. Fixed ai_provider/ai_remember_key Session State API conflict (removed redundant default value params).
+6. Fixed OTAUpdater typo (OtaUpdater → OTAUpdater).
+7. Fixed _load_real_agents() fallback for Docker/uv managed venvs.
+8. Fixed exception-proof splash clear in check_updates().
+9. Changed version format to "3.02" for float() compatibility in CI test.
 
 [3.0.1]
 1. Fixed import shadowing conflict between local src/agents/ and openai-agents package.

@@ -101,7 +101,7 @@ rm updater.sh
         guiUpdateMessage = ""
         try:
             resp = None
-            now = OtaUpdater._parse_version(VERSION)
+            now = OTAUpdater._parse_version(VERSION)
             if proxyServer:
                 resp = requests.get("https://api.github.com/repos/pranjal-joshi/Screeni-py/releases/latest",proxies={'https':proxyServer}, timeout=10)
             else:
@@ -133,7 +133,7 @@ rm updater.sh
                         print(colorText.BOLD + colorText.WARN + '[+] Error occured while updating!' + colorText.END)
                         raise(e)
             '''
-            _tag = OtaUpdater._parse_version(resp.json()['tag_name'])
+            _tag = OTAUpdater._parse_version(resp.json()['tag_name'])
             if _tag > now and not isDocker():
                 print(colorText.BOLD + colorText.FAIL + "[+] Executables are now DEPRECATED!\nFollow instructions given at https://github.com/pranjal-joshi/Screeni-py to switch to Docker.\n" + colorText.END)
             elif _tag > now and isDocker():    # OTA not applicable if we're running in docker!
